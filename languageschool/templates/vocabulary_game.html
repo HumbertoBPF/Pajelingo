@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form class="mt-3 text-center" action="{% url 'vocabulary_game_verify_answer' %}" method="POST">
+    {% csrf_token %}
+    <input type="text" class="mb-3 text-center form-control" value="{{word}}" id="wordToTranslate" name="word_to_translate" disabled>
+    {% if is_translation_correct%}    
+        <input type="text" class="mb-3 text-center form-control" placeholder="{{last_answer}}" id="translationWord" name="translation_word" disabled>
+    {% else %}
+        <input type="text" class="mb-3 text-center form-control" placeholder="Provide the translation in {{base_language}}" id="translationWord" name="translation_word">
+    {% endif %}
+    <input type="text" name="word_to_translate_id" value="{{word.id}}" hidden>
+    <input type="text" name="base_language" value="{{base_language}}" hidden>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{message.tags}}">{{message}}</div>
+        {% endfor %}
+    {% endif %}
+    {% if is_translation_correct%}
+        <button type="submit" class="btn btn-secondary" disabled>Check</button>
+    {% else %}
+        <button type="submit" class="btn btn-primary">Check</button>
+    {% endif %}
+    {% if is_translation_correct is not None%}
+        <a class="btn btn-success" href="/vocabulary_game?base_language={{ base_language.language_name }}&target_language={{ word.language.language_name }}" role="button">New word</a>
+    {% endif %}
+</form>
+
+{% endblock %}
