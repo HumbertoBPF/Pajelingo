@@ -3,6 +3,12 @@ from django.db import models
 # Create your models here.
 class Language(models.Model):
     language_name = models.CharField(max_length=30)
+    personal_pronoun_1 = models.CharField(max_length=30, blank=True, null=True)
+    personal_pronoun_2 = models.CharField(max_length=30, blank=True, null=True)
+    personal_pronoun_3 = models.CharField(max_length=30, blank=True, null=True)
+    personal_pronoun_4 = models.CharField(max_length=30, blank=True, null=True)
+    personal_pronoun_5 = models.CharField(max_length=30, blank=True, null=True)
+    personal_pronoun_6 = models.CharField(max_length=30, blank=True, null=True)
 
     def __str__(self):
         return self.language_name
