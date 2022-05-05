@@ -47,7 +47,7 @@ def vocabulary_game(request):
                 else:
                     messages.error(request, "The target and base languages must be different")
     # If some error was detected, go to the setup page
-    return vocabulary_game_setup(request)
+    return redirect('vocabulary_game_setup')
 
 def vocabulary_game_verify_answer(request):
     if request.method == "POST":
@@ -78,8 +78,41 @@ def vocabulary_game_verify_answer(request):
                                 'target_language': str(word_to_translate.language)})
             url = '{}?{}'.format(base_url, query_string)
             return redirect(url)
-    # If some error was detect, go to the setup page
+    # If some error was detected, go to the setup page
     return vocabulary_game_setup(request)
 
 def article_game_setup(request):
-    return render(request, 'article_game_setup.html')
+    # For the article game, English is not a language available since it has a unique article
+    languages = Language.objects.exclude(language_name = "English")
+
+    return render(request, 'article_game_setup.html', {'languages': languages})
+
+def article_game(request):
+    if request.method == "GET":
+        if request_contains(request.GET, ["language"]):
+            language = request.GET["language"]
+            # Verify if some language was chosen
+            if len(language) == 0:
+                messages.error(request, "You must choose a language")
+            else:
+                word = random.choice(Word.objects.filter(language=get_object_or_404(Language, language_name=language)).exclude(article = None))
+
+                return render(request, 'article_game.html', {'word': word})
+    # If some error was detected, go to setup page
+    return redirect('article_game_setup')
+
+def article_game_verify_answer(request):
+    if request.method == "POST":
+        if request_contains(request.POST, ["article", "word_id"]):
+            user_answer = request.POST["article"]
+            word_id = request.POST["word_id"]
+            word = get_object_or_404(Word, pk = word_id)
+            if word.article.article_name == user_answer:
+                messages.success(request, 'Correct :)\n'+str(word))
+            else:
+                messages.error(request, 'Wrong answer\n'+str(word))
+            base_url = reverse('article_game')
+            query_string =  urlencode({'language': str(word.language)})
+            url = '{}?{}'.format(base_url, query_string)
+            return redirect(url)
+    return article_game_setup(request)
