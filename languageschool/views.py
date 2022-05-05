@@ -2,7 +2,7 @@ from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.urls import reverse
-from languageschool.models import Language, Word
+from languageschool.models import Conjugation, Language, Word
 import random
 
 # Create your views here.
@@ -23,7 +23,7 @@ def index(request):
 def vocabulary_game_setup(request):
     languages = Language.objects.all()
 
-    return render(request, 'vocabulary_game_setup.html', {'languages':languages})
+    return render(request, 'game/vocabulary_game/vocabulary_game_setup.html', {'languages':languages})
 
 def vocabulary_game(request):
     if request.method == "GET":
@@ -43,7 +43,7 @@ def vocabulary_game(request):
                     # Picking all the words corresponding to the target language
                     words_list = Word.objects.filter(language = get_object_or_404(Language, language_name = target_language))
                     selected_word = random.choice(words_list)
-                    return render(request, "vocabulary_game.html", {"word":selected_word, "base_language":base_language})
+                    return render(request, "game/vocabulary_game/vocabulary_game.html", {"word":selected_word, "base_language":base_language})
                 else:
                     messages.error(request, "The target and base languages must be different")
     # If some error was detected, go to the setup page
@@ -85,7 +85,7 @@ def article_game_setup(request):
     # For the article game, English is not a language available since it has a unique article
     languages = Language.objects.exclude(language_name = "English")
 
-    return render(request, 'article_game_setup.html', {'languages': languages})
+    return render(request, 'game/article_game/article_game_setup.html', {'languages': languages})
 
 def article_game(request):
     if request.method == "GET":
@@ -97,7 +97,7 @@ def article_game(request):
             else:
                 word = random.choice(Word.objects.filter(language=get_object_or_404(Language, language_name=language)).exclude(article = None))
 
-                return render(request, 'article_game.html', {'word': word})
+                return render(request, 'game/article_game/article_game.html', {'word': word})
     # If some error was detected, go to setup page
     return redirect('article_game_setup')
 
@@ -116,3 +116,54 @@ def article_game_verify_answer(request):
             url = '{}?{}'.format(base_url, query_string)
             return redirect(url)
     return article_game_setup(request)
+
+def conjugation_game_setup(request):
+    languages = Language.objects.all()
+
+    return render(request, 'game/conjugation_game/conjugation_game_setup.html', {'languages':languages})
+
+def conjugation_game(request):
+    if request.method == "GET":
+        if request_contains(request.GET, ["language"]):
+            language = request.GET["language"]
+            # Verify if some language was chosen
+            if len(language) == 0:
+                messages.error(request, "You must choose a language")
+            else:
+                word = random.choice(Word.objects.filter(language=get_object_or_404(Language, language_name=language)).filter(article = None))
+
+                return render(request, 'game/conjugation_game/conjugation_game.html', {'word': word})
+    # If some error was detected, go to setup page
+    return redirect('conjugation_game_setup')
+
+def conjugation_game_verify_answer(request):
+    if request.method == "POST":
+        if request_contains(request.POST, ["conjugation_1", "conjugation_2", "conjugation_3", "conjugation_4", "conjugation_5", "conjugation_6", "word_id"]):
+            word_id = request.POST["word_id"]
+            conjugation_1 = request.POST["conjugation_1"]
+            conjugation_2 = request.POST["conjugation_2"]
+            conjugation_3 = request.POST["conjugation_3"]
+            conjugation_4 = request.POST["conjugation_4"]
+            conjugation_5 = request.POST["conjugation_5"]
+            conjugation_6 = request.POST["conjugation_6"]
+            verb = get_object_or_404(Word, pk = word_id)
+            language = verb.language
+            conjugation = Conjugation.objects.filter(word = word_id).filter(tense = "present")[0]
+            
+            correct_answer = language.personal_pronoun_1 + " " + conjugation.conjugation_1 + "\n" + \
+                             language.personal_pronoun_2 + " " + conjugation.conjugation_2 + "\n" + \
+                             language.personal_pronoun_3 + " " + conjugation.conjugation_3 + "\n" + \
+                             language.personal_pronoun_4 + " " + conjugation.conjugation_4 + "\n" + \
+                             language.personal_pronoun_5 + " " + conjugation.conjugation_5 + "\n" + \
+                             language.personal_pronoun_6 + " " + conjugation.conjugation_6 + "\n"
+            if conjugation_1 == conjugation.conjugation_1 and conjugation_2 == conjugation.conjugation_2 \
+                and conjugation_3 == conjugation.conjugation_3 and conjugation_4 == conjugation.conjugation_4 \
+                and conjugation_5 == conjugation.conjugation_5 and conjugation_6 == conjugation.conjugation_6:
+                messages.success(request, "Correct :)\n"+correct_answer)
+            else:
+                messages.error(request, "Wrong answer\n"+correct_answer)
+            base_url = reverse('conjugation_game')
+            query_string =  urlencode({'language': str(verb.language)})
+            url = '{}?{}'.format(base_url, query_string)
+            return redirect(url)
+    return conjugation_game_setup(request)
