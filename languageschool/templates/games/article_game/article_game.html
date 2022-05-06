@@ -12,8 +12,14 @@
 {% else %}
     <form class="mt-3 text-center" action="{% url 'article_game_verify_answer' %}" method="POST">
         {% csrf_token %}
-        <input type="text" class="mb-3 text-center form-control" placeholder="Provide the article" id="article" name="article">
-        <input type="text" class="mb-3 text-center form-control" value="{{word.word_name}}" id="word" name="word" disabled>
+        <div class="mb-3 row">
+            <div class="col-sm-2">
+                <input type="text" class="mb-3 text-center form-control" placeholder="Provide the article" id="article" name="article">
+            </div>
+            <div class="col-sm-10">
+                <input type="text" class="mb-3 text-center form-control" value="{{word.word_name}}" id="word" name="word" disabled>
+            </div>
+        </div>
         <input type="text" name="word_id" value="{{word.id}}" hidden>
         <button type="submit" class="btn btn-primary">Check</button>
     </form>
