@@ -11,5 +11,6 @@ urlpatterns = [
     path('article_game/verify_answer', views.article_game.article_game_verify_answer, name = 'article_game_verify_answer'),
     path('conjugation_game/setup', views.conjugation_game.conjugation_game_setup, name = 'conjugation_game_setup'),
     path('conjugation_game', views.conjugation_game.conjugation_game, name = 'conjugation_game'),
-    path('conjugation_game/verify_answer', views.conjugation_game.conjugation_game_verify_answer, name = 'conjugation_game_verify_answer')
+    path('conjugation_game/verify_answer', views.conjugation_game.conjugation_game_verify_answer, name = 'conjugation_game_verify_answer'),
+    path('search', views.general.search, name = 'search')
 ]
