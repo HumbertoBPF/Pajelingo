@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 from languageschool.models import Meaning, Word
+from django.db.models.functions import Lower
 
 
 # Create your views here.
@@ -23,7 +24,7 @@ def search(request):
         if request_contains(request.GET, ["search"]):
             search = request.GET["search"]
             # Results containing the specified string
-            search_results = Word.objects.filter(word_name__icontains = search)
+            search_results = Word.objects.filter(word_name__icontains = search).order_by(Lower('word_name'))
             # Pagination(getting page number and the results of the current page)
             paginator = Paginator(search_results, 12)
             page = request.GET.get('page')

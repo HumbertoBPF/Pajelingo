@@ -32,6 +32,7 @@ class Word(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
     synonym = models.ManyToManyField("self", blank=True)
+    image = models.ImageField(upload_to = 'images/%d/%m/%Y', blank = True)
 
     def __str__(self):
         return  ((str(self.article.article_name) + " ") if (self.article != None) else "") + self.word_name
