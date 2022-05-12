@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% if meanings %}
+        {% for meaning in meanings %}
+            <div class="mt-3 card bg-light">
+                <img src="" class="card-img-top" alt="">
+                <div class="card-body">
+                    <h5 class="card-title">{{meaning.word}}</h5>
+                    <p class="card-text">Meaning: {{meaning.meaning}}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center">No meaning found</div>
+    {% endif %}
+
+{% endblock %}

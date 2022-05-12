@@ -4,17 +4,23 @@
 {% block content %}
 
     <div class="mt-3 row">
-        {% for result in search_results %}
-            <div class="col-6 col-sm-4 my-1">
-                <div class="card bg-light">
-                    <img src="" class="card-img-top" alt="">
-                    <div class="card-body">
-                        <h5 class="card-title">{{result.word_name}}</h5>
-                        <p class="card-text">{{result.language}}</p>
-                    </div>
+        {% if search_results %}
+            {% for result in search_results %}
+                <div class="col-6 col-sm-4 my-1">
+                    <a class="text-reset text-decoration-none" href="/dictionary/{{result.id}}">
+                        <div class="card bg-light">
+                            <img src="" class="card-img-top" alt="">
+                            <div class="card-body">
+                                <h5 class="card-title">{{result.word_name}}</h5>
+                                <p class="card-text">{{result.language}}</p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <div class="text-center">No result found</div>
+        {% endif %}
     </div>
     
     {% if search_results.has_other_pages %}

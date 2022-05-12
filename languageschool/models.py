@@ -37,11 +37,11 @@ class Word(models.Model):
         return  ((str(self.article.article_name) + " ") if (self.article != None) else "") + self.word_name
 
 class Meaning(models.Model):
-    word = models.ManyToManyField(Word)
+    word = models.ForeignKey(Word, on_delete=models.CASCADE)
     meaning = models.TextField()
 
     def __str__(self):
-        return self.word
+        return str(self.word)
 
 class Conjugation(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)

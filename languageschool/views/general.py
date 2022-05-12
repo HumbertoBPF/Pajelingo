@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from languageschool.models import Word
+from languageschool.models import Meaning, Word
 
 
 # Create your views here.
@@ -32,3 +32,7 @@ def search(request):
             return render(request, 'search.html', {'search_results': search_results_current_page, 'search': search})
     
     return index(request)
+
+def dictionary(request, word_id):
+    meanings = Meaning.objects.filter(word = word_id)
+    return render(request, 'meaning.html', {'meanings': meanings})
