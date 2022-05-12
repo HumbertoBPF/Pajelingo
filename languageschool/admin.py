@@ -30,10 +30,16 @@ class ConjugationDisplay(admin.ModelAdmin):
     list_display_links = ('id','word')
     list_per_page = 10
 
+class MeaningDisplay(admin.ModelAdmin):
+    list_display = ('id','word','meaning')
+    list_display_links = ('id', 'word')
+    search_fields = ('word__word_name',)
+    list_per_page = 10
+
 # Register your models here.
 admin.site.register(Language,LanguageDisplay)
 admin.site.register(Category,CategoryDisplay)
 admin.site.register(Article,ArticleDisplay)
 admin.site.register(Word,WordDisplay)
-admin.site.register(Meaning)
+admin.site.register(Meaning,MeaningDisplay)
 admin.site.register(Conjugation,ConjugationDisplay)
