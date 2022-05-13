@@ -13,5 +13,7 @@ urlpatterns = [
     path('conjugation_game', views.conjugation_game.conjugation_game, name = 'conjugation_game'),
     path('conjugation_game/verify_answer', views.conjugation_game.conjugation_game_verify_answer, name = 'conjugation_game_verify_answer'),
     path('search', views.general.search, name = 'search'),
-    path('dictionary/<int:word_id>', views.general.dictionary, name= 'dictionary')
+    path('dictionary/<int:word_id>', views.general.dictionary, name = 'dictionary'),
+    path('account/signin', views.account.sign_in, name = 'account_sign_in'),
+    path('account/create_user', views.account.create_user, name = 'account_create_user')
 ]

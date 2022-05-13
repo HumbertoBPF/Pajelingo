@@ -22,17 +22,39 @@
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{% url 'index' %}">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'vocabulary_game_setup' %}">Vocabulary training</a>
+                    <!-- Games -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdownGames" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Games
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdownGames">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'vocabulary_game_setup' %}">Vocabulary training</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'article_game_setup' %}">Guess the article</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'conjugation_game_setup' %}">Conjugation game</a>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'article_game_setup' %}">Guess the article</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'conjugation_game_setup' %}">Conjugation game</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Math game</a>
+                    <!-- Account -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdownAccount" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Account
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdownAccount">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'account_sign_in' %}">Sign in</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="">Login</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="">Profile</a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
                 <form action="{% url 'search' %}" method="GET" class="d-flex">
