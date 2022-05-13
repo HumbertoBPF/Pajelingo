@@ -15,5 +15,8 @@ urlpatterns = [
     path('search', views.general.search, name = 'search'),
     path('dictionary/<int:word_id>', views.general.dictionary, name = 'dictionary'),
     path('account/signin', views.account.sign_in, name = 'account_sign_in'),
-    path('account/create_user', views.account.create_user, name = 'account_create_user')
+    path('account/create_user', views.account.create_user, name = 'account_create_user'),
+    path('account/login', views.account.login, name = 'account_login'),
+    path('account/auth_user', views.account.auth_user, name = 'account_auth_user'),
+    path('account/logout', views.account.logout, name = 'account_logout')
 ]
