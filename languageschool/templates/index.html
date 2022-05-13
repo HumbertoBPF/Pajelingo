@@ -3,6 +3,9 @@
 
 {% block content %}
 
+    {% if user.is_authenticated %}
+      <h5 class="mt-3 mx-3">Welcome back, {{user.username}}</h5>
+    {% endif %}
     <div id="carouselExampleInterval" class="carousel slide" data-bs-ride="carousel">
       <div class="carousel-indicators">
         <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
