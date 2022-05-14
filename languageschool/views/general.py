@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.core.paginator import Paginator
-from languageschool.models import Meaning, Score, Word
+from languageschool.models import Language, Meaning, Score, Word
 from django.db.models.functions import Lower
-
+from django.db.models import Sum
 
 # Create your views here.
 def request_contains(request_with_method, variables_required):
@@ -57,3 +57,19 @@ def search(request):
 def dictionary(request, word_id):
     meanings = Meaning.objects.filter(word = word_id)
     return render(request, 'meaning.html', {'meanings': meanings})
+
+def rankings(request):
+    # Show the sum of the scores in all the games for each user
+    general_scores = Score.objects.values('user__username').annotate(general_score = Sum('score')).order_by('-general_score')
+    # List of languages for the select field
+    languages = Language.objects.all()
+    scores_dict = {'general_scores': general_scores, 'languages': languages}
+    # If some language was specified, add the ranking associated with this language
+    if request.method == "GET":
+        if request_contains(request.GET, ["language"]):
+            language_name = request.GET["language"]
+            language = get_object_or_404(Language, language_name = language_name)
+            scores_in_language = Score.objects.filter(language = language).values('user__username').annotate(score = Sum('score')).order_by('-score')
+            scores_dict['scores_in_language'] = scores_in_language
+            scores_dict['language'] = language
+    return render(request, 'games/rankings.html', scores_dict)
