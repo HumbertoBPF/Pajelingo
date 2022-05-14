@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Language(models.Model):
@@ -56,3 +57,9 @@ class Conjugation(models.Model):
 
     def __str__(self):
         return self.word.word_name + " " + self.tense
+
+class Score(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    game = models.CharField(max_length=30)
+    score = models.PositiveBigIntegerField()

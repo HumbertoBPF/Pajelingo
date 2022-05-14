@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
-from languageschool.models import Meaning, Word
+from languageschool.models import Meaning, Score, Word
 from django.db.models.functions import Lower
 
 
@@ -15,6 +15,26 @@ def request_contains(request_with_method, variables_required):
             return False
 
     return True
+
+def create_score_if_not_exist(request, language, game):
+    '''Create a score if there is no score for this user in this game'''
+    if request.user.is_authenticated:
+        score = Score.objects.filter(user = request.user, language = language, game = game)
+        if len(score) == 0:
+            score = Score(user = request.user, language = language, game = game, score = 0)
+            score.save()
+
+# Increment score when getting the right answer
+def increment_score(request, language, game):
+    '''Function to increment the score of a game when getting a correct answer'''
+    if request.user.is_authenticated:
+        score = Score.objects.filter(user = request.user, language = language, game = game).latest('id')
+        score.score += 1
+        score.save()
+
+        return score
+    
+    return None
 
 def index(request):
     return render(request, 'index.html')

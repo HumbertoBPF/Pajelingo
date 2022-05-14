@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from languageschool.models import Language, Word
 from django.contrib import messages
-from languageschool.views.general import request_contains
+from languageschool.views.general import create_score_if_not_exist, increment_score, request_contains
 
 
 def vocabulary_game_setup(request):
@@ -56,9 +56,16 @@ def vocabulary_game_verify_answer(request):
                     # Checking if the answer was correct (if the user provided a synonim and if the synonim is in the correct language)
                     if str(synonim) == translation_word:
                         is_translation_correct = True
+            # Create score if it does not exist
+            create_score_if_not_exist(request, word_to_translate.language, "vocabulary game")
             # Message of feedback for the user
             if is_translation_correct:
-                messages.success(request, "Correct :)\n"+str(word_to_translate) + ": "+str(correct_translation))
+                # Increment score when getting the right answer
+                score = increment_score(request, word_to_translate.language, "vocabulary game")
+                message_string = "Correct :)\n"+str(word_to_translate) + ": "+str(correct_translation)
+                if score is not None:
+                    message_string += "\nYour score is "+str(score.score)
+                messages.success(request, message_string)
             else:
                 messages.error(request, "Wrong answer\n"+str(word_to_translate) + ": "+str(correct_translation))
             base_url = reverse('vocabulary_game')

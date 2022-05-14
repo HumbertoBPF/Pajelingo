@@ -18,5 +18,9 @@ urlpatterns = [
     path('account/create_user', views.account.create_user, name = 'account_create_user'),
     path('account/login', views.account.login, name = 'account_login'),
     path('account/auth_user', views.account.auth_user, name = 'account_auth_user'),
-    path('account/logout', views.account.logout, name = 'account_logout')
+    path('account/logout', views.account.logout, name = 'account_logout'),
+    path('account/profile', views.account.profile, name = 'account_profile'),
+    path('account/update_user', views.account.update_user, name = 'account_update_user'),
+    path('account/do_update_user', views.account.do_update_user, name = 'account_do_update_user'),
+    path('account/delete_user', views.account.delete_user, name = 'account_delete_user')
 ]
