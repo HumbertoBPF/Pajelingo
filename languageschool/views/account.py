@@ -137,7 +137,7 @@ def do_update_user(request):
             password = request.POST["password"]
             password_confirmation = request.POST["password_confirmation"]
             if is_valid_updated_user_info(request, email, username, password, password_confirmation):
-                # Update information of the user currently logged
+                # Update information of the user currently logged in
                 request.user.email = email
                 request.user.username = username
                 request.user.password = make_password(password)
@@ -149,6 +149,7 @@ def do_update_user(request):
     return update_user(request)
 
 def delete_user(request):
+    # It is important to be sure that the method was POST in order to avoid users to accidentally delete their accounts by merely accessing this endpoint
     if request.method == "POST":
         if request.user.is_authenticated:
             request.user.delete()

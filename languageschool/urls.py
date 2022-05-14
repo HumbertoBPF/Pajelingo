@@ -22,5 +22,6 @@ urlpatterns = [
     path('account/profile', views.account.profile, name = 'account_profile'),
     path('account/update_user', views.account.update_user, name = 'account_update_user'),
     path('account/do_update_user', views.account.do_update_user, name = 'account_do_update_user'),
-    path('account/delete_user', views.account.delete_user, name = 'account_delete_user')
+    path('account/delete_user', views.account.delete_user, name = 'account_delete_user'),
+    path('rankings', views.general.rankings, name = 'rankings')
 ]
