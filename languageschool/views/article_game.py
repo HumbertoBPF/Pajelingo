@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from languageschool.models import Language, Word
 from django.contrib import messages
-from languageschool.views.general import request_contains
+from languageschool.views.general import create_score_if_not_exist, increment_score, request_contains
 
 
 def article_game_setup(request):
@@ -34,9 +34,16 @@ def article_game_verify_answer(request):
             user_answer = request.POST["article"]
             word_id = request.POST["word_id"]
             word = get_object_or_404(Word, pk = word_id)
+            # Create score if it does not exist
+            create_score_if_not_exist(request, word.language, "article game")
             # Verifying user's answer
             if word.article.article_name == user_answer:
-                messages.success(request, 'Correct :)\n'+str(word))
+                # Increment score when getting the right answer
+                score = increment_score(request, word.language, "article game")
+                message_string = "Correct :)\n"+str(word)
+                if score is not None:
+                    message_string += "\nYour score is "+str(score.score)
+                messages.success(request, message_string)
             else:
                 messages.error(request, 'Wrong answer\n'+str(word))
             base_url = reverse('article_game')

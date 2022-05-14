@@ -45,17 +45,21 @@
                             Account
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdownAccount">
+                            {% if not user.is_authenticated %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'account_sign_in' %}">Sign in</a>
                             </li>
+                            {% endif %}
                             {% if not user.is_authenticated %}
                                 <li>
                                     <a class="dropdown-item" href="{% url 'account_login' %}">Login</a>
                                 </li>
                             {% endif %}
-                            <li>
-                                <a class="dropdown-item" href="">Profile</a>
-                            </li>
+                            {% if user.is_authenticated %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'account_profile' %}">Profile</a>
+                                </li>
+                            {% endif %}
                             {% if user.is_authenticated %}
                                 <li>
                                     <a class="dropdown-item" href="{% url 'account_logout' %}">Logout</a>

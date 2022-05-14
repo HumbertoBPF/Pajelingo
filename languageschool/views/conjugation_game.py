@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from languageschool.models import Conjugation, Language, Word
 from django.contrib import messages
-from languageschool.views.general import request_contains
+from languageschool.views.general import create_score_if_not_exist, increment_score, request_contains
 
 
 def conjugation_game_setup(request):
@@ -51,13 +51,21 @@ def conjugation_game_verify_answer(request):
                              language.personal_pronoun_4 + " " + conjugation.conjugation_4 + "\n" + \
                              language.personal_pronoun_5 + " " + conjugation.conjugation_5 + "\n" + \
                              language.personal_pronoun_6 + " " + conjugation.conjugation_6 + "\n"
+            # Create score if it does not exist
+            create_score_if_not_exist(request, language, "conjugation_game")
+            # Verifying user's answer
             if conjugation_1 == conjugation.conjugation_1 and conjugation_2 == conjugation.conjugation_2 \
                 and conjugation_3 == conjugation.conjugation_3 and conjugation_4 == conjugation.conjugation_4 \
                 and conjugation_5 == conjugation.conjugation_5 and conjugation_6 == conjugation.conjugation_6:
-                messages.success(request, "Correct :)\n"+correct_answer)
+                # Increment score when getting the right answer
+                score = increment_score(request, language, "conjugation game")
+                message_string = "Correct :)\n"+correct_answer
+                if score is not None:
+                    message_string += "\nYour score is "+str(score.score)
+                messages.success(request, message_string)
             else:
                 messages.error(request, "Wrong answer\n"+correct_answer)
-            base_url = reverse('conjugation_game')
+            base_url = reverse('conjugation game')
             query_string =  urlencode({'language': str(verb.language)})
             url = '{}?{}'.format(base_url, query_string)
             return redirect(url)
