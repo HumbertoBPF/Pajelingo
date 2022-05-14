@@ -5,62 +5,62 @@
 
 <section class="mt-3 mx-3">
 
-    <h5>General ranking:</h5>
+    <!-- If a language is specified, return the ranking concerning this language -->
+    {% if language %}
+        <h5>{{language}} ranking:</h5>
+    <!-- If no language is specified, return the general ranking -->
+    {% else %}
+        <h5>General ranking:</h5>
+    {% endif %}
+    <!-- If there are data to be shown, display the table -->
+    {% if scores %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Position</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score in scores %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{score.user__username}}</td>
+                    <td>{{score.score}}</td>
+                </tr>
+                {% endfor %}
+                <!-- If users are logged in, their position in the ranking is also specified and the website shows it -->
+                {% if my_position %}
+                    <tr>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>...</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">(You) {{my_position}}</th>
+                        <th scope="row">{{my_score.user__username}}</th>
+                        <th scope="row">{{my_score.score}}</th>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    <!-- If there is not data to be displayed, show the message below -->
+    {% else %}
+        <p>Not enough data.</p>
+    {% endif %}
 
-    <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Username</th>
-            <th scope="col">General score</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for general_score in general_scores %}
-            <tr>
-                <td>{{general_score.user__username}}</td>
-                <td>{{general_score.general_score}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <h5>Ranking by language:</h5>
+    <p>Filter by language:</p>
     <!-- Form to select the language of the ranking -->
     <form action="{% url 'rankings' %}" method="GET">
-        <label for="selectLanguage" class="form-label mt-2">Select a language</label>
         <select class="form-select" id="selectLanguage" name = "language" aria-label="Default select example">
+            <option value="" selected>Select a language</option>
             {% for language in languages %}  
                 <option value="{{language.language_name}}">{{language.language_name}}</option>
             {% endfor %}
         </select>
         <button type="submit" class="btn btn-primary my-3">Go</button>
     </form>
-
-    {% if language %}
-        <h6>{{language}} ranking:</h6>
-        <!-- If there are data to be shown, display the table -->
-        {% if scores_in_language %}
-            <table class="table">
-                <thead>
-                    <tr>
-                    <th scope="col">Username</th>
-                    <th scope="col">General score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for score_in_language in scores_in_language %}
-                    <tr>
-                        <td>{{score_in_language.user__username}}</td>
-                        <td>{{score_in_language.score}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        <!-- If there is not data to be displayed, show the message below -->
-        {% else %}
-            <p>Not enough data.</p>
-        {% endif %}
-    {% endif %}
 
 </section>
 

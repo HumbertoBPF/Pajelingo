@@ -59,17 +59,28 @@ def dictionary(request, word_id):
     return render(request, 'meaning.html', {'meanings': meanings})
 
 def rankings(request):
-    # Show the sum of the scores in all the games for each user
-    general_scores = Score.objects.values('user__username').annotate(general_score = Sum('score')).order_by('-general_score')
     # List of languages for the select field
     languages = Language.objects.all()
-    scores_dict = {'general_scores': general_scores, 'languages': languages}
-    # If some language was specified, add the ranking associated with this language
+    scores_dict = {'languages': languages}
     if request.method == "GET":
-        if request_contains(request.GET, ["language"]):
+        # If some language was specified, add the ranking associated with this language
+        if request_contains(request.GET, ["language"]) and len(request.GET["language"]) != 0:
             language_name = request.GET["language"]
             language = get_object_or_404(Language, language_name = language_name)
-            scores_in_language = Score.objects.filter(language = language).values('user__username').annotate(score = Sum('score')).order_by('-score')
-            scores_dict['scores_in_language'] = scores_in_language
-            scores_dict['language'] = language
+            scores = Score.objects.filter(language = language).values('user__username').annotate(score = Sum('score')).order_by('-score')
+            scores_dict['language'] = language                
+        # Otherwise, show the general ranking
+        else:
+            # Show the sum of the scores in all the games for each user
+            scores = Score.objects.values('user__username').annotate(score = Sum('score')).order_by('-score')
+        # If the users are logged in, their position in the ranking is shown
+        if request.user.is_authenticated:
+            for index, item in enumerate(scores):
+                if item['user__username'] == request.user.username:
+                    scores_dict['my_position'] = index + 1
+                    scores_dict['my_score'] = item
+                    break
+        # Only the top 10 of each ranking is shown
+        scores_dict['scores'] = scores[:10]
+
     return render(request, 'games/rankings.html', scores_dict)
