@@ -1,13 +1,11 @@
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.models import User
 from django.contrib import auth
-from languageschool.models import Score
+from languageschool.forms import FormPicture
+from languageschool.models import AppUser, Score
 from languageschool.views.general import request_contains
 from django.contrib.auth.hashers import make_password
-
-def sign_in(request):
-    return render(request, 'account/sign_in.html')
 
 def is_valid_user_date_format(request, email, username, password, password_confirmation):
     '''Verifies the format of the user data specified: if some field is empty, if the password length is between 6 and 30, if there
@@ -78,6 +76,9 @@ def is_valid_updated_user_info(request, email, username, password, password_conf
                 return False
     return True
 
+def sign_in(request):
+    return render(request, 'account/sign_in.html')
+
 def create_user(request):
     if request.method == "POST":
         if request_contains(request.POST, ["email", "username", "password", "password_confirmation"]):
@@ -86,8 +87,12 @@ def create_user(request):
             password = request.POST["password"]
             password_confirmation = request.POST["password_confirmation"]
             if is_valid_new_user_info(request, email, username, password, password_confirmation):
+                # Creating admin user
                 user = User.objects.create_user(username=username, email=email,password=password)
                 user.save()
+                # Creating app user
+                appuser = AppUser(user=user)
+                appuser.save()
                 messages.success(request, "User sucessfully created")
                 print("User created")
 
@@ -117,10 +122,12 @@ def logout(request):
     return redirect('index')
 
 def profile(request):
-    scores = []
+    context = {'scores' : []}
     if request.user.is_authenticated:
-        scores = Score.objects.filter(user = request.user).order_by('language')
-    return render(request, 'account/profile.html', {'scores': scores})
+        context["scores"] = Score.objects.filter(user = request.user).order_by('language')
+        context["app_user"] = AppUser.objects.filter(user = request.user)[0]
+        context["form_picture"] = FormPicture()
+    return render(request, 'account/profile.html', context)
 
 def update_user(request):
     # Users are allowed to update a user info only if they are authenticated in their account.
@@ -154,3 +161,12 @@ def delete_user(request):
         if request.user.is_authenticated:
             request.user.delete()
     return redirect('index')
+
+def change_picture(request):
+    if request.method == "POST" and request.user.is_authenticated:
+        form_picture = FormPicture(request.POST, request.FILES)
+        if form_picture.is_valid():
+            app_user = get_object_or_404(AppUser, user = request.user)
+            app_user.picture = form_picture.cleaned_data.get('picture')
+            app_user.save()
+    return redirect('account_profile')

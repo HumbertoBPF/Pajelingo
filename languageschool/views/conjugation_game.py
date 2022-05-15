@@ -58,14 +58,14 @@ def conjugation_game_verify_answer(request):
                 and conjugation_3 == conjugation.conjugation_3 and conjugation_4 == conjugation.conjugation_4 \
                 and conjugation_5 == conjugation.conjugation_5 and conjugation_6 == conjugation.conjugation_6:
                 # Increment score when getting the right answer
-                score = increment_score(request, language, "conjugation game")
+                score = increment_score(request, language, "conjugation_game")
                 message_string = "Correct :)\n"+correct_answer
                 if score is not None:
                     message_string += "\nYour score is "+str(score.score)
                 messages.success(request, message_string)
             else:
                 messages.error(request, "Wrong answer\n"+correct_answer)
-            base_url = reverse('conjugation game')
+            base_url = reverse('conjugation_game')
             query_string =  urlencode({'language': str(verb.language)})
             url = '{}?{}'.format(base_url, query_string)
             return redirect(url)

@@ -63,3 +63,10 @@ class Score(models.Model):
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     game = models.CharField(max_length=30)
     score = models.PositiveBigIntegerField()
+
+class AppUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    picture = models.ImageField(upload_to = 'images/%d/%m/%Y', blank = True)
+
+    def __str__(self):
+        return str(self.user)
