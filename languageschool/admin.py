@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
+from languageschool.models import AppUser, Article, Category, Conjugation, Language, Meaning, Score, Word
 
 class LanguageDisplay(admin.ModelAdmin):
     list_display = ('id','language_name')
@@ -41,6 +41,11 @@ class ScoreDisplay(admin.ModelAdmin):
     list_display_links = ('id',)
     list_per_page = 10
 
+class AppUserDisplay(admin.ModelAdmin):
+    list_display = ('id', 'user')
+    list_display_links = ('id', 'user')
+    list_per_page = 10
+
 # Register your models here.
 admin.site.register(Language,LanguageDisplay)
 admin.site.register(Category,CategoryDisplay)
@@ -49,3 +54,4 @@ admin.site.register(Word,WordDisplay)
 admin.site.register(Meaning,MeaningDisplay)
 admin.site.register(Conjugation,ConjugationDisplay)
 admin.site.register(Score, ScoreDisplay)
+admin.site.register(AppUser, AppUserDisplay)

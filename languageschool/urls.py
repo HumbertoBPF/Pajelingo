@@ -1,5 +1,6 @@
 from django.urls import path
 from languageschool import views
+from languageschool.views import account
 
 urlpatterns = [
     path('', views.general.index, name = 'index'),
@@ -23,5 +24,6 @@ urlpatterns = [
     path('account/update_user', views.account.update_user, name = 'account_update_user'),
     path('account/do_update_user', views.account.do_update_user, name = 'account_do_update_user'),
     path('account/delete_user', views.account.delete_user, name = 'account_delete_user'),
-    path('rankings', views.general.rankings, name = 'rankings')
+    path('rankings', views.general.rankings, name = 'rankings'),
+    path('account/change_picture', views.account.change_picture, name = 'account_change_picture')
 ]
