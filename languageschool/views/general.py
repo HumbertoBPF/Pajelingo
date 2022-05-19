@@ -6,6 +6,7 @@ from django.db.models import Sum
 
 # Create your views here.
 def request_contains(request_with_method, variables_required):
+    '''Verifies if a request method contains the variables whose name is specified as a list in the 'variables_required' argument.'''
     dict_values = {}
     for variable in request_with_method:
         dict_values[variable] = True
@@ -17,7 +18,7 @@ def request_contains(request_with_method, variables_required):
     return True
 
 def create_score_if_not_exist(request, language, game):
-    '''Create a score if there is no score for this user in this game'''
+    '''Creates a score if there is no score for this user in this game'''
     if request.user.is_authenticated:
         score = Score.objects.filter(user = request.user, language = language, game = game)
         if len(score) == 0:
