@@ -151,7 +151,8 @@ def do_update_user(request):
                 request.user.save()
                 # Login of the user with the new information(if it is not done, the user is automatically logged out)
                 user = auth.authenticate(request, username = username, password = password)
-                auth.login(request, user)
+                if user is not None:
+                    auth.login(request, user)
                 return redirect('account_profile')
     return update_user(request)
 

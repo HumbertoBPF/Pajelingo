@@ -1,6 +1,9 @@
-from django.urls import path
+from django.urls import include, path
 from languageschool import views
-from languageschool.views import account
+from languageschool.views.viewsets import ArticleViewSet, CategoryViewSet, ConjugationViewSet, LanguageViewSet, MeaningViewSet, WordViewSet
+from rest_framework import routers
+
+router = routers.DefaultRouter()
 
 urlpatterns = [
     path('', views.general.index, name = 'index'),
@@ -25,5 +28,12 @@ urlpatterns = [
     path('account/do_update_user', views.account.do_update_user, name = 'account_do_update_user'),
     path('account/delete_user', views.account.delete_user, name = 'account_delete_user'),
     path('rankings', views.general.rankings, name = 'rankings'),
-    path('account/change_picture', views.account.change_picture, name = 'account_change_picture')
+    path('account/change_picture', views.account.change_picture, name = 'account_change_picture'),
+    path('api/', include(router.urls)),
+    path('api/languages/', LanguageViewSet.as_view()),
+    path('api/categories/', CategoryViewSet.as_view()),
+    path('api/articles/', ArticleViewSet.as_view()),
+    path('api/words/', WordViewSet.as_view()),
+    path('api/meanings/', MeaningViewSet.as_view()),
+    path('api/conjugations/', ConjugationViewSet.as_view())
 ]
