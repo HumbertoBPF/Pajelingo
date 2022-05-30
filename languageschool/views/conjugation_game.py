@@ -1,8 +1,9 @@
 import random
+from unicodedata import category
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from languageschool.models import Conjugation, Language, Word
+from languageschool.models import Category, Conjugation, Language, Word
 from django.contrib import messages
 from languageschool.views.general import create_score_if_not_exist, increment_score, request_contains
 
@@ -21,7 +22,8 @@ def conjugation_game(request):
                 messages.error(request, "You must choose a language")
             else:
                 # Picks a verb and a conjugation
-                verb = random.choice(Word.objects.filter(language=get_object_or_404(Language, language_name=language)).filter(article = None))
+                category = get_object_or_404(Category, category_name = "verbs")
+                verb = random.choice(Word.objects.filter(language=get_object_or_404(Language, language_name=language)).filter(category = category))
                 conjugation = random.choice(Conjugation.objects.filter(word = verb.id))
 
                 return render(request, 'games/conjugation_game/conjugation_game.html', {'word': verb, 'tense': conjugation.tense})
