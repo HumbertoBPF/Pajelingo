@@ -47,14 +47,14 @@ def vocabulary_game_verify_answer(request):
             # Verifying user's answer
             correct_translation = ""
             is_translation_correct = False
-            for synonim in word_to_translate.synonym.all():
+            for synonim in word_to_translate.synonyms.all():
                 if synonim.language == base_language:
                     # Getting the correct answer
                     if len(correct_translation) != 0:
                         correct_translation += ", "
-                    correct_translation += str(synonim)
+                    correct_translation += synonim.word_name
                     # Checking if the answer was correct (if the user provided a synonim and if the synonim is in the correct language)
-                    if str(synonim) == translation_word:
+                    if synonim.word_name == translation_word:
                         is_translation_correct = True
             # Create score if it does not exist
             create_score_if_not_exist(request, word_to_translate.language, "vocabulary game")
@@ -62,12 +62,12 @@ def vocabulary_game_verify_answer(request):
             if is_translation_correct:
                 # Increment score when getting the right answer
                 score = increment_score(request, word_to_translate.language, "vocabulary game")
-                message_string = "Correct :)\n"+str(word_to_translate) + ": "+str(correct_translation)
+                message_string = "Correct :)\n" + word_to_translate.word_name + ": " + correct_translation
                 if score is not None:
                     message_string += "\nYour score is "+str(score.score)
                 messages.success(request, message_string)
             else:
-                messages.error(request, "Wrong answer\n"+str(word_to_translate) + ": "+str(correct_translation))
+                messages.error(request, "Wrong answer\n" + word_to_translate.word_name + ": " + correct_translation)
             base_url = reverse('vocabulary_game')
             query_string =  urlencode({'base_language': str(base_language), 
                                 'target_language': str(word_to_translate.language)})

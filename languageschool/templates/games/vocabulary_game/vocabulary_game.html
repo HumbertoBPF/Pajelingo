@@ -12,7 +12,7 @@
 {% else %}
     <form class="mt-3 text-center" action="{% url 'vocabulary_game_verify_answer' %}" method="POST">
         {% csrf_token %}    
-        <input type="text" class="mb-3 text-center form-control" value="{{word}}" id="wordToTranslate" name="word_to_translate" disabled>
+        <input type="text" class="mb-3 text-center form-control" value="{{word.word_name}}" id="wordToTranslate" name="word_to_translate" disabled>
         <input type="text" class="mb-3 text-center form-control" placeholder="Provide the translation in {{base_language}}" id="translationWord" name="translation_word">
         <input type="text" name="word_to_translate_id" value="{{word.id}}" hidden>
         <input type="text" name="base_language" value="{{base_language}}" hidden>
