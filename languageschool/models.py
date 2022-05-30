@@ -32,7 +32,7 @@ class Word(models.Model):
     language = models.ForeignKey(Language, on_delete=models.CASCADE, blank=True, null=True)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
-    synonym = models.ManyToManyField("self", blank=True)
+    synonyms = models.ManyToManyField("self", blank=True)
     image = models.ImageField(upload_to = 'images/%d/%m/%Y', blank = True)
 
     def __str__(self):

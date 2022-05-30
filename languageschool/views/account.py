@@ -7,7 +7,7 @@ from languageschool.models import AppUser, Score
 from languageschool.views.general import request_contains
 from django.contrib.auth.hashers import make_password
 
-def is_valid_user_date_format(request, email, username, password, password_confirmation):
+def is_valid_user_data_format(request, email, username, password, password_confirmation):
     '''Verifies the format of the user data specified: if some field is empty, if the password length is between 6 and 30, if there
     are blank spaces in the username and in the password, and if the passwords match.'''
     # Verifying if some field is empty
@@ -34,7 +34,7 @@ def is_valid_user_date_format(request, email, username, password, password_confi
 
 def is_valid_new_user_info(request, email, username, password, password_confirmation):
     # Verifying the format of the infomation (email, username, password...)
-    if not is_valid_user_date_format(request, email, username, password, password_confirmation):
+    if not is_valid_user_data_format(request, email, username, password, password_confirmation):
         return False
     else:
         # Avoiding repeated emails for different users
@@ -54,7 +54,7 @@ def is_valid_new_user_info(request, email, username, password, password_confirma
 
 def is_valid_updated_user_info(request, email, username, password, password_confirmation):
     # Verifying the format of the infomation (email, username, password...)
-    if not is_valid_user_date_format(request, email, username, password, password_confirmation):
+    if not is_valid_user_data_format(request, email, username, password, password_confirmation):
         return False
     else:
         # Avoiding repeated emails for different users
