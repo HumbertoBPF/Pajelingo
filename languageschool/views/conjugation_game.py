@@ -1,5 +1,4 @@
 import random
-from unicodedata import category
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
