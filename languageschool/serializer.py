@@ -12,11 +12,14 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ArticleSerializer(serializers.ModelSerializer):
+    language = serializers.ReadOnlyField(source='language.language_name')
     class Meta:
         model = Article
         fields = '__all__'
 
 class WordSerializer(serializers.ModelSerializer):
+    language = serializers.ReadOnlyField(source='language.language_name')
+    category = serializers.ReadOnlyField(source='category.category_name')
     class Meta:
         model = Word
         exclude = ('image', )

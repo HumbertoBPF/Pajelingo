@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Language(models.Model):
-    language_name = models.CharField(max_length=30)
+    language_name = models.CharField(max_length=30, unique=True)
     personal_pronoun_1 = models.CharField(max_length=30, blank=True, null=True)
     personal_pronoun_2 = models.CharField(max_length=30, blank=True, null=True)
     personal_pronoun_3 = models.CharField(max_length=30, blank=True, null=True)
@@ -15,7 +15,7 @@ class Language(models.Model):
         return self.language_name
 
 class Category(models.Model):
-    category_name = models.CharField(max_length=30)
+    category_name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.category_name
