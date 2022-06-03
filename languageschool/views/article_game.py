@@ -31,7 +31,7 @@ def article_game_verify_answer(request):
     if request.method == "POST":
         if request_contains(request.POST, ["article", "word_id"]):
             # Get word chosen and user's answer
-            user_answer = request.POST["article"]
+            user_answer = request.POST["article"].strip()
             word_id = request.POST["word_id"]
             word = get_object_or_404(Word, pk = word_id)
             # Create score if it does not exist

@@ -38,12 +38,12 @@ def conjugation_game_verify_answer(request):
             verb = get_object_or_404(Word, pk = word_id)
             language = verb.language
             # Get answers of the user
-            conjugation_1 = request.POST["conjugation_1"]
-            conjugation_2 = request.POST["conjugation_2"]
-            conjugation_3 = request.POST["conjugation_3"]
-            conjugation_4 = request.POST["conjugation_4"]
-            conjugation_5 = request.POST["conjugation_5"]
-            conjugation_6 = request.POST["conjugation_6"]
+            conjugation_1 = request.POST["conjugation_1"].strip()
+            conjugation_2 = request.POST["conjugation_2"].strip()
+            conjugation_3 = request.POST["conjugation_3"].strip()
+            conjugation_4 = request.POST["conjugation_4"].strip()
+            conjugation_5 = request.POST["conjugation_5"].strip()
+            conjugation_6 = request.POST["conjugation_6"].strip()
             conjugation = Conjugation.objects.filter(word = word_id).filter(tense = tense)[0]
             # Get the correct answer and verifying user's answer
             correct_answer = language.personal_pronoun_1 + " " + conjugation.conjugation_1 + "\n" + \

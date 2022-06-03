@@ -41,7 +41,7 @@ def vocabulary_game_verify_answer(request):
         if request_contains(request.POST, ["word_to_translate_id", "translation_word", "base_language"]):
             # Getting word to translate, language of the translation and user's answer
             word_to_translate_id = request.POST["word_to_translate_id"]
-            translation_word = request.POST["translation_word"]
+            translation_word = request.POST["translation_word"].strip()
             base_language = get_object_or_404(Language, language_name = request.POST["base_language"])
             word_to_translate = get_object_or_404(Word, pk = word_to_translate_id)
             # Verifying user's answer
