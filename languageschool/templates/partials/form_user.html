@@ -1,0 +1,19 @@
+{% csrf_token %}
+<div class="mb-3">
+    <label for="inputEmail" class="form-label">Email address</label>
+    <input type="email" class="form-control" id="inputEmail" name="email" value="{{user.email}}" aria-describedby="emailHelp">
+    <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+</div>
+<div class="mb-3">
+    <label for="inputUsername" class="form-label">Username</label>
+    <input type="text" class="form-control" id="inputUsername" name="username" value="{{user.username}}" aria-label="Username" aria-describedby="basic-addon1">
+    </div>
+<div class="mb-3">
+    <label for="inputPassword" class="form-label">Password</label>
+    <input type="password" class="form-control" id="inputPassword" name="password">
+</div>
+<div class="mb-3">
+    <label for="inputPasswordConf" class="form-label">Confirm your password</label>
+    <input type="password" class="form-control" id="inputPasswordConf" name = "password_confirmation">
+</div>
+<button type="submit" class="btn btn-primary">Submit</button>
