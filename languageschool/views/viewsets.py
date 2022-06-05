@@ -2,6 +2,7 @@ from languageschool.models import Article, Category, Conjugation, Language, Mean
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, WordSerializer
 from rest_framework import generics
 
+
 class LanguageViewSet(generics.ListAPIView):
     def get_queryset(self):
         queryset = Language.objects.all()
