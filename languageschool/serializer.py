@@ -1,4 +1,4 @@
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Word
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
 from rest_framework import serializers
 
 class LanguageSerializer(serializers.ModelSerializer):
@@ -32,4 +32,11 @@ class MeaningSerializer(serializers.ModelSerializer):
 class ConjugationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conjugation
+        fields = '__all__'
+
+class ScoreSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+    language = serializers.ReadOnlyField(source='language.language_name')
+    class Meta:
+        model = Score
         fields = '__all__'
