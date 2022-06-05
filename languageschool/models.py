@@ -64,6 +64,23 @@ class Score(models.Model):
     game = models.CharField(max_length=30)
     score = models.PositiveBigIntegerField()
 
+    @staticmethod
+    def increment_score(request, language, game_tag):
+        '''Function to increment the score of a game when getting a correct answer'''
+        if request.user.is_authenticated:
+            score = Score.objects.filter(user = request.user, language = language, game = game_tag)
+            
+            if len(score) == 0:
+                score = Score(user = request.user, language = language, game = game_tag, score = 1)
+            else:
+                score = score.latest('id')
+                score.score += 1
+
+            score.save()
+            return score
+        
+        return None
+
 class AppUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     picture = models.ImageField(upload_to = 'images/%d/%m/%Y', blank = True)

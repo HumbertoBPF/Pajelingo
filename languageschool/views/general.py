@@ -3,39 +3,7 @@ from django.core.paginator import Paginator
 from languageschool.models import Language, Meaning, Score, Word
 from django.db.models.functions import Lower
 from django.db.models import Sum
-
-# Create your views here.
-def request_contains(request_with_method, variables_required):
-    '''Verifies if a request method contains the variables whose name is specified as a list in the 'variables_required' argument.'''
-    dict_values = {}
-    for variable in request_with_method:
-        dict_values[variable] = True
-
-    for variable_required in variables_required:
-        if dict_values.get(variable_required) is None:
-            return False
-
-    return True
-
-def create_score_if_not_exist(request, language, game):
-    '''Creates a score if there is no score for this user in this game'''
-    if request.user.is_authenticated:
-        score = Score.objects.filter(user = request.user, language = language, game = game)
-        if len(score) == 0:
-            score = Score(user = request.user, language = language, game = game, score = 0)
-            score.save()
-
-# Increment score when getting the right answer
-def increment_score(request, language, game):
-    '''Function to increment the score of a game when getting a correct answer'''
-    if request.user.is_authenticated:
-        score = Score.objects.filter(user = request.user, language = language, game = game).latest('id')
-        score.score += 1
-        score.save()
-
-        return score
-    
-    return None
+from languageschool.utils import request_contains
 
 def index(request):
     return render(request, 'index.html')
