@@ -1,6 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from languageschool import views
-from languageschool.views.viewsets import ArticleViewSet, CategoryViewSet, ConjugationViewSet, LanguageViewSet, MeaningViewSet, WordViewSet
+from languageschool.views.viewsets import ArticleViewSet, CategoryViewSet, ConjugationViewSet, LanguageViewSet, MeaningViewSet, ScoreViewSet, WordViewSet
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register('scores', ScoreViewSet, basename = 'scores')
 
 urlpatterns = [
     path('', views.general.index, name = 'index'),
@@ -31,5 +35,6 @@ urlpatterns = [
     path('api/articles/', ArticleViewSet.as_view()),
     path('api/words/', WordViewSet.as_view()),
     path('api/meanings/', MeaningViewSet.as_view()),
-    path('api/conjugations/', ConjugationViewSet.as_view())
+    path('api/conjugations/', ConjugationViewSet.as_view()),
+    path('api/', include(router.urls))
 ]

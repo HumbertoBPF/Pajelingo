@@ -1,6 +1,8 @@
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Word
-from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, WordSerializer
-from rest_framework import generics
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
+from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
+from rest_framework import generics, viewsets
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 
 class LanguageViewSet(generics.ListAPIView):
@@ -38,3 +40,11 @@ class ConjugationViewSet(generics.ListAPIView):
         queryset = Conjugation.objects.all()
         return queryset
     serializer_class = ConjugationSerializer
+
+class ScoreViewSet(viewsets.ModelViewSet):
+    def get_queryset(self):
+        queryset = Score.objects.all()
+        return queryset
+    serializer_class = ScoreSerializer
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
