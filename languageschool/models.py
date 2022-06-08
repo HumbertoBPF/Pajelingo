@@ -65,13 +65,13 @@ class Score(models.Model):
     score = models.PositiveBigIntegerField()
 
     @staticmethod
-    def increment_score(request, language, game_tag):
+    def increment_score(request, language, game):
         '''Function to increment the score of a game when getting a correct answer'''
         if request.user.is_authenticated:
-            score = Score.objects.filter(user = request.user, language = language, game = game_tag)
+            score = Score.objects.filter(user = request.user, language = language, game = game)
             
             if len(score) == 0:
-                score = Score(user = request.user, language = language, game = game_tag, score = 1)
+                score = Score(user = request.user, language = language, game = game, score = 1)
             else:
                 score = score.latest('id')
                 score.score += 1
