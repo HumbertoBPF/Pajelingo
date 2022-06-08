@@ -1,7 +1,8 @@
 from django.http import Http404
+from languageschool import serializer
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, ScoreModelSerializer
-from rest_framework import generics, viewsets, views
+from rest_framework import generics, views
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -43,13 +44,23 @@ class ConjugationViewSet(generics.ListAPIView):
         return queryset
     serializer_class = ConjugationSerializer
 
-class ScoreViewSet(viewsets.ModelViewSet):
+class ScoreViewSet(generics.ListAPIView):
     def get_queryset(self):
         queryset = Score.objects.all()
         return queryset
     serializer_class = ScoreModelSerializer
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
+
+class NewScoreViewSet(views.APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ScoreSerializer(data = request.data, context = {"user": request.user})
+        if serializer.is_valid(raise_exception = True):
+            score = serializer.save()
+        return Response({"success" : "Score created"})
 
 class IncrementalScoreViewSet(views.APIView):
     authentication_classes = [BasicAuthentication]
@@ -61,7 +72,7 @@ class IncrementalScoreViewSet(views.APIView):
         # Localize the specified score
         scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game = data.get("game"))
         # If some score was found
-        if (len(scores) > 0):
+        if len(scores) > 0:
             score = scores[0]
             # Try to update the score
             serializer = ScoreSerializer(instance=score, data=data, partial=True)

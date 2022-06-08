@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
 from rest_framework import serializers
 
@@ -42,10 +43,14 @@ class ScoreModelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ScoreSerializer(serializers.Serializer):
-    user = serializers.CharField()
     language = serializers.CharField()
     game = serializers.CharField()
-    score = serializers.IntegerField()
+
+    def create(self, validated_data):
+        language = get_object_or_404(Language, language_name = validated_data.get("language"))
+        score = Score(user = self.context.get("user"), language = language, game = validated_data.get("game"), score = 1)
+        score.save()
+        return score
 
     def update(self, instance, validated_data):
         instance.score += 1
