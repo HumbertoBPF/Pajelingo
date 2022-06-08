@@ -10,7 +10,7 @@ from languageschool.game import Game
 
 class ArticleGame(Game):
     def get_tag():
-        return "article game"
+        return "article_game"
 
     def setup(request):
         # For the article game, English is not a language available since it has a unique article
