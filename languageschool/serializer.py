@@ -34,9 +34,20 @@ class ConjugationSerializer(serializers.ModelSerializer):
         model = Conjugation
         fields = '__all__'
 
-class ScoreSerializer(serializers.ModelSerializer):
+class ScoreModelSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     language = serializers.ReadOnlyField(source='language.language_name')
     class Meta:
         model = Score
         fields = '__all__'
+
+class ScoreSerializer(serializers.Serializer):
+    user = serializers.CharField()
+    language = serializers.CharField()
+    game = serializers.CharField()
+    score = serializers.IntegerField()
+
+    def update(self, instance, validated_data):
+        instance.score += 1
+        instance.save()
+        return instance

@@ -10,7 +10,7 @@ from languageschool.game import Game
 
 class VocabularyGame(Game):
     def get_tag():
-        return "vocabulary game"
+        return "vocabulary_game"
 
     def setup(request):
         languages = Language.objects.all()

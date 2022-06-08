@@ -1,6 +1,8 @@
+from django.http import Http404
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
-from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
-from rest_framework import generics, viewsets
+from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, ScoreModelSerializer
+from rest_framework import generics, viewsets, views
+from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -45,6 +47,26 @@ class ScoreViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Score.objects.all()
         return queryset
-    serializer_class = ScoreSerializer
+    serializer_class = ScoreModelSerializer
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
+
+class IncrementalScoreViewSet(views.APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        # Get request data
+        data = request.data
+        # Localize the specified score
+        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game = data.get("game"))
+        # If some score was found
+        if (len(scores) > 0):
+            score = scores[0]
+            # Try to update the score
+            serializer = ScoreSerializer(instance=score, data=data, partial=True)
+            if serializer.is_valid(raise_exception = True):
+                score = serializer.save()
+        else:
+            raise Http404()
+        return Response({"successs": "Score updated"})
