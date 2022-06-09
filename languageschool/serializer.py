@@ -35,7 +35,7 @@ class ConjugationSerializer(serializers.ModelSerializer):
         model = Conjugation
         fields = '__all__'
 
-class ScoreModelSerializer(serializers.ModelSerializer):
+class ListScoreSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     language = serializers.ReadOnlyField(source='language.language_name')
     class Meta:

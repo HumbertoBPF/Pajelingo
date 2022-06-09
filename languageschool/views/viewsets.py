@@ -1,8 +1,6 @@
-from django.http import Http404
-from languageschool import serializer
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
-from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, ScoreModelSerializer
-from rest_framework import generics, views
+from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
+from rest_framework import generics, views, status
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -44,27 +42,46 @@ class ConjugationViewSet(generics.ListAPIView):
         return queryset
     serializer_class = ConjugationSerializer
 
-class ScoreViewSet(generics.ListAPIView):
-    def get_queryset(self):
-        queryset = Score.objects.all()
-        return queryset
-    serializer_class = ScoreModelSerializer
+class ScoreViewSet(views.APIView):
+    '''
+    GET requests: we can optionally specify two URL parameters "language_id" and "game" in order to search a score of the authenticated
+    user for a game in the specified language. If any of these two parameters is not specified, all the scores are returned.
+
+    POST requests: creates a score record with default score of 1. The JSON with the corresponding language and game must be specified 
+    as follows: 
+
+        {
+            "language": <language_name>,
+            "game": <game_name>
+        }
+
+    POST requests: updates a score record by incrementing the score. The JSON with the corresponding language and game must be specified 
+    as follows: 
+
+        {
+            "language": <language_name>,
+            "game": <game_name>
+        }
+    '''
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
-class NewScoreViewSet(views.APIView):
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-
+    def get(self, request):
+        if request.GET.get("language_id") and request.GET.get("game"):
+            scores = Score.objects.filter(user = request.user, language = request.GET.get("language_id"), game = request.GET.get("game"))
+        else:
+            scores = Score.objects.all()
+        serializer = ListScoreSerializer(scores, many=True)
+        return Response(serializer.data)
+            
     def post(self, request):
-        serializer = ScoreSerializer(data = request.data, context = {"user": request.user})
-        if serializer.is_valid(raise_exception = True):
-            score = serializer.save()
-        return Response({"success" : "Score created"})
-
-class IncrementalScoreViewSet(views.APIView):
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
+        data = request.data
+        serializer = ScoreSerializer(data = data, context = {"user": request.user})
+        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game = data.get("game"))
+        if serializer.is_valid(raise_exception = True) and len(scores) == 0:
+            serializer.save()
+            return Response({"success" : "Score created"}, status=status.HTTP_201_CREATED)
+        return Response({"error" : "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."}, status=status.HTTP_409_CONFLICT)
 
     def put(self, request):
         # Get request data
@@ -78,6 +95,6 @@ class IncrementalScoreViewSet(views.APIView):
             serializer = ScoreSerializer(instance=score, data=data, partial=True)
             if serializer.is_valid(raise_exception = True):
                 score = serializer.save()
-        else:
-            raise Http404()
-        return Response({"successs": "Score updated"})
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"error" : "The specified score was not found. Please, perform a create(POST request) in order to create it."}, status=status.HTTP_409_CONFLICT)
+    
