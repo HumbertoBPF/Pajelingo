@@ -39,6 +39,8 @@ class MeaningDisplay(admin.ModelAdmin):
 class ScoreDisplay(admin.ModelAdmin):
     list_display = ('id', 'user', 'language', 'game', 'score')
     list_display_links = ('id',)
+    search_fields = ('user__username',)
+    list_filter = ('language','game')
     list_per_page = 10
 
 class AppUserDisplay(admin.ModelAdmin):

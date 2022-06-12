@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
 from rest_framework import generics, views, status
@@ -42,7 +43,7 @@ class ConjugationViewSet(generics.ListAPIView):
         return queryset
     serializer_class = ConjugationSerializer
 
-class ScoreViewSet(views.APIView):
+class ScoreListViewSet(views.APIView):
     '''
     GET requests: we can optionally specify two URL parameters "language_id" and "game" in order to search a score of the authenticated
     user for a game in the specified language. If any of these two parameters is not specified, all the scores are returned.
@@ -55,13 +56,7 @@ class ScoreViewSet(views.APIView):
             "game": <game_name>
         }
 
-    POST requests: updates a score record by incrementing the score. The JSON with the corresponding language and game must be specified 
-    as follows: 
-
-        {
-            "language": <language_name>,
-            "game": <game_name>
-        }
+    A JSON representation of the created score is returned.
     '''
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
@@ -79,22 +74,35 @@ class ScoreViewSet(views.APIView):
         serializer = ScoreSerializer(data = data, context = {"user": request.user})
         scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game = data.get("game"))
         if serializer.is_valid(raise_exception = True) and len(scores) == 0:
-            serializer.save()
-            return Response({"success" : "Score created"}, status=status.HTTP_201_CREATED)
+            score = serializer.save()
+            serializer = ListScoreSerializer(score)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({"error" : "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."}, status=status.HTTP_409_CONFLICT)
-
-    def put(self, request):
-        # Get request data
-        data = request.data
-        # Localize the specified score
-        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game = data.get("game"))
-        # If some score was found
-        if len(scores) > 0:
-            score = scores[0]
-            # Try to update the score
-            serializer = ScoreSerializer(instance=score, data=data, partial=True)
-            if serializer.is_valid(raise_exception = True):
-                score = serializer.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({"error" : "The specified score was not found. Please, perform a create(POST request) in order to create it."}, status=status.HTTP_409_CONFLICT)
     
+class ScoreViewSet(views.APIView):
+    '''
+    GET requests: returns the score whose id corresponds to the path variable passed.
+
+    PUT requests: increments the score corresponding to the id passed as path variable. It returns a JSON representation of the  
+    updated score.
+    '''
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, score_id=None):
+        score = get_object_or_404(Score, id = score_id)
+        serializer = ListScoreSerializer(score)
+        return Response(serializer.data)
+
+    def put(self, request, score_id=None):
+        # Localize the specified score
+        score = get_object_or_404(Score, id=score_id)
+        # Checks if the logged user can update it
+        if (request.user != score.user):
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        # Try to update the score
+        serializer = ScoreSerializer(instance=score, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception = True):
+            score = serializer.save()
+            serializer = ListScoreSerializer(score)
+            return Response(serializer.data)
