@@ -9,8 +9,8 @@ from languageschool.game import Game
 
 
 class ConjugationGame(Game):
-    def get_tag():
-        return "conjugation_game"
+    def get_game_model():
+        return get_object_or_404(Game, id=3)
 
     def setup(request):
         languages = Language.objects.all()
@@ -62,7 +62,7 @@ class ConjugationGame(Game):
                     and conjugation_3 == conjugation.conjugation_3 and conjugation_4 == conjugation.conjugation_4 \
                     and conjugation_5 == conjugation.conjugation_5 and conjugation_6 == conjugation.conjugation_6:
                     # Increment score when getting the right answer
-                    score = Score.increment_score(request, language, ConjugationGame.get_tag())
+                    score = Score.increment_score(request, language, ConjugationGame.get_game_model())
                     message_string = "Correct :)\n"+correct_answer
                     if score is not None:
                         message_string += "\nYour score is "+str(score.score)

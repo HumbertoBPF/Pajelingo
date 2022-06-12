@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 class Game(ABC):
     @staticmethod
     @abstractmethod
-    def get_tag():
+    def get_game_model():
         pass
 
     @staticmethod

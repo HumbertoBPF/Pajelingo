@@ -9,8 +9,8 @@ from languageschool.game import Game
 
 
 class VocabularyGame(Game):
-    def get_tag():
-        return "vocabulary_game"
+    def get_game_model():
+        return get_object_or_404(Game, id=1)
 
     def setup(request):
         languages = Language.objects.all()
@@ -64,7 +64,7 @@ class VocabularyGame(Game):
                 # Message of feedback for the user
                 if is_translation_correct:
                     # Increment score when getting the right answer
-                    score = Score.increment_score(request, word_to_translate.language, VocabularyGame.get_tag())
+                    score = Score.increment_score(request, word_to_translate.language, VocabularyGame.get_game_model())
                     message_string = "Correct :)\n" + word_to_translate.word_name + ": " + correct_translation
                     if score is not None:
                         message_string += "\nYour score is "+str(score.score)

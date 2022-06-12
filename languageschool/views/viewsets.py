@@ -63,7 +63,7 @@ class ScoreListViewSet(views.APIView):
 
     def get(self, request):
         if request.GET.get("language_id") and request.GET.get("game"):
-            scores = Score.objects.filter(user = request.user, language = request.GET.get("language_id"), game = request.GET.get("game"))
+            scores = Score.objects.filter(user = request.user, language = request.GET.get("language_id"), game__name = request.GET.get("game"))
         else:
             scores = Score.objects.all()
         serializer = ListScoreSerializer(scores, many=True)
@@ -72,7 +72,7 @@ class ScoreListViewSet(views.APIView):
     def post(self, request):
         data = request.data
         serializer = ScoreSerializer(data = data, context = {"user": request.user})
-        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game = data.get("game"))
+        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game__name = data.get("game"))
         if serializer.is_valid(raise_exception = True) and len(scores) == 0:
             score = serializer.save()
             serializer = ListScoreSerializer(score)
