@@ -2,15 +2,15 @@ import random
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from languageschool.models import Language, Score, Word
+from languageschool.models import Language, Score, Word, Game
 from django.contrib import messages
 from languageschool.utils import request_contains
 from languageschool.game import Game
 
 
 class ArticleGame(Game):
-    def get_tag():
-        return "article_game"
+    def get_game_model():
+        return get_object_or_404(Game, id=2)
 
     def setup(request):
         # For the article game, English is not a language available since it has a unique article
@@ -42,7 +42,7 @@ class ArticleGame(Game):
                 # Verifying user's answer
                 if word.article.article_name == user_answer:
                     # Increment score when getting the right answer
-                    score = Score.increment_score(request, word.language, ArticleGame.get_tag())
+                    score = Score.increment_score(request, word.language, ArticleGame.get_game_model())
                     message_string = "Correct :)\n"+str(word)
                     if score is not None:
                         message_string += "\nYour score is "+str(score.score)

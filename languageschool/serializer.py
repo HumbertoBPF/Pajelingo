@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
 from rest_framework import serializers
 
 class LanguageSerializer(serializers.ModelSerializer):
@@ -38,6 +38,7 @@ class ConjugationSerializer(serializers.ModelSerializer):
 class ListScoreSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     language = serializers.ReadOnlyField(source='language.language_name')
+    game = serializers.ReadOnlyField(source='game.game_name')
     class Meta:
         model = Score
         fields = '__all__'
@@ -48,6 +49,7 @@ class ScoreSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         language = get_object_or_404(Language, language_name = validated_data.get("language"))
+        game = get_object_or_404(Game, game_name = validated_data.get("game"))
         score = Score(user = self.context.get("user"), language = language, game = validated_data.get("game"), score = 1)
         score.save()
         return score
