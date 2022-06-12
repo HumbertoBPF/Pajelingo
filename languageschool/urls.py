@@ -1,6 +1,6 @@
 from django.urls import path
 from languageschool import views
-from languageschool.views.viewsets import ArticleViewSet, CategoryViewSet, ConjugationViewSet, LanguageViewSet, MeaningViewSet, ScoreViewSet, ScoreViewSet, WordViewSet
+from languageschool.views.viewsets import ArticleViewSet, CategoryViewSet, ConjugationViewSet, LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, ScoreViewSet, WordViewSet
 
 urlpatterns = [
     path('', views.general.index, name = 'index'),
@@ -32,5 +32,6 @@ urlpatterns = [
     path('api/words/', WordViewSet.as_view()),
     path('api/meanings/', MeaningViewSet.as_view()),
     path('api/conjugations/', ConjugationViewSet.as_view()),
-    path('api/scores/', ScoreViewSet.as_view())
+    path('api/scores/', ScoreListViewSet.as_view()),
+    path('api/scores/<int:score_id>', ScoreViewSet.as_view())
 ]
