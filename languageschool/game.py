@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Game(ABC):
+class GameView(ABC):
     @staticmethod
     @abstractmethod
     def get_game_model():

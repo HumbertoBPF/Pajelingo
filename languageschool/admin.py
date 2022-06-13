@@ -49,9 +49,9 @@ class AppUserDisplay(admin.ModelAdmin):
     list_per_page = 10
 
 class GameDisplay(admin.ModelAdmin):
-    list_display = ('id', 'game_name')
-    list_display_links = ('id', 'game_name')
-    search_fields = ('game_name',)
+    list_display = ('id', 'game_tag', 'game_name')
+    list_display_links = ('id', 'game_tag', 'game_name')
+    search_fields = ('game_tag',)
     list_per_page = 10
 
 # Register your models here.

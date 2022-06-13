@@ -1,11 +1,17 @@
 from django.shortcuts import get_object_or_404
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word
-from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
+from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word
+from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
 from rest_framework import generics, views, status
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+
+class GameViewSet(generics.ListAPIView):
+    def get_queryset(self):
+        queryset = Game.objects.all()
+        return queryset
+    serializer_class = GameSerializer
 
 class LanguageViewSet(generics.ListAPIView):
     def get_queryset(self):
@@ -53,7 +59,7 @@ class ScoreListViewSet(views.APIView):
 
         {
             "language": <language_name>,
-            "game": <game_name>
+            "game": <game_tag>
         }
 
     A JSON representation of the created score is returned.
@@ -63,7 +69,7 @@ class ScoreListViewSet(views.APIView):
 
     def get(self, request):
         if request.GET.get("language_id") and request.GET.get("game"):
-            scores = Score.objects.filter(user = request.user, language = request.GET.get("language_id"), game__name = request.GET.get("game"))
+            scores = Score.objects.filter(user = request.user, language = request.GET.get("language_id"), game__game_tag = request.GET.get("game"))
         else:
             scores = Score.objects.all()
         serializer = ListScoreSerializer(scores, many=True)
@@ -72,7 +78,7 @@ class ScoreListViewSet(views.APIView):
     def post(self, request):
         data = request.data
         serializer = ScoreSerializer(data = data, context = {"user": request.user})
-        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game__name = data.get("game"))
+        scores = Score.objects.filter(user = request.user, language__language_name = data.get("language"), game__game_tag = data.get("game"))
         if serializer.is_valid(raise_exception = True) and len(scores) == 0:
             score = serializer.save()
             serializer = ListScoreSerializer(score)
