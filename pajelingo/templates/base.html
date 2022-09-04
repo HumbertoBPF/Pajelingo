@@ -32,13 +32,13 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdownGames">
                             <li>
-                                <a class="dropdown-item" href="{% url 'vocabulary_game_setup' %}">Vocabulary training</a>
+                                <a class="dropdown-item" href="{% url 'vocabulary-game-setup' %}">Vocabulary training</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'article_game_setup' %}">Guess the article</a>
+                                <a class="dropdown-item" href="{% url 'article-game-setup' %}">Guess the article</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'conjugation_game_setup' %}">Conjugation game</a>
+                                <a class="dropdown-item" href="{% url 'conjugation-game-setup' %}">Conjugation game</a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'rankings' %}">Rankings</a>
@@ -53,22 +53,22 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdownAccount">
                             {% if not user.is_authenticated %}
                             <li>
-                                <a class="dropdown-item" href="{% url 'account_sign_in' %}">Sign in</a>
+                                <a class="dropdown-item" href="{% url 'account-sign-in' %}">Sign in</a>
                             </li>
                             {% endif %}
                             {% if not user.is_authenticated %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'account_login' %}">Login</a>
+                                    <a class="dropdown-item" href="{% url 'account-login' %}">Login</a>
                                 </li>
                             {% endif %}
                             {% if user.is_authenticated %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'account_profile' %}">Profile</a>
+                                    <a class="dropdown-item" href="{% url 'account-profile' %}">Profile</a>
                                 </li>
                             {% endif %}
                             {% if user.is_authenticated %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'account_logout' %}">Logout</a>
+                                    <a class="dropdown-item" href="{% url 'account-logout' %}">Logout</a>
                                 </li>
                             {% endif %}
                         </ul>

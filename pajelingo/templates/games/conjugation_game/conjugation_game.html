@@ -7,10 +7,10 @@
         {% for message in messages %}
             <div class="alert alert-{{message.tags}}">{{message|linebreaksbr}}</div>
         {% endfor %}
-        <a class="btn btn-success" href="/conjugation_game?language={{ word.language.language_name }}" role="button">New word</a>
+        <a class="btn btn-success" href="/conjugation-game?language={{ word.language.language_name }}" role="button">New word</a>
     </section>
 {% else %}
-    <form class="mt-3 text-center" action="{% url 'conjugation_game_verify_answer' %}" method="POST">
+    <form class="mt-3 text-center" action="{% url 'conjugation-game-verify-answer' %}" method="POST">
         {% csrf_token %}
         <div class="mb-3 row">
             <div class="col-5 col-sm-3 col-lg-2">

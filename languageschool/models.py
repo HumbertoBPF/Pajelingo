@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # Create your models here.
 class Game(models.Model):
     game_tag = models.CharField(max_length=30, unique=True, null=True, blank=True)
@@ -8,6 +9,7 @@ class Game(models.Model):
 
     def __str__(self):
         return str(self.game_tag)
+
 
 class Language(models.Model):
     language_name = models.CharField(max_length=30, unique=True)
@@ -21,18 +23,21 @@ class Language(models.Model):
     def __str__(self):
         return self.language_name
 
+
 class Category(models.Model):
     category_name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.category_name
 
+
 class Article(models.Model):
     article_name = models.CharField(max_length=10)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.article_name + " (" + str(self.language) + ")" 
+        return self.article_name + " (" + str(self.language) + ")"
+
 
 class Word(models.Model):
     word_name = models.CharField(max_length=30)
@@ -40,10 +45,11 @@ class Word(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
     synonyms = models.ManyToManyField("self", blank=True)
-    image = models.ImageField(upload_to = 'images/%d/%m/%Y', blank = True)
+    image = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
 
     def __str__(self):
-        return  ((str(self.article.article_name) + " ") if (self.article != None) else "") + self.word_name
+        return ((str(self.article.article_name) + " ") if (self.article != None) else "") + self.word_name
+
 
 class Meaning(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
@@ -51,6 +57,7 @@ class Meaning(models.Model):
 
     def __str__(self):
         return str(self.word)
+
 
 class Conjugation(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
@@ -65,6 +72,7 @@ class Conjugation(models.Model):
     def __str__(self):
         return self.word.word_name + " " + self.tense
 
+
 class Score(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
@@ -75,22 +83,23 @@ class Score(models.Model):
     def increment_score(request, language, game):
         '''Function to increment the score of a game when getting a correct answer'''
         if request.user.is_authenticated:
-            score = Score.objects.filter(user = request.user, language = language, game = game)
-            
+            score = Score.objects.filter(user=request.user, language=language, game=game)
+
             if len(score) == 0:
-                score = Score(user = request.user, language = language, game = game, score = 1)
+                score = Score(user=request.user, language=language, game=game, score=1)
             else:
                 score = score.latest('id')
                 score.score += 1
 
             score.save()
             return score
-        
+
         return None
+
 
 class AppUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    picture = models.ImageField(upload_to = 'images/%d/%m/%Y', blank = True)
+    picture = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
 
     def __str__(self):
         return str(self.user)

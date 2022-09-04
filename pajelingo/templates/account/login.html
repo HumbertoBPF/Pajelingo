@@ -12,7 +12,7 @@
         {% endfor %}
         </section>
     {% endif%} 
-    <form class="mt-3 mx-3" action="{% url 'account_auth_user' %}" method="POST">
+    <form class="mt-3 mx-3" action="{% url 'account-auth-user' %}" method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label for="inputUsername" class="form-label">Username</label>
