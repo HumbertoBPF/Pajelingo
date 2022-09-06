@@ -81,7 +81,7 @@ class Score(models.Model):
 
     @staticmethod
     def increment_score(request, language, game):
-        '''Function to increment the score of a game when getting a correct answer'''
+        """Function to increment the score of a game when getting a correct answer"""
         if request.user.is_authenticated:
             score = Score.objects.filter(user=request.user, language=language, game=game)
 

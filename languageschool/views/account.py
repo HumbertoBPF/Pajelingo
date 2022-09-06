@@ -26,9 +26,9 @@ def create_user(request):
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
                 # Creating app user
-                appuser = AppUser(user=user)
-                appuser.save()
-                messages.success(request, "User sucessfully created")
+                app_user = AppUser(user=user)
+                app_user.save()
+                messages.success(request, "User successfully created")
                 print("User created")
                 return redirect('account-sign-in')
             else:
@@ -104,9 +104,8 @@ def do_update_user(request):
 
 def delete_user(request):
     # It is important to be sure that the method was POST in order to avoid users to accidentally delete their accounts by merely accessing this endpoint
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            request.user.delete()
+    if request.method == "POST" and request.user.is_authenticated:
+        request.user.delete()
     return redirect('index')
 
 
