@@ -40,8 +40,8 @@ def rankings(request):
         if request_contains(request.GET, ["language"]) and len(request.GET["language"]) != 0:
             language_name = request.GET["language"]
             language = get_object_or_404(Language, language_name=language_name)
-            scores = Score.objects.filter(language=language).values('user__username').annotate(
-                score=Sum('score')).order_by('-score')
+            scores = Score.objects.filter(language=language).values('user__username')\
+                .annotate(score=Sum('score')).order_by('-score')
             scores_dict['language'] = language
             # Otherwise, show the general ranking
         else:

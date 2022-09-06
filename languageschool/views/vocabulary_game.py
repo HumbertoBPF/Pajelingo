@@ -8,9 +8,36 @@ from languageschool.utils import request_contains
 from languageschool.game import GameView
 
 
+def check_answer(word_to_translate, translation_word, base_language):
+    correct_translation = ""
+    is_translation_correct = False
+    for synonym in word_to_translate.synonyms.all():
+        if synonym.language == base_language:
+            # Getting the correct answer
+            if len(correct_translation) != 0:
+                correct_translation += ", "
+            correct_translation += synonym.word_name
+            # Checking if the answer was correct (if the user provided a synonym and if the synonym is in the correct language)
+            if synonym.word_name == translation_word:
+                is_translation_correct = True
+
+    return is_translation_correct, correct_translation
+
+
+def send_feedback(request, is_correct_answer, word_to_translate, correct_translation, score):
+    if is_correct_answer:
+        message_string = "Correct :)\n" + word_to_translate.word_name + ": " + correct_translation
+        if score is not None:
+            message_string += "\nYour score is " + str(score.score)
+        messages.success(request, message_string)
+    else:
+        messages.error(request, "Wrong answer\n" + word_to_translate.word_name + ": " + correct_translation)
+
+
 class VocabularyGame(GameView):
     @staticmethod
     def get_game_model():
+        # TODO implement a error page to the cases when the game has not been created in the database yet
         return get_object_or_404(Game, id=1)
 
     @staticmethod
@@ -34,8 +61,10 @@ class VocabularyGame(GameView):
                     # Verifying if the selected languages are equal
                     if base_language != target_language:
                         # Validating the base_language (check if it is a valid language, if not it returns a 404 error)
+                        # TODO implement a error page to the cases where there is not the language chosen
                         base_language = get_object_or_404(Language, language_name=base_language)
                         # Picking all the words corresponding to the target language
+                        # TODO implement a error page to the cases where there is not a word associated with the chosen language
                         words_list = Word.objects.filter(
                             language=get_object_or_404(Language, language_name=target_language))
                         selected_word = random.choice(words_list)
@@ -51,32 +80,13 @@ class VocabularyGame(GameView):
         if request.method == "POST":
             if request_contains(request.POST, ["word_to_translate_id", "translation_word", "base_language"]):
                 # Getting word to translate, language of the translation and user's answer
-                word_to_translate_id = request.POST["word_to_translate_id"]
                 translation_word = request.POST["translation_word"].strip()
                 base_language = get_object_or_404(Language, language_name=request.POST["base_language"])
-                word_to_translate = get_object_or_404(Word, pk=word_to_translate_id)
-                # Verifying user's answer
-                correct_translation = ""
-                is_translation_correct = False
-                for synonim in word_to_translate.synonyms.all():
-                    if synonim.language == base_language:
-                        # Getting the correct answer
-                        if len(correct_translation) != 0:
-                            correct_translation += ", "
-                        correct_translation += synonim.word_name
-                        # Checking if the answer was correct (if the user provided a synonim and if the synonim is in the correct language)
-                        if synonim.word_name == translation_word:
-                            is_translation_correct = True
-                # Message of feedback for the user
-                if is_translation_correct:
-                    # Increment score when getting the right answer
-                    score = Score.increment_score(request, word_to_translate.language, VocabularyGame.get_game_model())
-                    message_string = "Correct :)\n" + word_to_translate.word_name + ": " + correct_translation
-                    if score is not None:
-                        message_string += "\nYour score is " + str(score.score)
-                    messages.success(request, message_string)
-                else:
-                    messages.error(request, "Wrong answer\n" + word_to_translate.word_name + ": " + correct_translation)
+                word_to_translate = get_object_or_404(Word, pk=request.POST["word_to_translate_id"])
+                is_correct_answer, correct_translation = check_answer(word_to_translate, translation_word, base_language)
+                # Increment score when getting the right answer
+                score = Score.increment_score(request, word_to_translate.language, VocabularyGame.get_game_model()) if is_correct_answer else None
+                send_feedback(request, is_correct_answer, word_to_translate, correct_translation, score)
                 base_url = reverse('vocabulary-game')
                 query_string = urlencode({'base_language': str(base_language),
                                           'target_language': str(word_to_translate.language)})

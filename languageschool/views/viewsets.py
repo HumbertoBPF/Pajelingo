@@ -100,8 +100,7 @@ class ScoreListViewSet(views.APIView):
             score = serializer.save()
             serializer = ListScoreSerializer(score)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({
-                            "error": "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."},
+        return Response({"error": "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."},
                         status=status.HTTP_409_CONFLICT)
 
 

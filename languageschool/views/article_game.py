@@ -8,6 +8,16 @@ from languageschool.utils import request_contains
 from languageschool.game import GameView
 
 
+def send_message(request, is_correct_answer, word, score):
+    if is_correct_answer:
+        message_string = "Correct :)\n" + str(word)
+        if score is not None:
+            message_string += "\nYour score is " + str(score.score)
+        messages.success(request, message_string)
+    else:
+        messages.error(request, 'Wrong answer\n' + str(word))
+
+
 class ArticleGame(GameView):
     @staticmethod
     def get_game_model():
@@ -26,12 +36,12 @@ class ArticleGame(GameView):
             if request_contains(request.GET, ["language"]):
                 language = request.GET["language"]
                 # Verify if some language was chosen
-                if len(language) == 0:
+                if len(language) == 0 or language == "English":
                     messages.error(request, "You must choose a language")
                 else:
                     word = random.choice(
-                        Word.objects.filter(language=get_object_or_404(Language, language_name=language)).exclude(
-                            article=None))
+                        Word.objects
+                        .filter(language=get_object_or_404(Language, language_name=language)).exclude(article=None))
 
                     return render(request, 'games/article_game/article_game.html', {'word': word})
         # If some error was detected, go to setup page
@@ -43,18 +53,11 @@ class ArticleGame(GameView):
             if request_contains(request.POST, ["article", "word_id"]):
                 # Get word chosen and user's answer
                 user_answer = request.POST["article"].strip()
-                word_id = request.POST["word_id"]
-                word = get_object_or_404(Word, pk=word_id)
-                # Verifying user's answer
-                if word.article.article_name == user_answer:
-                    # Increment score when getting the right answer
-                    score = Score.increment_score(request, word.language, ArticleGame.get_game_model())
-                    message_string = "Correct :)\n" + str(word)
-                    if score is not None:
-                        message_string += "\nYour score is " + str(score.score)
-                    messages.success(request, message_string)
-                else:
-                    messages.error(request, 'Wrong answer\n' + str(word))
+                word = get_object_or_404(Word, pk=request.POST["word_id"])
+                is_correct_answer = (word.article.article_name == user_answer)
+                # Increment score when getting the right answer
+                score = Score.increment_score(request, word.language, ArticleGame.get_game_model()) if is_correct_answer else None
+                send_message(request, is_correct_answer, word, score)
                 base_url = reverse('article-game')
                 query_string = urlencode({'language': str(word.language)})
                 url = '{}?{}'.format(base_url, query_string)
