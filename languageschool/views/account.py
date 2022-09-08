@@ -1,12 +1,13 @@
-from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth.models import User
 from django.contrib import auth
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404, redirect, render
+
 from languageschool.forms import FormPicture
 from languageschool.models import AppUser, Score
 from languageschool.validation import is_valid_user_data
 from languageschool.views.general import request_contains
-from django.contrib.auth.hashers import make_password
 
 
 def sign_in(request):

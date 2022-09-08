@@ -1,9 +1,10 @@
 import random
+
 import pytest
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
-from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score
+from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning
 
 
 @pytest.fixture
@@ -67,6 +68,14 @@ def words(languages, articles):
             word.synonyms.set(synonyms.copy())
             synonyms.append(word)
     return Word.objects.all()
+
+
+@pytest.fixture
+def meanings(words):
+    for word in words:
+        for _ in range(random.randint(1, 5)):
+            Meaning.objects.create(word=word, meaning=get_random_string(random.randint(1, 255)))
+    return Meaning.objects.all()
 
 
 @pytest.fixture
