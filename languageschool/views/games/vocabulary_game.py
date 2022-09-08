@@ -1,11 +1,13 @@
 import random
 from urllib.parse import urlencode
+
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from languageschool.models import Language, Score, Word, Game
-from django.contrib import messages
-from languageschool.utils import request_contains
+
 from languageschool.game import GameView
+from languageschool.models import Language, Score, Word, Game
+from languageschool.utils import request_contains
 
 
 def check_answer(word_to_translate, translation_word, base_language):

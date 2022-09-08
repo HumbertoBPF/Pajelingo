@@ -1,8 +1,9 @@
-from django.shortcuts import get_object_or_404, render
 from django.core.paginator import Paginator
-from languageschool.models import Language, Meaning, Score, Word
-from django.db.models.functions import Lower
 from django.db.models import Sum
+from django.db.models.functions import Lower
+from django.shortcuts import get_object_or_404, render
+
+from languageschool.models import Language, Meaning, Score, Word
 from languageschool.utils import request_contains
 
 

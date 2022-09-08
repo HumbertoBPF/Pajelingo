@@ -1,11 +1,12 @@
 import random
-import pytest
+from urllib.parse import urlencode
 
+import pytest
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from pytest_django.asserts import assertQuerysetEqual
 from rest_framework import status
-from urllib.parse import urlencode
+
 from languageschool.models import Score
 
 

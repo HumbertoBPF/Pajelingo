@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from languageschool.models import AppUser, Article, Category, Conjugation, Game, Language, Meaning, Score, Word
 
+
 class LanguageDisplay(admin.ModelAdmin):
     list_display = ('id','language_name')
     list_display_links = ('id','language_name')

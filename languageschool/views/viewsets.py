@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
+from rest_framework import generics, views, status
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
-from rest_framework import generics, views, status
-from rest_framework.response import Response
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 
 class GameViewSet(generics.ListAPIView):

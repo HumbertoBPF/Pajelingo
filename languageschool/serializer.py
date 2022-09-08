@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
 from rest_framework import serializers
+
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
 
 
 class GameSerializer(serializers.ModelSerializer):

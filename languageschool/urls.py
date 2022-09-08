@@ -1,20 +1,22 @@
 from django.urls import path
+
 from languageschool import views
+from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet
 
 urlpatterns = [
     path('dashboard', views.general.index, name='index'),
-    path('vocabulary-game/setup', views.vocabulary_game.VocabularyGame.setup, name='vocabulary-game-setup'),
-    path('vocabulary-game', views.vocabulary_game.VocabularyGame.play, name='vocabulary-game'),
-    path('vocabulary-game/verify-answer', views.vocabulary_game.VocabularyGame.verify_answer,
+    path('vocabulary-game/setup', vocabulary_game.VocabularyGame.setup, name='vocabulary-game-setup'),
+    path('vocabulary-game', vocabulary_game.VocabularyGame.play, name='vocabulary-game'),
+    path('vocabulary-game/verify-answer', vocabulary_game.VocabularyGame.verify_answer,
          name='vocabulary-game-verify-answer'),
-    path('article-game/setup', views.article_game.ArticleGame.setup, name='article-game-setup'),
-    path('article-game', views.article_game.ArticleGame.play, name='article-game'),
-    path('article-game/verify-answer', views.article_game.ArticleGame.verify_answer, name='article-game-verify-answer'),
-    path('conjugation-game/setup', views.conjugation_game.ConjugationGame.setup, name='conjugation-game-setup'),
-    path('conjugation-game', views.conjugation_game.ConjugationGame.play, name='conjugation-game'),
-    path('conjugation-game/verify-answer', views.conjugation_game.ConjugationGame.verify_answer,
+    path('article-game/setup', article_game.ArticleGame.setup, name='article-game-setup'),
+    path('article-game', article_game.ArticleGame.play, name='article-game'),
+    path('article-game/verify-answer', article_game.ArticleGame.verify_answer, name='article-game-verify-answer'),
+    path('conjugation-game/setup', conjugation_game.ConjugationGame.setup, name='conjugation-game-setup'),
+    path('conjugation-game', conjugation_game.ConjugationGame.play, name='conjugation-game'),
+    path('conjugation-game/verify-answer', conjugation_game.ConjugationGame.verify_answer,
          name='conjugation-game-verify-answer'),
     path('search', views.general.search, name='search'),
     path('dictionary/<int:word_id>', views.general.dictionary, name='dictionary'),
