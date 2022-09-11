@@ -128,7 +128,7 @@ def test_vocabulary_game_answer(client, languages, words, vocabulary_game, is_co
 )
 @pytest.mark.django_db
 def test_vocabulary_game_answer_user_authenticated_first_play(client, account, languages, words, vocabulary_game, is_correct_answer):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     word_to_translate = random.choice(words)
@@ -147,14 +147,14 @@ def test_vocabulary_game_answer_user_authenticated_first_play(client, account, l
 )
 @pytest.mark.django_db
 def test_vocabulary_game_answer_user_authenticated(client, account, languages, words, vocabulary_game, score, is_correct_answer):
-    user, password = account
+    user, password = account()[0]
     initial_score = random.randint(100, 1000)
 
     client.login(username=user.username, password=password)
 
     word_to_translate = random.choice(words)
     target_language = word_to_translate.language
-    score(user=user, games=[vocabulary_game], languages=[target_language], initial_score=initial_score)
+    score(users=[user], games=[vocabulary_game], languages=[target_language], initial_score=initial_score)
 
     generate_answer_vocabulary_game(client, word_to_translate, languages, is_correct_answer)
 

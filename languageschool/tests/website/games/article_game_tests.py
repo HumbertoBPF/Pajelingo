@@ -104,7 +104,7 @@ def test_article_game_answer(client, words, article_game, is_correct_answer):
 )
 @pytest.mark.django_db
 def test_article_game_answer_authenticated_user_first_play(client, account, words, article_game, is_correct_answer):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     word = random.choice(words)
@@ -125,14 +125,14 @@ def test_article_game_answer_authenticated_user_first_play(client, account, word
 )
 @pytest.mark.django_db
 def test_article_game_answer_authenticated_user(client, account, words, article_game, score, is_correct_answer):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
     initial_score = random.randint(100, 1000)
 
     word = random.choice(words)
     target_language = word.language
 
-    score(user=user, games=[article_game], languages=[target_language], initial_score=initial_score)
+    score(users=[user], games=[article_game], languages=[target_language], initial_score=initial_score)
     generate_answer_article_game(client, word, is_correct_answer)
 
     if is_correct_answer:

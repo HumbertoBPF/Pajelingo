@@ -25,9 +25,9 @@ def test_profile_access_requires_authentication(client):
 
 @pytest.mark.django_db
 def test_profile_access(client, account, score, article_game, vocabulary_game, conjugation_game, languages):
-    user, password = account
+    user, password = account()[0]
 
-    scores = score(user=user, games=[article_game, vocabulary_game, conjugation_game], languages=languages)
+    scores = score(users=[user], games=[article_game, vocabulary_game, conjugation_game], languages=languages)
 
     client.login(username=user.username, password=password)
 
@@ -54,7 +54,7 @@ def test_update_user_requires_authentication(client):
 
 @pytest.mark.django_db
 def test_update_user(client, account):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     url = reverse('account-update-user')
@@ -104,7 +104,7 @@ def test_do_update_user_no_authentication(client):
 )
 @pytest.mark.django_db
 def test_do_update_user(client, account, email, username, password, is_password_confirmed):
-    user, user_password = account
+    user, user_password = account()[0]
     client.login(username=user.username, password=user_password)
 
     url = reverse('account-do-update-user')
@@ -136,9 +136,10 @@ def test_do_update_user(client, account, email, username, password, is_password_
     ]
 )
 @pytest.mark.django_db
-def test_do_update_user_repeated_credentials(client, account, account2, is_repeated_email, is_repeated_username):
-    user, password = account
-    user2, password2 = account2
+def test_do_update_user_repeated_credentials(client, account, is_repeated_email, is_repeated_username):
+    accounts = account(n=2)
+    user, password = accounts[0]
+    user2, password2 = accounts[1]
     client.login(username=user.username, password=password)
 
     url = reverse('account-do-update-user')
@@ -166,7 +167,7 @@ def test_do_update_user_repeated_credentials(client, account, account2, is_repea
 )
 @pytest.mark.django_db
 def test_do_update_user_same_credentials(client, account, is_same_email, is_same_username):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     url = reverse('account-do-update-user')
@@ -187,7 +188,7 @@ def test_do_update_user_same_credentials(client, account, is_same_email, is_same
 
 @pytest.mark.django_db
 def test_delete_user_requires_authentication(client, account):
-    user, password = account
+    user, password = account()[0]
     url = reverse('account-delete-user')
     response = client.post(url)
 
@@ -199,7 +200,7 @@ def test_delete_user_requires_authentication(client, account):
 
 @pytest.mark.django_db
 def test_delete_user(client, account):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     url = reverse('account-delete-user')
@@ -214,7 +215,7 @@ def test_delete_user(client, account):
 
 @pytest.mark.django_db
 def test_change_profile_picture_requires_authentication(client, account):
-    user, password = account
+    user, password = account()[0]
     url = reverse('account-change-picture')
 
     response = client.post(url)
@@ -234,7 +235,7 @@ def test_change_profile_picture_requires_authentication(client, account):
 )
 @pytest.mark.django_db
 def test_change_profile_picture(client, account, filename, is_successful):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     url = reverse('account-change-picture')

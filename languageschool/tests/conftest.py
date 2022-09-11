@@ -125,32 +125,32 @@ def conjugation_game():
 
 @pytest.fixture
 def account():
-    return account_factory()
+    return account_factory
 
 
-@pytest.fixture
-def account2():
-    return account_factory()
+def account_factory(n=1):
+    accounts_list = []
 
-
-def account_factory():
-    password = get_random_string(random.randint(6, 30))
-    user = User.objects.create_user(username=get_random_string(random.randint(10, 30)),
-                                    email=get_random_string(random.randint(10, 30)) + "@test.com",
-                                    password=password)
-    AppUser.objects.create(user=user)
-    return user, password
+    for _ in range(n):
+        password = get_random_string(random.randint(6, 30))
+        user = User.objects.create_user(username=get_random_string(random.randint(10, 30)),
+                                        email=get_random_string(random.randint(10, 30)) + "@test.com",
+                                        password=password)
+        AppUser.objects.create(user=user)
+        accounts_list.append((user, password))
+    return accounts_list
 
 
 @pytest.fixture
 def score():
-    def create_score(user, games, languages, initial_score=None):
-        for game in games:
-            for language in languages:
-                score = initial_score
-                if initial_score is None:
-                    score = random.randint(100, 1000)
-                Score.objects.create(user=user, game=game, language=language, score=score)
+    def create_score(users, games, languages, initial_score=None):
+        for user in users:
+            for game in games:
+                for language in languages:
+                    score = initial_score
+                    if initial_score is None:
+                        score = random.randint(100, 1000)
+                    Score.objects.create(user=user, game=game, language=language, score=score)
         return Score.objects.all()
     return create_score
 

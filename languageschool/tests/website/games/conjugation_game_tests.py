@@ -107,7 +107,7 @@ def test_conjugation_game_answer(client, conjugations, conjugation_game, is_corr
 )
 @pytest.mark.django_db
 def test_conjugation_game_answer_authenticated_user_first_play(client, account, conjugations, conjugation_game, is_correct_answer):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     conjugation = random.choice(conjugations)
@@ -128,14 +128,14 @@ def test_conjugation_game_answer_authenticated_user_first_play(client, account, 
 )
 @pytest.mark.django_db
 def test_conjugation_game_answer_authenticated_user(client, account, conjugations, conjugation_game, score, is_correct_answer):
-    user, password = account
+    user, password = account()[0]
     client.login(username=user.username, password=password)
 
     conjugation = random.choice(conjugations)
     initial_score = random.randint(100, 1000)
     target_language = conjugation.word.language
 
-    score(user=user, games=[conjugation_game], languages=[target_language], initial_score=initial_score)
+    score(users=[user], games=[conjugation_game], languages=[target_language], initial_score=initial_score)
 
     generate_answer_conjugation_game(client, conjugation, is_correct_answer)
 
