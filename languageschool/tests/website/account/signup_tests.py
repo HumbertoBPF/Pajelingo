@@ -64,7 +64,7 @@ def test_signup_validation(client, email, username, password, is_password_confir
 )
 @pytest.mark.django_db
 def test_signup_error_repeated_credentials(client, account, is_repeated_email, is_repeated_username):
-    user, password = account
+    user, password = account()[0]
     password_signup = get_random_string(random.randint(6, 30))
 
     url = reverse('account-create-user')

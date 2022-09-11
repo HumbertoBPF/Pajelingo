@@ -77,7 +77,7 @@ def test_validation_function_error_message(email, username, password, is_passwor
 )
 @pytest.mark.django_db
 def test_validation_function_error_message_repeated_credentials_on_signup(account, is_repeated_email, is_repeated_username):
-    user, password = account
+    user, password = account()[0]
     email = user.email if is_repeated_email else (get_random_string(random.randint(10, 30))+"@test.com")
     username = user.username if is_repeated_username else get_random_string(random.randint(10, 30))
     new_user_password = get_random_string(random.randint(6, 30))
@@ -96,9 +96,10 @@ def test_validation_function_error_message_repeated_credentials_on_signup(accoun
     ]
 )
 @pytest.mark.django_db
-def test_validation_function_error_message_repeated_credentials_on_update(account, account2, is_repeated_email, is_repeated_username):
-    user, password = account
-    existing_user = account2[0]
+def test_validation_function_error_message_repeated_credentials_on_update(account, is_repeated_email, is_repeated_username):
+    accounts = account(n=2)
+    user, password = accounts[0]
+    existing_user, password2 = accounts[1]
     email = user.email if is_repeated_email else (get_random_string(random.randint(10, 30))+"@test.com")
     username = user.username if is_repeated_username else get_random_string(random.randint(10, 30))
     new_user_password = get_random_string(random.randint(6, 30))
@@ -116,8 +117,9 @@ def test_validation_function_error_message_repeated_credentials_on_update(accoun
     "is_same_username", [True, False]
 )
 @pytest.mark.django_db
-def test_validation_function_same_credentials_on_update(account, account2, is_same_email, is_same_username):
-    user, password = account
+def test_validation_function_same_credentials_on_update(account, is_same_email, is_same_username):
+    accounts = account(n=2)
+    user, password = accounts[0]
     email = user.email if is_same_email else (get_random_string(random.randint(10, 30)) + "@test.com")
     username = user.username if is_same_username else get_random_string(random.randint(10, 30))
     new_user_password = get_random_string(random.randint(6, 30))
