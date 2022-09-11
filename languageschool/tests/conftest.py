@@ -1,10 +1,11 @@
 import random
 
 import pytest
+from django.contrib import auth
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
-from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning
+from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, AppUser
 
 
 @pytest.fixture
@@ -124,15 +125,44 @@ def conjugation_game():
 
 @pytest.fixture
 def account():
+    return account_factory()
+
+
+@pytest.fixture
+def account2():
+    return account_factory()
+
+
+def account_factory():
     password = get_random_string(random.randint(6, 30))
     user = User.objects.create_user(username=get_random_string(random.randint(10, 30)),
                                     email=get_random_string(random.randint(10, 30)) + "@test.com",
                                     password=password)
+    AppUser.objects.create(user=user)
     return user, password
 
 
 @pytest.fixture
 def score():
-    def create_score(user, game, language, initial_score):
-        return Score.objects.create(user=user, game=game, language=language, score=initial_score)
+    def create_score(user, games, languages, initial_score=None):
+        for game in games:
+            for language in languages:
+                score = initial_score
+                if initial_score is None:
+                    score = random.randint(100, 1000)
+                Score.objects.create(user=user, game=game, language=language, score=score)
+        return Score.objects.all()
     return create_score
+
+
+def is_user_authenticated(client, user):
+    """
+    Verifies if the specified user is authenticated in the current session.
+
+    :param client: Django client fixture
+    :param user: instance of a user that we want to check that is authenticated
+    :type user: User
+
+    :return: boolean indicating if the specified user is authenticated
+    """
+    return auth.get_user(client).username == user.username

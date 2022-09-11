@@ -137,10 +137,9 @@ def test_vocabulary_game_answer_user_authenticated_first_play(client, account, l
     generate_answer_vocabulary_game(client, word_to_translate, languages, is_correct_answer)
 
     if is_correct_answer:
-        assert Score.objects.filter(user=user, game=vocabulary_game,
-                                    language=target_language, score=1).first() is not None
+        assert Score.objects.filter(user=user, game=vocabulary_game, language=target_language, score=1).exists()
     else:
-        assert Score.objects.filter(user=user, game=vocabulary_game, language=target_language).first() is None
+        assert not Score.objects.filter(user=user, game=vocabulary_game, language=target_language).exists()
 
 
 @pytest.mark.parametrize(
@@ -155,16 +154,16 @@ def test_vocabulary_game_answer_user_authenticated(client, account, languages, w
 
     word_to_translate = random.choice(words)
     target_language = word_to_translate.language
-    score(user=user, game=vocabulary_game, language=target_language, initial_score=initial_score)
+    score(user=user, games=[vocabulary_game], languages=[target_language], initial_score=initial_score)
 
     generate_answer_vocabulary_game(client, word_to_translate, languages, is_correct_answer)
 
     if is_correct_answer:
         assert Score.objects.filter(user=user, game=vocabulary_game, language=target_language,
-                                    score=initial_score + 1).first() is not None
+                                    score=initial_score + 1).exists()
     else:
         assert Score.objects.filter(user=user, game=vocabulary_game, language=target_language,
-                                    score=initial_score).first() is not None
+                                    score=initial_score).exists()
 
 
 @pytest.mark.django_db

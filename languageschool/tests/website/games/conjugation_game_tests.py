@@ -116,10 +116,9 @@ def test_conjugation_game_answer_authenticated_user_first_play(client, account, 
     generate_answer_conjugation_game(client, conjugation, is_correct_answer)
 
     if is_correct_answer:
-        assert Score.objects.filter(user=user, game=conjugation_game, language=target_language, score=1)\
-                   .first() is not None
+        assert Score.objects.filter(user=user, game=conjugation_game, language=target_language, score=1).exists()
     else:
-        assert Score.objects.filter(user=user, game=conjugation_game, language=target_language).first() is None
+        assert not Score.objects.filter(user=user, game=conjugation_game, language=target_language).exists()
 
 
 @pytest.mark.parametrize(
@@ -136,16 +135,16 @@ def test_conjugation_game_answer_authenticated_user(client, account, conjugation
     initial_score = random.randint(100, 1000)
     target_language = conjugation.word.language
 
-    score(user=user, game=conjugation_game, language=target_language, initial_score=initial_score)
+    score(user=user, games=[conjugation_game], languages=[target_language], initial_score=initial_score)
 
     generate_answer_conjugation_game(client, conjugation, is_correct_answer)
 
     if is_correct_answer:
         assert Score.objects.filter(user=user, game=conjugation_game,
-                                    language=target_language, score=initial_score+1).first() is not None
+                                    language=target_language, score=initial_score+1).exists()
     else:
         assert Score.objects.filter(user=user, game=conjugation_game,
-                                    language=target_language, score=initial_score).first() is not None
+                                    language=target_language, score=initial_score).exists()
 
 
 @pytest.mark.django_db
