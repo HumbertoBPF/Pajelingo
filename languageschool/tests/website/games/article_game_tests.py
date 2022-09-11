@@ -113,9 +113,9 @@ def test_article_game_answer_authenticated_user_first_play(client, account, word
     generate_answer_article_game(client, word, is_correct_answer)
 
     if is_correct_answer:
-        assert Score.objects.filter(user=user, language=target_language, game=article_game, score=1).first() is not None
+        assert Score.objects.filter(user=user, language=target_language, game=article_game, score=1).exists()
     else:
-        assert Score.objects.filter(user=user, language=target_language, game=article_game).first() is None
+        assert not Score.objects.filter(user=user, language=target_language, game=article_game).exists()
 
 
 @pytest.mark.parametrize(
@@ -132,15 +132,15 @@ def test_article_game_answer_authenticated_user(client, account, words, article_
     word = random.choice(words)
     target_language = word.language
 
-    score(user=user, game=article_game, language=target_language, initial_score=initial_score)
+    score(user=user, games=[article_game], languages=[target_language], initial_score=initial_score)
     generate_answer_article_game(client, word, is_correct_answer)
 
     if is_correct_answer:
         assert Score.objects.filter(user=user, game=article_game, language=target_language, score=initial_score+1)\
-                   .first() is not None
+            .exists()
     else:
-        assert Score.objects.filter(user=user, game=article_game, language=target_language, score=initial_score) \
-                   .first() is not None
+        assert Score.objects.filter(user=user, game=article_game, language=target_language, score=initial_score)\
+            .exists()
 
 
 @pytest.mark.django_db

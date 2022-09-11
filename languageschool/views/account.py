@@ -30,7 +30,6 @@ def create_user(request):
                 app_user = AppUser(user=user)
                 app_user.save()
                 messages.success(request, "User successfully created")
-                print("User created")
                 return redirect('account-sign-in')
             else:
                 messages.error(request, error_message)
