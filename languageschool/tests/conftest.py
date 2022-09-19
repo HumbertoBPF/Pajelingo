@@ -1,11 +1,17 @@
+import base64
 import random
 
 import pytest
-from django.contrib import auth
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
+from rest_framework.test import APIClient
 
 from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, AppUser
+
+
+@pytest.fixture
+def api_client():
+    return APIClient()
 
 
 @pytest.fixture
@@ -155,14 +161,9 @@ def score():
     return create_score
 
 
-def is_user_authenticated(client, user):
-    """
-    Verifies if the specified user is authenticated in the current session.
-
-    :param client: Django client fixture
-    :param user: instance of a user that we want to check that is authenticated
-    :type user: User
-
-    :return: boolean indicating if the specified user is authenticated
-    """
-    return auth.get_user(client).username == user.username
+@pytest.fixture
+def categories():
+    for i in range(random.randint(10, 30)):
+        category = Category(category_name=get_random_string(random.randint(10, 30)))
+        category.save()
+    return Category.objects.all()
