@@ -10,6 +10,8 @@ from rest_framework import status
 from languageschool.models import AppUser
 from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
 
+URL = reverse('account-create-user')
+
 
 @pytest.mark.parametrize(
     "email", [
@@ -40,7 +42,6 @@ from languageschool.tests.website.account.validation_function_tests import TEST_
 )
 @pytest.mark.django_db
 def test_signup_validation(client, email, username, password, is_password_confirmed):
-    url = reverse('account-create-user')
     data = {
         "email": email,
         "username": username,
@@ -48,7 +49,7 @@ def test_signup_validation(client, email, username, password, is_password_confir
         "password_confirmation": password if is_password_confirmed else get_random_string(random.randint(1, 50))
     }
 
-    response = client.post(url, data=data)
+    response = client.post(URL, data=data)
     is_user_created = (email == TEST_EMAIL) and (username == TEST_USERNAME) and (password == TEST_PASSWORD) and is_password_confirmed
     assert response.status_code == status.HTTP_302_FOUND if is_user_created else status.HTTP_200_OK
     assert User.objects.filter(email=email, username=username).exists() == is_user_created
@@ -67,7 +68,6 @@ def test_signup_error_repeated_credentials(client, account, is_repeated_email, i
     user, password = account()[0]
     password_signup = get_random_string(random.randint(6, 30))
 
-    url = reverse('account-create-user')
     data = {
         "email": user.email if is_repeated_email else get_random_string(random.randint(10, 30))+"@test.com",
         "username": user.username if is_repeated_username else get_random_string(random.randint(10, 30)),
@@ -75,7 +75,7 @@ def test_signup_error_repeated_credentials(client, account, is_repeated_email, i
         "password_confirmation": password_signup
     }
 
-    response = client.post(url, data=data)
+    response = client.post(URL, data=data)
 
     assert response.status_code == status.HTTP_200_OK
     assert not User.objects.filter(~Q(id=user.id), email=data["email"], username=data["username"]).exists()

@@ -31,13 +31,13 @@ urlpatterns = [
     path('account/delete-user', views.account.delete_user, name='account-delete-user'),
     path('rankings', views.general.rankings, name='rankings'),
     path('account/change-picture', views.account.change_picture, name='account-change-picture'),
-    path('api/games', GameViewSet.as_view()),
-    path('api/languages/', LanguageViewSet.as_view()),
-    path('api/categories/', CategoryViewSet.as_view()),
-    path('api/articles/', ArticleViewSet.as_view()),
-    path('api/words/', WordViewSet.as_view()),
-    path('api/meanings/', MeaningViewSet.as_view()),
-    path('api/conjugations/', ConjugationViewSet.as_view()),
-    path('api/scores/', ScoreListViewSet.as_view()),
-    path('api/scores/<int:score_id>', ScoreViewSet.as_view())
+    path('api/games', GameViewSet.as_view(), name='games-api'),
+    path('api/languages/', LanguageViewSet.as_view(), name='languages-api'),
+    path('api/categories/', CategoryViewSet.as_view(), name='categories-api'),
+    path('api/articles/', ArticleViewSet.as_view(), name='articles-api'),
+    path('api/words/', WordViewSet.as_view(), name='words-api'),
+    path('api/meanings/', MeaningViewSet.as_view(), name='meanings-api'),
+    path('api/conjugations/', ConjugationViewSet.as_view(), name='conjugations-api'),
+    path('api/scores/', ScoreListViewSet.as_view(), name='list-scores-api'),
+    path('api/scores/<int:score_id>', ScoreViewSet.as_view(), name='score-api')
 ]

@@ -8,6 +8,8 @@ from languageschool.models import Article, Category, Conjugation, Game, Language
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
 
+CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."
+
 
 class GameViewSet(generics.ListAPIView):
     def get_queryset(self):
@@ -101,8 +103,7 @@ class ScoreListViewSet(views.APIView):
             score = serializer.save()
             serializer = ListScoreSerializer(score)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"error": "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."},
-                        status=status.HTTP_409_CONFLICT)
+        return Response({"error": CONFLICT_SCORE_MESSAGE}, status=status.HTTP_409_CONFLICT)
 
 
 class ScoreViewSet(views.APIView):

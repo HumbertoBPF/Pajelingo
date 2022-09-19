@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.tests.conftest import is_user_authenticated
+from languageschool.tests.utils import is_user_authenticated
 
 
 @pytest.mark.parametrize(
