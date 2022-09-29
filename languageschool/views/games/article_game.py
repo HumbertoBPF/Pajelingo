@@ -64,4 +64,4 @@ class ArticleGame(GameView):
                 query_string = urlencode({'language': str(word.language)})
                 url = '{}?{}'.format(base_url, query_string)
                 return redirect(url)
-        return ArticleGame.setup(request)
+        return redirect('article-game-setup')

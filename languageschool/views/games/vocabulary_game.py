@@ -95,4 +95,4 @@ class VocabularyGame(GameView):
                 url = '{}?{}'.format(base_url, query_string)
                 return redirect(url)
         # If some error was detected, go to the setup page
-        return VocabularyGame.setup(request)
+        return redirect('vocabulary-game-setup')

@@ -12,23 +12,23 @@
 <form class="mt-3 mx-3" action="{% url 'vocabulary-game' %}" method="GET">
     <div class="mb-3">
         <label for="selectBaseLanguage" class="form-label">Base language</label>
-        <select class="form-select form-select-sm" aria-label=".form-select-sm example" name="base_language" id="selectBaseLanguage">
-            <option value="" selected>Pick a base language</option>
+        <select id="selectBaseLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="base_language">
+            <option id="defaultBaseLanguageItem" value="" selected>Pick a base language</option>
             {% for language in languages %}
-                <option value="{{ language.language_name }}">{{ language.language_name }}</option>
+                <option id="{{ language.language_name }}BaseLanguageItem" value="{{ language.language_name }}">{{ language.language_name }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="mb-3">
         <label for="selectTargetLanguage" class="form-label">Target language</label>
-        <select class="form-select form-select-sm" aria-label=".form-select-sm example" name="target_language" id="selectTargetLanguage">
-            <option value="" selected>Pick a target language</option>
+        <select id="selectTargetLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="target_language">
+            <option id="defaultTargetLanguageItem" value="" selected>Pick a target language</option>
             {% for language in languages %}
-                <option value="{{ language.language_name }}">{{ language.language_name }}</option>
+                <option id="{{ language.language_name }}TargetLanguageItem" value="{{ language.language_name }}">{{ language.language_name }}</option>
             {% endfor %}
         </select>
     </div>
-    <button type="submit" class="btn btn-primary">Play!</button>
+    <button id="submitButtonSetupForm" type="submit" class="btn btn-primary">Play!</button>
 </form>
 
 {% endblock %}

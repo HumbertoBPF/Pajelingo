@@ -7,7 +7,7 @@ from django.utils.crypto import get_random_string
 from pytest_django.asserts import assertQuerysetEqual
 from rest_framework import status
 
-from languageschool.models import Score
+from languageschool.models import Score, Language
 
 
 def generate_answer_vocabulary_game(client, word_to_translate, languages, is_correct_answer):
@@ -41,7 +41,8 @@ def generate_answer_vocabulary_game(client, word_to_translate, languages, is_cor
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup_page(client, languages):
+def test_vocabulary_game_setup_page(client, vocabulary_game_dependencies):
+    languages = Language.objects.all()
     url = reverse('vocabulary-game-setup')
     response = client.get(url)
 
@@ -62,7 +63,7 @@ def test_vocabulary_game_setup_page(client, languages):
     ]
 )
 @pytest.mark.django_db
-def test_vocabulary_game_setup_no_language_selected(client, languages, base_language, target_language):
+def test_vocabulary_game_setup_no_language_selected(client, vocabulary_game_dependencies, base_language, target_language):
     url = reverse('vocabulary-game')
     form_data = {}
 
@@ -78,7 +79,7 @@ def test_vocabulary_game_setup_no_language_selected(client, languages, base_lang
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup_invalid_or_equal_languages(client, languages):
+def test_vocabulary_game_setup_invalid_or_equal_languages(client, vocabulary_game_dependencies):
     url = reverse('vocabulary-game')
     form_data = {
         "base_language": get_random_string(random.randint(1, 30)),
@@ -97,7 +98,8 @@ def test_vocabulary_game_setup_invalid_or_equal_languages(client, languages):
     "index_target_language", range(5)
 )
 @pytest.mark.django_db
-def test_vocabulary_game_setup(client, languages, words, index_base_language, index_target_language):
+def test_vocabulary_game_setup(client, vocabulary_game_dependencies, index_base_language, index_target_language):
+    languages = Language.objects.all()
     url = reverse('vocabulary-game')
     form_data = {
         "base_language": languages[index_base_language].language_name,
@@ -118,7 +120,9 @@ def test_vocabulary_game_setup(client, languages, words, index_base_language, in
     "is_correct_answer", [True, False]
 )
 @pytest.mark.django_db
-def test_vocabulary_game_answer(client, languages, words, vocabulary_game, is_correct_answer):
+def test_vocabulary_game_answer(client, vocabulary_game_dependencies, is_correct_answer):
+    languages = Language.objects.all()
+    _, words = vocabulary_game_dependencies
     word_to_translate = random.choice(words)
     generate_answer_vocabulary_game(client, word_to_translate, languages, is_correct_answer)
 
@@ -127,7 +131,9 @@ def test_vocabulary_game_answer(client, languages, words, vocabulary_game, is_co
     "is_correct_answer", [True, False]
 )
 @pytest.mark.django_db
-def test_vocabulary_game_answer_user_authenticated_first_play(client, account, languages, words, vocabulary_game, is_correct_answer):
+def test_vocabulary_game_answer_user_authenticated_first_play(client, account, vocabulary_game_dependencies, is_correct_answer):
+    vocabulary_game, words = vocabulary_game_dependencies
+    languages = Language.objects.all()
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
@@ -146,7 +152,9 @@ def test_vocabulary_game_answer_user_authenticated_first_play(client, account, l
     "is_correct_answer", [True, False]
 )
 @pytest.mark.django_db
-def test_vocabulary_game_answer_user_authenticated(client, account, languages, words, vocabulary_game, score, is_correct_answer):
+def test_vocabulary_game_answer_user_authenticated(client, account, vocabulary_game_dependencies, score, is_correct_answer):
+    vocabulary_game, words = vocabulary_game_dependencies
+    languages = Language.objects.all()
     user, password = account()[0]
     initial_score = random.randint(100, 1000)
 
@@ -167,7 +175,8 @@ def test_vocabulary_game_answer_user_authenticated(client, account, languages, w
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_not_found_base_language(client, languages, words, vocabulary_game):
+def test_vocabulary_game_not_found_base_language(client, vocabulary_game_dependencies):
+    _, words = vocabulary_game_dependencies
     url = reverse("vocabulary-game-verify-answer")
     form_data = {
         "word_to_translate_id": random.choice(words).id,
@@ -181,7 +190,8 @@ def test_vocabulary_game_not_found_base_language(client, languages, words, vocab
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_not_found_word_to_translate(client, languages, words, vocabulary_game):
+def test_vocabulary_game_not_found_word_to_translate(client, vocabulary_game_dependencies):
+    languages = Language.objects.all()
     url = reverse("vocabulary-game-verify-answer")
     form_data = {
         "word_to_translate_id": random.randint(100, 30000),

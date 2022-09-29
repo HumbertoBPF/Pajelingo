@@ -7,13 +7,13 @@ from pytest_django.asserts import assertQuerysetEqual
 from rest_framework import status
 
 
-def access_rankings(client, accounts, vocabulary_game, article_game, conjugation_game, languages, score, language):
+def access_rankings(client, accounts, games, languages, score, language):
     users = []
 
     for user, password in accounts:
         users.append(user)
 
-    score(users=users, games=[vocabulary_game, article_game, conjugation_game], languages=languages)
+    score(users=users, games=games, languages=languages)
 
     url = reverse('rankings')
     data = {}
@@ -50,13 +50,13 @@ def access_rankings(client, accounts, vocabulary_game, article_game, conjugation
     ]
 )
 @pytest.mark.django_db
-def test_rankings(client, account, vocabulary_game, article_game, conjugation_game, languages, score, language):
+def test_rankings(client, account, games, languages, score, language):
     accounts = account(n=random.randint(5, 30))
-    access_rankings(client, accounts, vocabulary_game, article_game, conjugation_game, languages, score, language)
+    access_rankings(client, accounts, games, languages, score, language)
 
 
 @pytest.mark.django_db
-def test_rankings_invalid_language_filter(client, account, vocabulary_game, article_game, conjugation_game, languages, score):
+def test_rankings_invalid_language_filter(client, account, games, languages, score):
     url = reverse('rankings')
     data = {"language": get_random_string(random.randint(10, 30))}
 
@@ -76,12 +76,12 @@ def test_rankings_invalid_language_filter(client, account, vocabulary_game, arti
     ]
 )
 @pytest.mark.django_db
-def test_rankings_authenticated_user(client, account, vocabulary_game, article_game, conjugation_game, languages, score, language):
+def test_rankings_authenticated_user(client, account, games, languages, score, language):
     accounts = account(n=random.randint(5, 30))
     user, password = accounts[0]
     client.login(username=user.username, password=password)
 
-    response = access_rankings(client, accounts, vocabulary_game, article_game, conjugation_game, languages, score, language)
+    response = access_rankings(client, accounts, games, languages, score, language)
 
     assert response.context.get('my_position') is not None
     assert response.context.get('my_score') is not None
