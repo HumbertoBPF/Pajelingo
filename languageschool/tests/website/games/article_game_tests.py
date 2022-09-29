@@ -7,7 +7,7 @@ from django.utils.crypto import get_random_string
 from pytest_django.asserts import assertQuerysetEqual
 from rest_framework import status
 
-from languageschool.models import Score
+from languageschool.models import Score, Language
 
 
 def generate_answer_article_game(client, word, is_correct_answer):
@@ -27,7 +27,8 @@ def generate_answer_article_game(client, word, is_correct_answer):
 
 
 @pytest.mark.django_db
-def test_article_game_setup_page(client, languages):
+def test_article_game_setup_page(client, article_game_dependencies):
+    languages = Language.objects.all()
     url = reverse('article-game-setup')
     response = client.get(url)
 
@@ -42,7 +43,7 @@ def test_article_game_setup_page(client, languages):
     ]
 )
 @pytest.mark.django_db
-def test_article_game_setup_no_language_selected(client, languages, language):
+def test_article_game_setup_no_language_selected(client, article_game_dependencies, language):
     url = reverse('article-game')
     form_data = {}
 
@@ -56,7 +57,7 @@ def test_article_game_setup_no_language_selected(client, languages, language):
 
 
 @pytest.mark.django_db
-def test_article_game_setup_invalid_languages(client, languages):
+def test_article_game_setup_invalid_languages(client, article_game_dependencies):
     url = reverse('article-game')
     form_data = {"language": get_random_string(random.randint(1, 30))}
 
@@ -69,7 +70,7 @@ def test_article_game_setup_invalid_languages(client, languages):
     "index_language", range(5)
 )
 @pytest.mark.django_db
-def test_article_game_setup(client, languages, words, index_language):
+def test_article_game_setup(client, languages, article_game_dependencies, index_language):
     url = reverse('article-game')
     language = languages[index_language].language_name
     form_data = {
@@ -103,7 +104,8 @@ def test_article_game_answer(client, words, article_game, is_correct_answer):
     ]
 )
 @pytest.mark.django_db
-def test_article_game_answer_authenticated_user_first_play(client, account, words, article_game, is_correct_answer):
+def test_article_game_answer_authenticated_user_first_play(client, account, article_game_dependencies, is_correct_answer):
+    article_game, words = article_game_dependencies
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
@@ -124,7 +126,8 @@ def test_article_game_answer_authenticated_user_first_play(client, account, word
     ]
 )
 @pytest.mark.django_db
-def test_article_game_answer_authenticated_user(client, account, words, article_game, score, is_correct_answer):
+def test_article_game_answer_authenticated_user(client, account, article_game_dependencies, score, is_correct_answer):
+    article_game, words = article_game_dependencies
     user, password = account()[0]
     client.login(username=user.username, password=password)
     initial_score = random.randint(100, 1000)
@@ -144,7 +147,7 @@ def test_article_game_answer_authenticated_user(client, account, words, article_
 
 
 @pytest.mark.django_db
-def test_article_game_not_found_word(client, languages, words, vocabulary_game):
+def test_article_game_not_found_word(client, languages, article_game_dependencies):
     url = reverse("article-game-verify-answer")
     form_data = {
         "article": get_random_string(random.randint(1, 10)),

@@ -87,4 +87,4 @@ class ConjugationGame(GameView):
                 query_string = urlencode({'language': str(verb.language)})
                 url = '{}?{}'.format(base_url, query_string)
                 return redirect(url)
-        return ConjugationGame.setup(request)
+        return redirect('conjugation-game-setup')

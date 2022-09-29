@@ -7,7 +7,7 @@ from django.utils.crypto import get_random_string
 from pytest_django.asserts import assertQuerysetEqual
 from rest_framework import status
 
-from languageschool.models import Score
+from languageschool.models import Score, Language
 
 
 def generate_answer_conjugation_game(client, conjugation, is_correct_answer):
@@ -34,7 +34,8 @@ def generate_answer_conjugation_game(client, conjugation, is_correct_answer):
 
 
 @pytest.mark.django_db
-def test_conjugation_game_setup_page(client, languages):
+def test_conjugation_game_setup_page(client, conjugation_game_dependencies):
+    languages = Language.objects.all()
     url = reverse('conjugation-game-setup')
     response = client.get(url)
 
@@ -49,7 +50,7 @@ def test_conjugation_game_setup_page(client, languages):
     ]
 )
 @pytest.mark.django_db
-def test_conjugation_game_setup_no_language_selected(client, languages, language):
+def test_conjugation_game_setup_no_language_selected(client, conjugation_game_dependencies, language):
     url = reverse('conjugation-game')
     form_data = {}
 
@@ -63,7 +64,7 @@ def test_conjugation_game_setup_no_language_selected(client, languages, language
 
 
 @pytest.mark.django_db
-def test_conjugation_game_setup_invalid_languages(client, languages):
+def test_conjugation_game_setup_invalid_languages(client, conjugation_game_dependencies):
     url = reverse('conjugation-game')
     form_data = {"language": get_random_string(random.randint(1, 30))}
 
@@ -76,7 +77,7 @@ def test_conjugation_game_setup_invalid_languages(client, languages):
     "index_language", range(5)
 )
 @pytest.mark.django_db
-def test_conjugation_game_setup(client, languages, verbs, conjugations, index_language):
+def test_conjugation_game_setup(client, languages, conjugation_game_dependencies, index_language):
     url = reverse('conjugation-game')
     form_data = {
         "language": languages[index_language].language_name
@@ -95,7 +96,8 @@ def test_conjugation_game_setup(client, languages, verbs, conjugations, index_la
     ]
 )
 @pytest.mark.django_db
-def test_conjugation_game_answer(client, conjugations, conjugation_game, is_correct_answer):
+def test_conjugation_game_answer(client, conjugation_game_dependencies, is_correct_answer):
+    _, conjugations = conjugation_game_dependencies
     conjugation = random.choice(conjugations)
     generate_answer_conjugation_game(client, conjugation, is_correct_answer)
 
@@ -106,7 +108,8 @@ def test_conjugation_game_answer(client, conjugations, conjugation_game, is_corr
     ]
 )
 @pytest.mark.django_db
-def test_conjugation_game_answer_authenticated_user_first_play(client, account, conjugations, conjugation_game, is_correct_answer):
+def test_conjugation_game_answer_authenticated_user_first_play(client, account, conjugation_game_dependencies, is_correct_answer):
+    conjugation_game, conjugations = conjugation_game_dependencies
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
@@ -127,7 +130,8 @@ def test_conjugation_game_answer_authenticated_user_first_play(client, account, 
     ]
 )
 @pytest.mark.django_db
-def test_conjugation_game_answer_authenticated_user(client, account, conjugations, conjugation_game, score, is_correct_answer):
+def test_conjugation_game_answer_authenticated_user(client, account, conjugation_game_dependencies, score, is_correct_answer):
+    conjugation_game, conjugations = conjugation_game_dependencies
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
@@ -148,7 +152,8 @@ def test_conjugation_game_answer_authenticated_user(client, account, conjugation
 
 
 @pytest.mark.django_db
-def test_conjugation_game_verb_not_found(client, conjugations, conjugation_game):
+def test_conjugation_game_verb_not_found(client, conjugation_game_dependencies):
+    _, conjugations = conjugation_game_dependencies
     url = reverse("conjugation-game-verify-answer")
     conjugation = random.choice(conjugations)
 
@@ -169,7 +174,8 @@ def test_conjugation_game_verb_not_found(client, conjugations, conjugation_game)
 
 
 @pytest.mark.django_db
-def test_conjugation_game_tense_not_found(client, conjugations, conjugation_game):
+def test_conjugation_game_tense_not_found(client, conjugation_game_dependencies):
+    _, conjugations = conjugation_game_dependencies
     url = reverse("conjugation-game-verify-answer")
     conjugation = random.choice(conjugations)
 

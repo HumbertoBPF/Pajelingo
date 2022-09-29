@@ -1,10 +1,15 @@
-import base64
 import random
 
 import pytest
+from selenium import webdriver
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from rest_framework.test import APIClient
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, AppUser
 
@@ -131,20 +136,18 @@ def conjugation_game():
 
 @pytest.fixture
 def account():
+    def account_factory(n=1):
+        accounts_list = []
+
+        for _ in range(n):
+            password = get_random_string(random.randint(6, 30))
+            user = User.objects.create_user(username=get_random_string(random.randint(10, 30)),
+                                            email=get_random_string(random.randint(10, 30)) + "@test.com",
+                                            password=password)
+            AppUser.objects.create(user=user)
+            accounts_list.append((user, password))
+        return accounts_list
     return account_factory
-
-
-def account_factory(n=1):
-    accounts_list = []
-
-    for _ in range(n):
-        password = get_random_string(random.randint(6, 30))
-        user = User.objects.create_user(username=get_random_string(random.randint(10, 30)),
-                                        email=get_random_string(random.randint(10, 30)) + "@test.com",
-                                        password=password)
-        AppUser.objects.create(user=user)
-        accounts_list.append((user, password))
-    return accounts_list
 
 
 @pytest.fixture
@@ -167,3 +170,41 @@ def categories():
         category = Category(category_name=get_random_string(random.randint(10, 30)))
         category.save()
     return Category.objects.all()
+
+
+@pytest.fixture
+def article_game_dependencies(article_game, words):
+    return article_game, words
+
+
+@pytest.fixture
+def conjugation_game_dependencies(conjugation_game, conjugations):
+    return conjugation_game, conjugations
+
+
+@pytest.fixture
+def vocabulary_game_dependencies(vocabulary_game,  words):
+    return vocabulary_game, words
+
+
+@pytest.fixture
+def games(article_game, conjugation_game, vocabulary_game):
+    return [article_game, conjugation_game, vocabulary_game]
+
+
+@pytest.fixture(scope="package", params=["Chrome", "Firefox", "Edge"])
+def selenium_driver(request):
+    if request.param == "Firefox":
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Firefox(service=Service("C:/Users/Humberto/Downloads/geckodriver.exe"), options=options)
+    elif request.param == "Edge":
+        options = EdgeOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Edge(service=Service("C:/Users/Humberto/Downloads/msedgedriver.exe"), options=options)
+    else:
+        options = ChromeOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(service=Service("C:/Users/Humberto/Downloads/chromedriver.exe"), options=options)
+    yield driver
+    driver.close()

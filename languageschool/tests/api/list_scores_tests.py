@@ -21,9 +21,9 @@ def test_list_scores_requires_authentication(api_client, account):
 
 
 @pytest.mark.django_db
-def test_list_scores_wrong_credentials(api_client, account, article_game, conjugation_game, vocabulary_game, languages, score):
+def test_list_scores_wrong_credentials(api_client, account, games, languages, score):
     user, password = account()[0]
-    score(users=[user], games=[article_game, conjugation_game, vocabulary_game], languages=languages)
+    score(users=[user], games=games, languages=languages)
 
     wrong_username = get_random_string(random.randint(1, 50))
     wrong_password = get_random_string(random.randint(1, 50))
@@ -33,9 +33,8 @@ def test_list_scores_wrong_credentials(api_client, account, article_game, conjug
 
 
 @pytest.mark.django_db
-def test_list_scores(api_client, account, article_game, conjugation_game, vocabulary_game, languages, score):
+def test_list_scores(api_client, account, games, languages, score):
     accounts = account(n=random.randint(1, 10))
-    games = [article_game, conjugation_game, vocabulary_game]
     users = get_users(accounts)
     scores = score(users=users, games=games, languages=languages)
 
@@ -50,9 +49,8 @@ def test_list_scores(api_client, account, article_game, conjugation_game, vocabu
 
 
 @pytest.mark.django_db
-def test_list_scores_get_score(api_client, account, article_game, conjugation_game, vocabulary_game, languages, score):
+def test_list_scores_get_score(api_client, account, games, languages, score):
     accounts = account(n=random.randint(1, 10))
-    games = [article_game, conjugation_game, vocabulary_game]
     users = get_users(accounts)
     score(users=users, games=games, languages=languages)
 
@@ -97,9 +95,8 @@ def test_list_scores_create_score_wrong_credentials(api_client, account):
 
 
 @pytest.mark.django_db
-def test_list_scores_create_score(api_client, account, article_game, conjugation_game, vocabulary_game, languages):
+def test_list_scores_create_score(api_client, account, games, languages):
     accounts = account(n=random.randint(1, 10))
-    games = [article_game, conjugation_game, vocabulary_game]
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
@@ -120,9 +117,8 @@ def test_list_scores_create_score(api_client, account, article_game, conjugation
 
 
 @pytest.mark.django_db
-def test_list_scores_create_score_conflict(api_client, account, article_game, conjugation_game, vocabulary_game, languages, score):
+def test_list_scores_create_score_conflict(api_client, account, games, languages, score):
     accounts = account(n=random.randint(1, 10))
-    games = [article_game, conjugation_game, vocabulary_game]
     users = get_users(accounts)
 
     score(users=users, games=games, languages=languages)
@@ -152,9 +148,8 @@ def test_list_scores_create_score_conflict(api_client, account, article_game, co
     ]
 )
 @pytest.mark.django_db
-def test_list_scores_create_score_bad_request(api_client, account, article_game, conjugation_game, vocabulary_game, languages, has_language_key, has_game_key):
+def test_list_scores_create_score_bad_request(api_client, account, games, languages, has_language_key, has_game_key):
     accounts = account(n=random.randint(1, 10))
-    games = [article_game, conjugation_game, vocabulary_game]
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
@@ -179,9 +174,8 @@ def test_list_scores_create_score_bad_request(api_client, account, article_game,
     ]
 )
 @pytest.mark.django_db
-def test_list_scores_create_score_not_found(api_client, account, article_game, conjugation_game, vocabulary_game, languages, is_valid_language, is_valid_game):
+def test_list_scores_create_score_not_found(api_client, account, games, languages, is_valid_language, is_valid_game):
     accounts = account(n=random.randint(1, 10))
-    games = [article_game, conjugation_game, vocabulary_game]
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
@@ -198,7 +192,7 @@ def test_list_scores_create_score_not_found(api_client, account, article_game, c
 
 
 @pytest.mark.django_db
-def test_list_scores_does_not_accept_put(api_client, account, article_game, conjugation_game, vocabulary_game, languages):
+def test_list_scores_does_not_accept_put(api_client, account, games, languages):
     accounts = account(n=random.randint(1, 10))
 
     user, password = random.choice(accounts)
@@ -209,7 +203,7 @@ def test_list_scores_does_not_accept_put(api_client, account, article_game, conj
 
 
 @pytest.mark.django_db
-def test_list_scores_does_not_accept_delete(api_client, account, article_game, conjugation_game, vocabulary_game, languages):
+def test_list_scores_does_not_accept_delete(api_client, account, games, languages):
     accounts = account(n=random.randint(1, 10))
 
     user, password = random.choice(accounts)

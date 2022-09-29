@@ -24,10 +24,10 @@ def test_profile_access_requires_authentication(client):
 
 
 @pytest.mark.django_db
-def test_profile_access(client, account, score, article_game, vocabulary_game, conjugation_game, languages):
+def test_profile_access(client, account, score, games, languages):
     user, password = account()[0]
 
-    scores = score(users=[user], games=[article_game, vocabulary_game, conjugation_game], languages=languages)
+    scores = score(users=[user], games=games, languages=languages)
 
     client.login(username=user.username, password=password)
 
@@ -229,7 +229,7 @@ def test_change_profile_picture_requires_authentication(client, account):
 @pytest.mark.parametrize(
     "filename, is_successful", [
         ('C:/Users/Humberto/Desktop/Humberto/Study/WebDev/Pajelingo/pajelingo/static/pajelingo.jpg', True),
-        ('C:/Users/Humberto/Downloads/results.csv', False),
+        ('C:/Users/Humberto/Downloads/PokemonApp.pdf', False),
         ('C:/Users/Humberto/Downloads/test.txt', False)
     ]
 )

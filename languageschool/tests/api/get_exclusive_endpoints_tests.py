@@ -2,21 +2,20 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from languageschool.models import Game
 from languageschool.tests.api.comparers import SimpleComparer, ArticleComparer, MeaningComparer, ConjugationComparer, \
     WordComparer
 from languageschool.tests.utils import deserialize_data, is_model_objects_equal_to_dict_array
 
 
 @pytest.mark.django_db
-def test_game_endpoint(api_client, conjugation_game, article_game, vocabulary_game):
+def test_game_endpoint(api_client, games):
     url = reverse("games-api")
     response = api_client.get(url)
 
     data = deserialize_data(response.data)
 
     assert response.status_code == status.HTTP_200_OK
-    assert is_model_objects_equal_to_dict_array(Game.objects.all(), data, SimpleComparer())
+    assert is_model_objects_equal_to_dict_array(games, data, SimpleComparer())
 
 
 @pytest.mark.django_db
