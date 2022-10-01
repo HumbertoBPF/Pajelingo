@@ -22,29 +22,29 @@ def authenticate(live_server, selenium_driver, user, password):
 
 
 def assert_menu(selenium_driver, is_authenticated):
-    home_link_items = selenium_driver.find_elements(By.ID, "home-link")
-    game_dropdown_items = selenium_driver.find_elements(By.ID, "game-dropdown-item")
-    account_dropdown_items = selenium_driver.find_elements(By.ID, "account-dropdown-item")
+    home_link_items = selenium_driver.find_elements(By.ID, "homeLink")
+    game_dropdown_items = selenium_driver.find_elements(By.ID, "gameDropdownItem")
+    account_dropdown_items = selenium_driver.find_elements(By.ID, "accountDropdownItem")
 
     assert len(home_link_items) == 1
     assert len(game_dropdown_items) == 1
     assert len(account_dropdown_items) == 1
 
-    article_game_link_items = selenium_driver.find_elements(By.ID, "article-game-link")
-    conjugation_game_link_items = selenium_driver.find_elements(By.ID, "conjugation-game-link")
-    vocabulary_game_link_items = selenium_driver.find_elements(By.ID, "vocabulary-game-link")
+    article_game_link_items = selenium_driver.find_elements(By.ID, "articleGameLink")
+    conjugation_game_link_items = selenium_driver.find_elements(By.ID, "conjugationGameLink")
+    vocabulary_game_link_items = selenium_driver.find_elements(By.ID, "vocabularyGameLink")
 
     assert len(article_game_link_items) == 1
     assert len(conjugation_game_link_items) == 1
     assert len(vocabulary_game_link_items) == 1
 
     if is_authenticated:
-        profile_link_items = selenium_driver.find_elements(By.ID, "profile-link")
-        logout_link_items = selenium_driver.find_elements(By.ID, "logout-link")
+        profile_link_items = selenium_driver.find_elements(By.ID, "profileLink")
+        logout_link_items = selenium_driver.find_elements(By.ID, "logoutLink")
         assert len(profile_link_items) == 1
         assert len(logout_link_items) == 1
     else:
-        sign_in_link_items = selenium_driver.find_elements(By.ID, "sign-in-link")
-        login_link_items = selenium_driver.find_elements(By.ID, "login-link")
+        sign_in_link_items = selenium_driver.find_elements(By.ID, "signInLink")
+        login_link_items = selenium_driver.find_elements(By.ID, "loginLink")
         assert len(sign_in_link_items) == 1
         assert len(login_link_items) == 1
