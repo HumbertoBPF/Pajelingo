@@ -23,56 +23,56 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a id="home-link" class="nav-link" aria-current="page" href="{% url 'index' %}">Home</a>
+                        <a id="homeLink" class="nav-link" aria-current="page" href="{% url 'index' %}">Home</a>
                     </li>
                     <!-- Games -->
                     <li class="nav-item dropdown">
-                        <a id="game-dropdown-item" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a id="gameDropdownItem" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Games
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="game-dropdown-item">
+                        <ul class="dropdown-menu" aria-labelledby="gameDropdownItem">
                             <li>
-                                <a id="vocabulary-game-link" class="dropdown-item" href="{% url 'vocabulary-game-setup' %}">Vocabulary training</a>
+                                <a id="vocabularyGameLink" class="dropdown-item" href="{% url 'vocabulary-game-setup' %}">Vocabulary training</a>
                             </li>
                             <li>
-                                <a id="article-game-link" class="dropdown-item" href="{% url 'article-game-setup' %}">Guess the article</a>
+                                <a id="articleGameLink" class="dropdown-item" href="{% url 'article-game-setup' %}">Guess the article</a>
                             </li>
                             <li>
-                                <a id="conjugation-game-link" class="dropdown-item" href="{% url 'conjugation-game-setup' %}">Conjugation game</a>
+                                <a id="conjugationGameLink" class="dropdown-item" href="{% url 'conjugation-game-setup' %}">Conjugation game</a>
                             </li>
                             <li>
-                                <a id="rankings-link" class="dropdown-item" href="{% url 'rankings' %}">Rankings</a>
+                                <a id="rankingsLink" class="dropdown-item" href="{% url 'rankings' %}">Rankings</a>
                             </li>
                         </ul>
                     </li>
                     <!-- Account -->
                     <li class="nav-item dropdown">
-                        <a id="account-dropdown-item" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a id="accountDropdownItem" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Account
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="account-dropdown-item">
                             {% if not user.is_authenticated %}
                                 <li>
-                                    <a id="sign-in-link" class="dropdown-item" href="{% url 'account-sign-in' %}">Sign in</a>
+                                    <a id="signInLink" class="dropdown-item" href="{% url 'account-sign-in' %}">Sign in</a>
                                 </li>
                                 <li>
-                                    <a id="login-link" class="dropdown-item" href="{% url 'account-login' %}">Login</a>
+                                    <a id="loginLink" class="dropdown-item" href="{% url 'account-login' %}">Login</a>
                                 </li>
                             {% endif %}
                             {% if user.is_authenticated %}
                                 <li>
-                                    <a id="profile-link" class="dropdown-item" href="{% url 'account-profile' %}">Profile</a>
+                                    <a id="profileLink" class="dropdown-item" href="{% url 'account-profile' %}">Profile</a>
                                 </li>
                                     <li>
-                                    <a id="logout-link" class="dropdown-item" href="{% url 'account-logout' %}">Logout</a>
+                                    <a id="logoutLink" class="dropdown-item" href="{% url 'account-logout' %}">Logout</a>
                                 </li>
                             {% endif %}
                         </ul>
                     </li>
                 </ul>
                 <form id="search-form" action="{% url 'search' %}" method="GET" class="d-flex">
-                    <input class="form-control me-2" name="search" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
+                    <input id="searchInput" class="form-control me-2" name="search" type="search" placeholder="Search" aria-label="Search">
+                    <button id="searchSubmitButton" class="btn btn-outline-success" type="submit">Search</button>
                 </form>
             </div>
         </div>
