@@ -96,3 +96,4 @@ class TestSearchSelenium:
             meanings_dict[meaning.id] = True
         # Verifying that all the expected meanings were displayed
         assert len(meanings) == len(meanings_dict)
+        assert_menu(selenium_driver, False)

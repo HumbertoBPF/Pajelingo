@@ -1,19 +1,19 @@
 {% csrf_token %}
 <div class="mb-3">
     <label for="inputEmail" class="form-label">Email address</label>
-    <input type="email" class="form-control" id="inputEmail" name="email" value="{{user.email}}" aria-describedby="emailHelp">
+    <input id="inputEmail" type="email" class="form-control" name="email" value="{{user.email}}" aria-describedby="emailHelp" required>
     <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
 </div>
 <div class="mb-3">
     <label for="inputUsername" class="form-label">Username</label>
-    <input type="text" class="form-control" id="inputUsername" name="username" value="{{user.username}}" aria-label="Username" aria-describedby="basic-addon1">
+    <input id="inputUsername" type="text" class="form-control" name="username" value="{{user.username}}" aria-label="Username" aria-describedby="basic-addon1" required>
     </div>
 <div class="mb-3">
     <label for="inputPassword" class="form-label">Password</label>
-    <input type="password" class="form-control" id="inputPassword" name="password">
+    <input id="inputPassword" type="password" class="form-control" name="password" required>
 </div>
 <div class="mb-3">
     <label for="inputPasswordConf" class="form-label">Confirm your password</label>
-    <input type="password" class="form-control" id="inputPasswordConf" name = "password_confirmation">
+    <input id="inputPasswordConf" type="password" class="form-control" name = "password_confirmation" required>
 </div>
-<button type="submit" class="btn btn-primary">Submit</button>
+<button id="submitButtonSignup" type="submit" class="btn btn-primary">Submit</button>
