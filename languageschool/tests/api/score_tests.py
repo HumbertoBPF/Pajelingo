@@ -115,7 +115,7 @@ def test_put_score(api_client, account, games, languages, score):
 
 @pytest.mark.django_db
 def test_put_score_user_does_not_own_score(api_client, account, games, languages, score):
-    accounts = account(n=random.randint(1, 10))
+    accounts = account(n=random.randint(2, 10))
     users = get_users(accounts)
     scores = score(users=users, games=games, languages=languages)
 

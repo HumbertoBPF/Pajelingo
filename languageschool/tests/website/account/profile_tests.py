@@ -66,13 +66,13 @@ def test_update_user(client, account):
 
 
 @pytest.mark.django_db
-def test_do_update_user_no_authentication(client):
+def test_do_update_user_requires_authentication(client):
     url = reverse('account-do-update-user')
 
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('index')
+    assert response.url == reverse('account-update-user')
 
 
 @pytest.mark.parametrize(
@@ -153,7 +153,7 @@ def test_do_update_user_repeated_credentials(client, account, is_repeated_email,
 
     response = client.post(url, data=data)
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_302_FOUND
     assert User.objects.filter(id=user.id, email=user.email, username=user.username).exists()
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username).exists()
 

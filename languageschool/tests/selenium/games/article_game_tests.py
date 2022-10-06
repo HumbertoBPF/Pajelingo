@@ -111,7 +111,7 @@ class TestArticleGameSelenium:
         user, password = account()[0]
         article_game, words = article_game_dependencies
         score(users=[user], games=[article_game], languages=Language.objects.all())
-        authenticate(live_server, selenium_driver, user, password)
+        authenticate(live_server, selenium_driver, user.username, password)
         language = self.get_language_for_setup()
 
         initial_score = Score.objects.filter(user=user, game=article_game, language=language).first().score
@@ -135,7 +135,7 @@ class TestArticleGameSelenium:
         user, password = account()[0]
         article_game, words = article_game_dependencies
         score(users=[user], games=[article_game], languages=Language.objects.all())
-        authenticate(live_server, selenium_driver, user, password)
+        authenticate(live_server, selenium_driver, user.username, password)
         language = self.get_language_for_setup()
 
         initial_score = Score.objects.filter(user=user, game=article_game, language=language).first().score

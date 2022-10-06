@@ -151,7 +151,7 @@ class TestConjugationGameSelenium:
         user, password = account()[0]
         conjugation_game, words = conjugation_game_dependencies
         score(users=[user], games=[conjugation_game], languages=Language.objects.all())
-        authenticate(live_server, selenium_driver, user, password)
+        authenticate(live_server, selenium_driver, user.username, password)
         language = self.get_language_for_setup()
 
         initial_score = Score.objects.filter(user=user, game=conjugation_game, language=language).first().score
@@ -185,7 +185,7 @@ class TestConjugationGameSelenium:
         user, password = account()[0]
         conjugation_game, words = conjugation_game_dependencies
         score(users=[user], games=[conjugation_game], languages=Language.objects.all())
-        authenticate(live_server, selenium_driver, user, password)
+        authenticate(live_server, selenium_driver, user.username, password)
         language = self.get_language_for_setup()
 
         initial_score = Score.objects.filter(user=user, game=conjugation_game, language=language).first().score

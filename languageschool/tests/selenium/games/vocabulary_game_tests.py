@@ -161,7 +161,7 @@ class TestVocabularyGameSelenium:
         user, password = account()[0]
         vocabulary_game, words = vocabulary_game_dependencies
         score(users=[user], games=[vocabulary_game], languages=Language.objects.all())
-        authenticate(live_server, selenium_driver, user, password)
+        authenticate(live_server, selenium_driver, user.username, password)
         base_language, target_language = self.get_languages_for_setup()
 
         initial_score = Score.objects.filter(user=user, game=vocabulary_game, language=target_language).first().score
@@ -187,7 +187,7 @@ class TestVocabularyGameSelenium:
         user, password = account()[0]
         vocabulary_game, words = vocabulary_game_dependencies
         score(users=[user], games=[vocabulary_game], languages=Language.objects.all())
-        authenticate(live_server, selenium_driver, user, password)
+        authenticate(live_server, selenium_driver, user.username, password)
         base_language, target_language = self.get_languages_for_setup()
 
         initial_score = Score.objects.filter(user=user, game=vocabulary_game, language=target_language).first().score

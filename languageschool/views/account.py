@@ -9,6 +9,9 @@ from languageschool.models import AppUser, Score
 from languageschool.validation import is_valid_user_data
 from languageschool.views.general import request_contains
 
+LOGIN_ERROR = "Incorrect username or password"
+SUCCESSFUL_SIGN_UP = "User successfully created"
+
 
 def sign_in(request):
     return render(request, 'account/sign_in.html')
@@ -29,7 +32,7 @@ def create_user(request):
                 # Creating app user
                 app_user = AppUser(user=user)
                 app_user.save()
-                messages.success(request, "User successfully created")
+                messages.success(request, SUCCESSFUL_SIGN_UP)
                 return redirect('account-sign-in')
             else:
                 messages.error(request, error_message)
@@ -52,7 +55,7 @@ def auth_user(request):
                 auth.login(request, user)
                 return redirect('index')
             else:
-                messages.error(request, "Incorrect username or password")
+                messages.error(request, LOGIN_ERROR)
     return login(request)
 
 
@@ -99,7 +102,7 @@ def do_update_user(request):
                 return redirect('account-profile')
             else:
                 messages.error(request, error_message)
-    return update_user(request)
+    return redirect('account-update-user')
 
 
 def delete_user(request):
