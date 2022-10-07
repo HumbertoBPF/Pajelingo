@@ -194,17 +194,21 @@ def games(article_game, conjugation_game, vocabulary_game):
 
 @pytest.fixture(scope="package", params=["Chrome", "Firefox", "Edge"])
 def selenium_driver(request):
+    # The window-size is necessary because sometimes Selenium does not find some web elements when in headless mode
     if request.param == "Firefox":
         options = FirefoxOptions()
         options.add_argument("--headless")
+        options.add_argument('--window-size=1920,1080')
         driver = webdriver.Firefox(service=Service("C:/Users/Humberto/Downloads/geckodriver.exe"), options=options)
     elif request.param == "Edge":
         options = EdgeOptions()
         options.add_argument("--headless")
+        options.add_argument('--window-size=1920,1080')
         driver = webdriver.Edge(service=Service("C:/Users/Humberto/Downloads/msedgedriver.exe"), options=options)
     else:
         options = ChromeOptions()
         options.add_argument("--headless")
+        options.add_argument('--window-size=1920,1080')
         driver = webdriver.Chrome(service=Service("C:/Users/Humberto/Downloads/chromedriver.exe"), options=options)
     yield driver
     driver.close()
