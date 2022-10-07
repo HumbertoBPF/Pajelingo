@@ -7,10 +7,10 @@
 
     <!-- If a language is specified, return the ranking concerning this language -->
     {% if language %}
-        <h5>{{language}} ranking:</h5>
+        <h5>{{language}} ranking</h5>
     <!-- If no language is specified, return the general ranking -->
     {% else %}
-        <h5>General ranking:</h5>
+        <h5>General ranking</h5>
     {% endif %}
     <!-- If there are data to be shown, display the table -->
     {% if scores %}
@@ -32,12 +32,12 @@
                 {% endfor %}
                 <!-- If users are logged in, their position in the ranking is also specified and the website shows it -->
                 {% if my_position %}
-                    <tr>
+                    <tr id="separator">
                         <td>...</td>
                         <td>...</td>
                         <td>...</td>
                     </tr>
-                    <tr>
+                    <tr id="my_position">
                         <th scope="row">(You) {{my_position}}</th>
                         <th scope="row">{{my_score.user__username}}</th>
                         <th scope="row">{{my_score.score}}</th>
@@ -45,7 +45,7 @@
                 {% endif %}
             </tbody>
         </table>
-    <!-- If there is not data to be displayed, show the message below -->
+    <!-- If there is no data to be displayed, show the message below -->
     {% else %}
         <p>Not enough data.</p>
     {% endif %}
@@ -54,12 +54,12 @@
     <!-- Form to select the language of the ranking -->
     <form action="{% url 'rankings' %}" method="GET">
         <select class="form-select" id="selectLanguage" name = "language" aria-label="Default select example">
-            <option value="" selected>Select a language</option>
-            {% for language in languages %}  
-                <option value="{{language.language_name}}">{{language.language_name}}</option>
+            <option id="defaultItem" value="" selected>Select a language</option>
+            {% for language in languages %}
+                <option id="{{ language.language_name }}Item" value="{{language.language_name}}">{{language.language_name}}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary my-3">Go</button>
+        <button id="applyFilterButton" type="submit" class="btn btn-primary my-3">Go</button>
     </form>
 
 </section>
