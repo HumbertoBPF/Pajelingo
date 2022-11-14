@@ -121,17 +121,17 @@ def conjugations(verbs):
 
 @pytest.fixture
 def vocabulary_game():
-    return Game.objects.create(id=1, game_tag="vocabulary_game", game_name="Vocabulary Game")
+    return Game.objects.create(id=1, game_name="Vocabulary Game")
 
 
 @pytest.fixture
 def article_game():
-    return Game.objects.create(id=2, game_tag="article_game", game_name="Article Game")
+    return Game.objects.create(id=2, game_name="Article Game")
 
 
 @pytest.fixture
 def conjugation_game():
-    return Game.objects.create(id=3, game_tag="conjugation_game", game_name="Conjugation Game")
+    return Game.objects.create(id=3, game_name="Conjugation Game")
 
 
 @pytest.fixture

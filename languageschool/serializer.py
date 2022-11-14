@@ -57,7 +57,7 @@ class ConjugationSerializer(serializers.ModelSerializer):
 class ListScoreSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     language = serializers.ReadOnlyField(source='language.language_name')
-    game = serializers.ReadOnlyField(source='game.game_tag')
+    game = serializers.ReadOnlyField(source='game.id')
 
     class Meta:
         model = Score
@@ -84,11 +84,11 @@ class UserSerializer(serializers.Serializer):
 
 class ScoreSerializer(serializers.Serializer):
     language = serializers.CharField()
-    game = serializers.CharField()
+    game = serializers.IntegerField()
 
     def create(self, validated_data):
         language = get_object_or_404(Language, language_name=validated_data.get("language"))
-        game = get_object_or_404(Game, game_tag=validated_data.get("game"))
+        game = get_object_or_404(Game, pk=validated_data.get("game"))
         score = Score(user=self.context.get("user"), language=language, game=game, score=1)
         score.save()
         return score

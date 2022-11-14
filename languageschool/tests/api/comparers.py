@@ -137,6 +137,6 @@ class ListScoresComparer(SimpleComparer):
 
         self.verify_sub_attribute("user", ["user", "username"])
         self.verify_sub_attribute("language", ["language", "language_name"])
-        self.verify_sub_attribute("game", ["game", "game_tag"])
+        self.verify_sub_attribute("game", ["game", "id"])
 
         return self.are_attributes_and_keys_equal()

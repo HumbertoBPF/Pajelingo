@@ -56,7 +56,7 @@ def test_get_score(api_client, account, games, languages, score):
     assert json.get("id") == score.id
     assert json.get("user") == score.user.username
     assert json.get("language") == score.language.language_name
-    assert json.get("game") == score.game.game_tag
+    assert json.get("game") == score.game.id
     assert json.get("score") == score.score
 
 
@@ -109,7 +109,7 @@ def test_put_score(api_client, account, games, languages, score):
     assert updated_score.language.id == score.language.id
     assert json.get("score") == score.score + 1
     assert json.get("user") == score.user.username
-    assert json.get("game") == score.game.game_tag
+    assert json.get("game") == score.game.id
     assert json.get("language") == score.language.language_name
 
 

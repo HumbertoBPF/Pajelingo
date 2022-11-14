@@ -3,11 +3,10 @@ from django.db import models
 
 
 class Game(models.Model):
-    game_tag = models.CharField(max_length=30, unique=True, null=True, blank=True)
     game_name = models.CharField(max_length=30, unique=True, null=True, blank=True)
 
     def __str__(self):
-        return str(self.game_tag)
+        return str(self.game_name)
 
 
 class Language(models.Model):
