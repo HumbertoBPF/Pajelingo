@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, views, status
 from rest_framework.authentication import BasicAuthentication
@@ -5,8 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word
+from languageschool.permissions import AllowPostOnly
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
-    LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer
+    LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer
 
 CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."
 
@@ -65,6 +67,25 @@ class ConjugationViewSet(generics.ListAPIView):
         return queryset
 
     serializer_class = ConjugationSerializer
+
+
+class UserViewSet(views.APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [AllowPostOnly]
+
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        return Response({
+            "username": serializer.data.get("username"),
+            "email": serializer.data.get("email")
+         }, status.HTTP_201_CREATED)
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ScoreListViewSet(views.APIView):

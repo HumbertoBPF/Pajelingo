@@ -1,7 +1,10 @@
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
+from languageschool.validation import is_valid_user_data
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -59,6 +62,24 @@ class ListScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Score
         fields = '__all__'
+
+
+class UserSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    email = serializers.CharField()
+    password = serializers.CharField()
+
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        username = validated_data.get("username")
+        email = validated_data.get("email")
+        password = validated_data.get("password")
+        is_valid, error_message = is_valid_user_data(email, username, password, password)
+        if not is_valid:
+            raise ValidationError({"message": error_message})
+        return User.objects.create_user(email=email, username=username, password=password)
 
 
 class ScoreSerializer(serializers.Serializer):
