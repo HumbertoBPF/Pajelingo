@@ -98,7 +98,7 @@ class ScoreListViewSet(views.APIView):
 
         {
             "language": <language_name>,
-            "game": <game_tag>
+            "game": <id>
         }
 
     A JSON representation of the created score is returned.
@@ -109,7 +109,7 @@ class ScoreListViewSet(views.APIView):
     def get(self, request):
         if request.GET.get("language_id") and request.GET.get("game"):
             scores = Score.objects.filter(user=request.user, language=request.GET.get("language_id"),
-                                          game__game_tag=request.GET.get("game"))
+                                          game__id=request.GET.get("game"))
         else:
             scores = Score.objects.all()
         serializer = ListScoreSerializer(scores, many=True)
@@ -119,7 +119,7 @@ class ScoreListViewSet(views.APIView):
         data = request.data
         serializer = ScoreSerializer(data=data, context={"user": request.user})
         scores = Score.objects.filter(user=request.user, language__language_name=data.get("language"),
-                                      game__game_tag=data.get("game"))
+                                      game__id=data.get("game"))
         if serializer.is_valid(raise_exception=True) and len(scores) == 0:
             score = serializer.save()
             serializer = ListScoreSerializer(score)

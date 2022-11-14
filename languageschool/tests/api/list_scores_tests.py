@@ -60,7 +60,7 @@ def test_list_scores_get_score(api_client, account, games, languages, score):
 
     data = {
         "language_id": language.id,
-        "game": game.game_tag
+        "game": game.id
     }
 
     response = api_client.get(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
@@ -72,7 +72,7 @@ def test_list_scores_get_score(api_client, account, games, languages, score):
     assert len(data) == 1
     assert json.get("user") == user.username
     assert json.get("language") == language.language_name
-    assert json.get("game") == game.game_tag
+    assert json.get("game") == game.id
     assert json.get("score") is not None
 
 
@@ -103,7 +103,7 @@ def test_list_scores_create_score(api_client, account, games, languages):
     game = random.choice(games)
     data = {
         "language": language.language_name,
-        "game": game.game_tag
+        "game": game.id
     }
     response = api_client.post(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
@@ -112,7 +112,7 @@ def test_list_scores_create_score(api_client, account, games, languages):
     assert response.status_code == status.HTTP_201_CREATED
     assert json.get("user") == user.username
     assert json.get("language") == language.language_name
-    assert json.get("game") == game.game_tag
+    assert json.get("game") == game.id
     assert json.get("score") == 1
 
 
@@ -129,7 +129,7 @@ def test_list_scores_create_score_conflict(api_client, account, games, languages
 
     data = {
         "language": language.language_name,
-        "game": game.game_tag
+        "game": game.id
     }
 
     response = api_client.post(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
@@ -159,7 +159,7 @@ def test_list_scores_create_score_bad_request(api_client, account, games, langua
     if has_language_key:
         data["language"] = language.language_name
     if has_game_key:
-        data["game"] = game.game_tag
+        data["game"] = game.id
 
     response = api_client.post(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
@@ -183,7 +183,7 @@ def test_list_scores_create_score_not_found(api_client, account, games, language
 
     data = {
         "language": language.language_name if is_valid_language else get_random_string(random.randint(10, 30)),
-        "game": game.game_tag if is_valid_game else get_random_string(random.randint(10, 30))
+        "game": game.id if is_valid_game else random.randint(100, 300)
     }
 
     response = api_client.post(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
