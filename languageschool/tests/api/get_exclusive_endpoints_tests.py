@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from languageschool.tests.api.comparers import SimpleComparer, ArticleComparer, MeaningComparer, ConjugationComparer, \
-    WordComparer
+    WordComparer, ListScoresComparer
 from languageschool.tests.utils import deserialize_data, is_model_objects_equal_to_dict_array
 
 
@@ -82,3 +82,17 @@ def test_conjugations_endpoint(api_client, conjugations):
 
     assert response.status_code == status.HTTP_200_OK
     assert is_model_objects_equal_to_dict_array(conjugations, data, ConjugationComparer())
+
+
+@pytest.mark.django_db
+def test_conjugations_endpoint(api_client, account, games, languages, score):
+    user, password = account()[0]
+    scores = score(users=[user], games=games, languages=languages)
+
+    url = reverse("scores-api")
+    response = api_client.get(url)
+
+    data = deserialize_data(response.data)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert is_model_objects_equal_to_dict_array(scores, data, ListScoresComparer())

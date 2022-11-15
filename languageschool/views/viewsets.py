@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, views, status
 from rest_framework.authentication import BasicAuthentication
@@ -10,6 +9,7 @@ from languageschool.permissions import AllowPostOnly
 from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer
 
+MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE = "You must specify a language and a game"
 CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."
 
 
@@ -69,9 +69,24 @@ class ConjugationViewSet(generics.ListAPIView):
     serializer_class = ConjugationSerializer
 
 
+class ScoreListViewSet(generics.ListAPIView):
+    def get_queryset(self):
+        queryset = Score.objects.all()
+        return queryset
+
+    serializer_class = ListScoreSerializer
+
+
 class UserViewSet(views.APIView):
     authentication_classes = [BasicAuthentication]
     permission_classes = [AllowPostOnly]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "username": user.username,
+            "email": user.email
+         }, status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -88,9 +103,9 @@ class UserViewSet(views.APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ScoreListViewSet(views.APIView):
+class ScoreViewSet(views.APIView):
     """
-    GET requests: we can optionally specify two URL parameters "language_id" and "game" in order to search a score of the authenticated
+    GET requests: we can optionally specify two URL parameters "language" and "game" in order to search a score of the authenticated
     user for a game in the specified language. If any of these two parameters is not specified, all the scores are returned.
 
     POST requests: creates a score record with default score of 1. The JSON with the corresponding language and game must be specified
@@ -107,11 +122,13 @@ class ScoreListViewSet(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.GET.get("language_id") and request.GET.get("game"):
-            scores = Score.objects.filter(user=request.user, language=request.GET.get("language_id"),
-                                          game__id=request.GET.get("game"))
-        else:
-            scores = Score.objects.all()
+        language = request.GET.get("language")
+        game = request.GET.get("game")
+
+        if (language is None) or (game is None):
+            return Response({"error": MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
+
+        scores = Score.objects.filter(user=request.user, language__language_name=language, game__id=game)
         serializer = ListScoreSerializer(scores, many=True)
         return Response(serializer.data)
 
@@ -125,22 +142,6 @@ class ScoreListViewSet(views.APIView):
             serializer = ListScoreSerializer(score)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({"error": CONFLICT_SCORE_MESSAGE}, status=status.HTTP_409_CONFLICT)
-
-
-class ScoreViewSet(views.APIView):
-    """
-    GET requests: returns the score whose id corresponds to the path variable passed.
-
-    PUT requests: increments the score corresponding to the id passed as path variable. It returns a JSON representation of the
-    updated score.
-    """
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, score_id=None):
-        score = get_object_or_404(Score, id=score_id)
-        serializer = ListScoreSerializer(score)
-        return Response(serializer.data)
 
     def put(self, request, score_id=None):
         # Localize the specified score
