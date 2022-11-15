@@ -4,6 +4,7 @@ from django.db import models
 
 class Game(models.Model):
     game_name = models.CharField(max_length=30, unique=True, null=True, blank=True)
+    android_game_activity = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return str(self.game_name)
@@ -79,7 +80,15 @@ class Score(models.Model):
 
     @staticmethod
     def increment_score(request, language, game):
-        """Function to increment the score of a game when getting a correct answer"""
+        """
+        Function to increment the score of a game when getting a correct answer.
+
+        :param request: Django request object
+        :param language: language attribute of the concerned score
+        :param game: game attribute of the concerned score
+
+        :return: if the update is performed, the updated score is returned. Otherwise, None is returned.
+        """
         if request.user.is_authenticated:
             score = Score.objects.filter(user=request.user, language=language, game=game)
 
