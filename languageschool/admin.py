@@ -58,9 +58,9 @@ class AppUserDisplay(admin.ModelAdmin):
 
 
 class GameDisplay(admin.ModelAdmin):
-    list_display = ('id', 'game_name')
-    list_display_links = ('id', 'game_name')
-    search_fields = ('game_name',)
+    list_display = ('id', 'android_game_activity', 'game_name')
+    list_display_links = ('id', 'android_game_activity', 'game_name')
+    search_fields = ('game_name', 'android_game_activity')
     list_per_page = 10
 
 
