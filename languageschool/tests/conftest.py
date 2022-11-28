@@ -1,17 +1,17 @@
 import random
 
 import pytest
-from selenium import webdriver
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from rest_framework.test import APIClient
+from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, AppUser
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
 
 
 @pytest.fixture
@@ -140,9 +140,9 @@ def account():
         accounts_list = []
 
         for _ in range(n):
-            password = get_random_string(random.randint(6, 30))
-            user = User.objects.create_user(username=get_random_string(random.randint(10, 30)),
-                                            email=get_random_string(random.randint(10, 30)) + "@test.com",
+            password = get_valid_password()
+            user = User.objects.create_user(username=get_random_username(),
+                                            email=get_random_email(),
                                             password=password)
             AppUser.objects.create(user=user)
             accounts_list.append((user, password))

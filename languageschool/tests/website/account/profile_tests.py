@@ -9,6 +9,8 @@ from rest_framework import status
 
 from languageschool.forms import FormPicture
 from languageschool.models import AppUser
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
+    get_too_long_password, get_too_short_password
 from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
 
 
@@ -78,22 +80,22 @@ def test_do_update_user_requires_authentication(client):
 @pytest.mark.parametrize(
     "email", [
         TEST_EMAIL,
-        get_random_string(random.randint(1, 15)) + " " + get_random_string(random.randint(1, 15)) + "@test.com",
+        get_random_string(random.randint(1, 10)) + " " + get_random_email(),
         ""
     ]
 )
 @pytest.mark.parametrize(
     "username", [
         TEST_USERNAME,
-        get_random_string(random.randint(1, 15)) + " " + get_random_string(random.randint(1, 15)),
+        get_random_string(random.randint(1, 10)) + " " + get_random_username(),
         ""
     ]
 )
 @pytest.mark.parametrize(
     "password", [
         TEST_PASSWORD,
-        get_random_string(random.randint(1, 5)),
-        get_random_string(random.randint(31, 50))
+        get_too_short_password(),
+        get_too_long_password()
     ]
 )
 @pytest.mark.parametrize(
@@ -112,7 +114,7 @@ def test_do_update_user(client, account, email, username, password, is_password_
         "email": email,
         "username": username,
         "password": password,
-        "password_confirmation": password if is_password_confirmed else get_random_string(random.randint(1, 50))
+        "password_confirmation": password if is_password_confirmed else get_valid_password()
     }
 
     response = client.post(url, data=data)
@@ -143,10 +145,10 @@ def test_do_update_user_repeated_credentials(client, account, is_repeated_email,
     client.login(username=user.username, password=password)
 
     url = reverse('account-do-update-user')
-    new_password = get_random_string(random.randint(6, 30))
+    new_password = get_valid_password()
     data = {
-        "email": user2.email if is_repeated_email else get_random_string(random.randint(10, 30)) + "@test.com",
-        "username": user2.username if is_repeated_username else get_random_string(random.randint(10, 30)),
+        "email": user2.email if is_repeated_email else get_random_email(),
+        "username": user2.username if is_repeated_username else get_random_username(),
         "password": new_password,
         "password_confirmation": new_password
     }
@@ -171,10 +173,10 @@ def test_do_update_user_same_credentials(client, account, is_same_email, is_same
     client.login(username=user.username, password=password)
 
     url = reverse('account-do-update-user')
-    new_password = get_random_string(random.randint(6, 30))
+    new_password = get_valid_password()
     data = {
-        "email": user.email if is_same_email else get_random_string(random.randint(10, 30)) + "@test.com",
-        "username": user.username if is_same_username else get_random_string(random.randint(10, 30)),
+        "email": user.email if is_same_email else get_random_email(),
+        "username": user.username if is_same_username else get_random_username(),
         "password": new_password,
         "password_confirmation": new_password
     }

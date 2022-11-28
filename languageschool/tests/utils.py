@@ -1,7 +1,9 @@
 import base64
 import io
+import random
 
 from django.contrib import auth
+from django.utils.crypto import get_random_string
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -78,3 +80,48 @@ def get_users(accounts):
         users.append(user)
 
     return users
+
+
+def get_valid_password():
+    """
+    Gets a random valid password. A valid password has a length between 8 and 30.
+
+    :return: a random valid password
+    """
+    return get_random_string(random.randint(8, 30))
+
+
+def get_random_email():
+    """
+    Gets a random email address. A fake "@test.com" suffix is used.
+
+    :return: a random email address
+    """
+    return get_random_string(random.randint(10, 20)) + "@test.com"
+
+
+def get_random_username():
+    """
+    Gets a random username.
+
+    :return: a random username
+    """
+    return get_random_string(random.randint(10, 20))
+
+
+def get_too_short_password():
+    """
+    Gets a password with less than 8 characters, which is below the minimal length.
+
+    :return: a too short password
+    """
+    return get_random_string(random.randint(1, 7))
+
+
+def get_too_long_password():
+    """
+    Gets a password with more than 30 characters, which is above the maximal length.
+
+    :return: a too long password
+    """
+    return get_random_string(random.randint(31, 50))
