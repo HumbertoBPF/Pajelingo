@@ -8,6 +8,8 @@ from django.utils.crypto import get_random_string
 from rest_framework import status
 
 from languageschool.models import AppUser
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
+    get_too_short_password, get_too_long_password
 from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
 
 URL = reverse('account-create-user')
@@ -16,22 +18,22 @@ URL = reverse('account-create-user')
 @pytest.mark.parametrize(
     "email", [
         TEST_EMAIL,
-        get_random_string(random.randint(1, 15))+" "+get_random_string(random.randint(1, 15))+"@test.com",
+        get_random_string(random.randint(1, 10))+" "+get_random_email(),
         ""
     ]
 )
 @pytest.mark.parametrize(
     "username", [
         TEST_USERNAME,
-        get_random_string(random.randint(1, 15))+" "+get_random_string(random.randint(1, 15)),
+        get_random_string(random.randint(1, 10))+" "+get_random_username(),
         ""
     ]
 )
 @pytest.mark.parametrize(
     "password", [
         TEST_PASSWORD,
-        get_random_string(random.randint(1, 5)),
-        get_random_string(random.randint(31, 50))
+        get_too_short_password(),
+        get_too_long_password()
     ]
 )
 @pytest.mark.parametrize(
@@ -46,7 +48,7 @@ def test_signup_validation(client, email, username, password, is_password_confir
         "email": email,
         "username": username,
         "password": password,
-        "password_confirmation": password if is_password_confirmed else get_random_string(random.randint(1, 50))
+        "password_confirmation": password if is_password_confirmed else get_valid_password()
     }
 
     response = client.post(URL, data=data)
@@ -66,11 +68,11 @@ def test_signup_validation(client, email, username, password, is_password_confir
 @pytest.mark.django_db
 def test_signup_error_repeated_credentials(client, account, is_repeated_email, is_repeated_username):
     user, password = account()[0]
-    password_signup = get_random_string(random.randint(6, 30))
+    password_signup = get_valid_password()
 
     data = {
-        "email": user.email if is_repeated_email else get_random_string(random.randint(10, 30))+"@test.com",
-        "username": user.username if is_repeated_username else get_random_string(random.randint(10, 30)),
+        "email": user.email if is_repeated_email else get_random_email(),
+        "username": user.username if is_repeated_username else get_random_username(),
         "password": password_signup,
         "password_confirmation": password_signup
     }

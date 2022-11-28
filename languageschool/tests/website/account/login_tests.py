@@ -1,23 +1,20 @@
-import random
-
 import pytest
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.tests.utils import is_user_authenticated
+from languageschool.tests.utils import is_user_authenticated, get_random_username, get_valid_password
 
 
 @pytest.mark.parametrize(
     "username", [
         None,
-        get_random_string(random.randint(10, 30))
+        get_random_username()
     ]
 )
 @pytest.mark.parametrize(
     "password", [
         None,
-        get_random_string(random.randint(1, 50))
+        get_valid_password()
     ]
 )
 @pytest.mark.django_db

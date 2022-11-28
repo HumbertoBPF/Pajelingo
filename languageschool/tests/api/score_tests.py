@@ -6,7 +6,8 @@ from django.utils.crypto import get_random_string
 from rest_framework import status
 
 from languageschool.models import Score
-from languageschool.tests.utils import get_users, get_basic_auth_header, deserialize_data
+from languageschool.tests.utils import get_users, get_basic_auth_header, deserialize_data, get_random_username, \
+    get_valid_password
 from languageschool.views.viewsets import CONFLICT_SCORE_MESSAGE, MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
 
 URL = "/api/score/"
@@ -31,8 +32,8 @@ def test_get_score_wrong_credentials(api_client, account, games, languages, scor
     users = get_users(accounts)
     scores = score(users=users, games=games, languages=languages)
 
-    wrong_username = get_random_string(random.randint(1, 50))
-    wrong_password = get_random_string(random.randint(1, 50))
+    wrong_username = get_random_username()
+    wrong_password = get_valid_password()
     score = random.choice(scores)
 
     response = api_client.get(URL+str(score.id), HTTP_AUTHORIZATION=get_basic_auth_header(wrong_username, wrong_password))
@@ -112,8 +113,8 @@ def test_list_scores_create_score_requires_authentication(api_client, account):
 def test_list_scores_create_score_wrong_credentials(api_client, account):
     account()
 
-    wrong_username = get_random_string(random.randint(1, 50))
-    wrong_password = get_random_string(random.randint(1, 50))
+    wrong_username = get_random_username()
+    wrong_password = get_valid_password()
     response = api_client.post(URL, HTTP_AUTHORIZATION=get_basic_auth_header(wrong_username, wrong_password))
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -235,8 +236,8 @@ def test_put_score_wrong_credentials(api_client, account, games, languages, scor
     users = get_users(accounts)
     scores = score(users=users, games=games, languages=languages)
 
-    wrong_username = get_random_string(random.randint(1, 50))
-    wrong_password = get_random_string(random.randint(1, 50))
+    wrong_username = get_random_username()
+    wrong_password = get_valid_password()
     score = random.choice(scores)
 
     response = api_client.put(URL+str(score.id), HTTP_AUTHORIZATION=get_basic_auth_header(wrong_username, wrong_password))

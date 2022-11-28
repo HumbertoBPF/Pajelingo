@@ -1,11 +1,9 @@
-import random
-
 import pytest
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.tests.selenium.utils import assert_menu, authenticate
+from languageschool.tests.utils import get_random_username, get_valid_password
 from languageschool.views.account import LOGIN_ERROR
 
 
@@ -35,7 +33,7 @@ class TestsLoginSelenium:
     @pytest.mark.django_db
     def test_failed_login_attempt(self, live_server, selenium_driver, account):
         account()
-        authenticate(live_server, selenium_driver, get_random_string(random.randint(1, 18)), get_random_string(random.randint(1, 50)))
+        authenticate(live_server, selenium_driver, get_random_username(), get_valid_password())
         alert_danger = selenium_driver.find_element(By.CLASS_NAME, "alert-danger")
         assert alert_danger.text == LOGIN_ERROR
         assert_menu(selenium_driver, False)

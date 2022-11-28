@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
 from languageschool.validation import is_valid_user_data
 
 
@@ -66,7 +66,7 @@ class ListScoreSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.Serializer):
     username = serializers.CharField()
-    email = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField()
 
     def update(self, instance, validated_data):
@@ -76,10 +76,12 @@ class UserSerializer(serializers.Serializer):
         username = validated_data.get("username")
         email = validated_data.get("email")
         password = validated_data.get("password")
-        is_valid, error_message = is_valid_user_data(email, username, password, password)
-        if not is_valid:
-            raise ValidationError({"message": error_message})
-        return User.objects.create_user(email=email, username=username, password=password)
+        error_field, error_message = is_valid_user_data(email, username, password, password)
+        if error_field is not None:
+            raise ValidationError({error_field: [error_message]})
+        user = User.objects.create_user(email=email, username=username, password=password)
+        AppUser.objects.create(user=user)
+        return user
 
 
 class ScoreSerializer(serializers.Serializer):

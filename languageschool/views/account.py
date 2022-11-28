@@ -24,8 +24,8 @@ def create_user(request):
             username = request.POST["username"]
             password = request.POST["password"]
             password_confirmation = request.POST["password_confirmation"]
-            is_valid, error_message = is_valid_user_data(email, username, password, password_confirmation)
-            if is_valid:
+            error_field, error_message = is_valid_user_data(email, username, password, password_confirmation)
+            if error_field is None:
                 # Creating admin user
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
@@ -88,8 +88,8 @@ def do_update_user(request):
             username = request.POST["username"]
             password = request.POST["password"]
             password_confirmation = request.POST["password_confirmation"]
-            is_valid, error_message = is_valid_user_data(email, username, password, password_confirmation, existing_user=request.user)
-            if is_valid:
+            error_field, error_message = is_valid_user_data(email, username, password, password_confirmation, existing_user=request.user)
+            if error_field is None:
                 # Update information of the user currently logged in
                 request.user.email = email
                 request.user.username = username

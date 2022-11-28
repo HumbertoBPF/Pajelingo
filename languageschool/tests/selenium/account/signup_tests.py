@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from languageschool.models import AppUser
 from languageschool.tests.selenium.utils import assert_menu, WARNING_REQUIRED_FIELD_HTML, WARNING_EMAIL_WITH_SPACE_HTML, \
     WARNING_REQUIRED_EMAIL_FIREFOX_HTML, submit_form_user, get_form_error_message
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
 from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASSWORD, ERROR_NOT_CONFIRMED_PASSWORD, \
     ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
 from languageschool.views.account import SUCCESSFUL_SIGN_UP
@@ -37,9 +38,9 @@ class TestSignupSelenium:
     def test_signup(self, live_server, selenium_driver):
         selenium_driver.get(live_server.url + reverse("account-sign-in"))
 
-        email = get_random_string(random.randint(6, 30)) + "@test.com"
-        username = get_random_string(random.randint(1, 18))
-        password = get_random_string(random.randint(6, 30))
+        email = get_random_email()
+        username = get_random_username()
+        password = get_valid_password()
 
         submit_form_user(selenium_driver, email, username, password, password)
 
@@ -52,21 +53,21 @@ class TestSignupSelenium:
 
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [
-            (get_random_string(random.randint(1, 18))+"@test.com", get_random_string(random.randint(1, 18)), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 18))+"@test.com", "", get_random_string(random.randint(6, 30)), True, "inputUsername", [WARNING_REQUIRED_FIELD_HTML]),
-            ("", get_random_string(random.randint(1, 18)), get_random_string(random.randint(6, 30)), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 9))+" "+get_random_string(random.randint(1, 9))+"@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(6, 30)), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
-            (get_random_string(random.randint(1, 18))+"@test.com", get_random_string(random.randint(1, 9))+" "+get_random_string(random.randint(1, 9)), get_random_string(random.randint(6, 30)), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_string(random.randint(1, 18))+"@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(1, 5)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_string(random.randint(1, 18))+"@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(31, 50)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_string(random.randint(1, 18))+"@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(6, 30)), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
+            (get_random_email(), get_random_username(), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_email(), "", get_valid_password(), True, "inputUsername", [WARNING_REQUIRED_FIELD_HTML]),
+            ("", get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_string(random.randint(1, 10))+" "+get_random_email(), get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
+            (get_random_email(), get_random_string(random.randint(1, 10))+" "+get_random_username(), get_valid_password(), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
+            (get_random_email(), get_random_username(), get_random_string(random.randint(1, 7)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_random_string(random.randint(31, 50)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_valid_password(), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
         ]
     )
     @pytest.mark.django_db
     def test_signup_form_error(self, live_server, selenium_driver, email, username, password, is_password_confirmed, field, accepted_messages):
         selenium_driver.get(live_server.url + reverse("account-sign-in"))
 
-        confirmation_password = password if is_password_confirmed else get_random_string(random.randint(6, 30))
+        confirmation_password = password if is_password_confirmed else get_valid_password()
 
         submit_form_user(selenium_driver, email, username, password, confirmation_password)
 
@@ -92,10 +93,10 @@ class TestSignupSelenium:
         user, _ = account()[0]
         selenium_driver.get(live_server.url + reverse("account-sign-in"))
 
-        password = get_random_string(random.randint(6, 30))
+        password = get_valid_password()
 
-        email = user.email if is_repeated_email else get_random_string(random.randint(1, 18)) + "@test.com"
-        username = user.username if is_repeated_username else get_random_string(random.randint(1, 18))
+        email = user.email if is_repeated_email else get_random_email()
+        username = user.username if is_repeated_username else get_random_username()
 
         submit_form_user(selenium_driver, email, username, password, password)
 

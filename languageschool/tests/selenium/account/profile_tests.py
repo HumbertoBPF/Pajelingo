@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from languageschool.models import AppUser
 from languageschool.tests.selenium.utils import assert_menu, authenticate, WARNING_REQUIRED_FIELD_HTML, \
     WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML, get_form_error_message, submit_form_user
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
 from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASSWORD, ERROR_NOT_CONFIRMED_PASSWORD, \
     ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
 
@@ -117,14 +118,14 @@ class TestsProfileSelenium:
 
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [
-            (get_random_string(random.randint(1, 18)) + "@test.com", get_random_string(random.randint(1, 18)), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 18)) + "@test.com", "", get_random_string(random.randint(6, 30)), True, "inputUsername", [WARNING_REQUIRED_FIELD_HTML]),
-            ("", get_random_string(random.randint(1, 18)), get_random_string(random.randint(6, 30)), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 9)) + " " + get_random_string(random.randint(1, 9)) + "@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(6, 30)), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
-            (get_random_string(random.randint(1, 18)) + "@test.com", get_random_string(random.randint(1, 9)) + " " + get_random_string(random.randint(1, 9)), get_random_string(random.randint(6, 30)), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_string(random.randint(1, 18)) + "@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(1, 5)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_string(random.randint(1, 18)) + "@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(31, 50)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_string(random.randint(1, 18)) + "@test.com", get_random_string(random.randint(1, 18)), get_random_string(random.randint(6, 30)), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
+            (get_random_email(), get_random_username(), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_email(), "", get_valid_password(), True, "inputUsername", [WARNING_REQUIRED_FIELD_HTML]),
+            ("", get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
+            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(), get_valid_password(), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
+            (get_random_email(), get_random_username(), get_random_string(random.randint(1, 7)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_random_string(random.randint(31, 50)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_valid_password(), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
         ]
     )
     @pytest.mark.django_db
@@ -136,7 +137,7 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, user_password)
         selenium_driver.get(live_server.url + reverse("account-update-user"))
 
-        confirmation_password = password if is_password_confirmed else get_random_string(random.randint(6, 30))
+        confirmation_password = password if is_password_confirmed else get_valid_password()
 
         submit_form_user(selenium_driver, email, username, password, confirmation_password)
 
@@ -170,9 +171,9 @@ class TestsProfileSelenium:
         repeated_email = random.choice(accounts[1:])[0].email
         repeated_username = random.choice(accounts[1:])[0].username
 
-        email = repeated_email if is_repeated_email else get_random_string(random.randint(1, 18)) + "@test.com"
-        username = repeated_username if is_repeated_username else get_random_string(random.randint(1, 18))
-        password = get_random_string(random.randint(6, 30))
+        email = repeated_email if is_repeated_email else get_random_email()
+        username = repeated_username if is_repeated_username else get_random_username()
+        password = get_valid_password()
 
         submit_form_user(selenium_driver, email, username, password, password)
 
@@ -205,9 +206,9 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("account-update-user"))
 
-        email = user.email if is_same_email else get_random_string(random.randint(1, 18)) + "@test.com"
-        username = user.username if is_same_username else get_random_string(random.randint(1, 18))
-        password = get_random_string(random.randint(6, 30))
+        email = user.email if is_same_email else get_random_email()
+        username = user.username if is_same_username else get_random_username()
+        password = get_valid_password()
 
         submit_form_user(selenium_driver, email, username, password, password)
         # Checks if the users are redirected to their profile
