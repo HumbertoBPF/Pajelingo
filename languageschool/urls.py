@@ -38,7 +38,7 @@ urlpatterns = [
     path('api/words/', WordViewSet.as_view(), name='words-api'),
     path('api/meanings/', MeaningViewSet.as_view(), name='meanings-api'),
     path('api/conjugations/', ConjugationViewSet.as_view(), name='conjugations-api'),
-    path('api/user/', UserViewSet.as_view()),
+    path('api/user/', UserViewSet.as_view(), name='user-api'),
     path('api/score/', ScoreViewSet.as_view(), name='score-api'),
     path('api/score/<int:score_id>', ScoreViewSet.as_view(), name='update-score-api'),
     path('api/scores/', ScoreListViewSet.as_view(), name='scores-api')

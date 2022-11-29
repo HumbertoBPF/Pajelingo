@@ -69,19 +69,37 @@ class UserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def update(self, instance, validated_data):
-        pass
-
     def create(self, validated_data):
         username = validated_data.get("username")
         email = validated_data.get("email")
         password = validated_data.get("password")
+
         error_field, error_message = is_valid_user_data(email, username, password, password)
+
         if error_field is not None:
             raise ValidationError({error_field: [error_message]})
+
         user = User.objects.create_user(email=email, username=username, password=password)
         AppUser.objects.create(user=user)
+
         return user
+
+    def update(self, instance, validated_data):
+        username = validated_data.get("username")
+        email = validated_data.get("email")
+        password = validated_data.get("password")
+
+        error_field, error_message = is_valid_user_data(email, username, password, password, existing_user=instance)
+
+        if error_field is not None:
+            raise ValidationError({error_field: [error_message]})
+
+        instance.username = username
+        instance.email = email
+        instance.set_password(password)
+        instance.save()
+
+        return instance
 
 
 class ScoreSerializer(serializers.Serializer):
