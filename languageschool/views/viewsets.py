@@ -90,12 +90,25 @@ class UserViewSet(views.APIView):
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
+
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+
         return Response({
             "username": serializer.data.get("username"),
             "email": serializer.data.get("email")
          }, status.HTTP_201_CREATED)
+
+    def put(self, request):
+        serializer = UserSerializer(instance=request.user, data=request.data, partial=True)
+
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+        return Response({
+            "username": serializer.data.get("username"),
+            "email": serializer.data.get("email")
+         }, status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user
@@ -117,6 +130,8 @@ class ScoreViewSet(views.APIView):
         }
 
     A JSON representation of the created score is returned.
+
+    PUT requests: increments an existing score record with 1. The score record is specified in the request with its game and language.
     """
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]

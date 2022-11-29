@@ -30,13 +30,13 @@ def is_valid_user_data(email, username, password, password_confirmation, existin
     :return: a tuple where the first value is a boolean indicating if the data is valid and the second value is an error message.
     """
     # Verifying if some field is empty
-    if len(email) == 0:
+    if (email is None) or (len(email) == 0):
         return "email", ERROR_EMPTY_EMAIL
 
-    if len(username) == 0:
+    if (username is None) or (len(username) == 0):
         return "username", ERROR_EMPTY_USERNAME
 
-    if len(password) == 0:
+    if (password is None) or (len(password) == 0):
         return "password", ERROR_EMPTY_PASSWORD
     # Verifying length of the password
     if len(password) < 8 or len(password) > 30:
