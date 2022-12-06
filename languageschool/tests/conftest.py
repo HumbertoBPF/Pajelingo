@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, AppUser
+from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
 
 
@@ -144,7 +144,6 @@ def account():
             user = User.objects.create_user(username=get_random_username(),
                                             email=get_random_email(),
                                             password=password)
-            AppUser.objects.create(user=user)
             accounts_list.append((user, password))
         return accounts_list
     return account_factory
