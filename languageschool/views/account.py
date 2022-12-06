@@ -29,9 +29,7 @@ def create_user(request):
                 # Creating admin user
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
-                # Creating app user
-                app_user = AppUser(user=user)
-                app_user.save()
+
                 messages.success(request, SUCCESSFUL_SIGN_UP)
                 return redirect('account-sign-in')
             else:

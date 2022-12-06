@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
 from languageschool.validation import is_valid_user_data
 
 
@@ -80,7 +80,6 @@ class UserSerializer(serializers.Serializer):
             raise ValidationError({error_field: [error_message]})
 
         user = User.objects.create_user(email=email, username=username, password=password)
-        AppUser.objects.create(user=user)
 
         return user
 

@@ -47,7 +47,7 @@ class Word(models.Model):
     image = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
 
     def __str__(self):
-        return ((str(self.article.article_name) + " ") if (self.article != None) else "") + self.word_name
+        return ((str(self.article.article_name) + " ") if (self.article is not None) else "") + self.word_name
 
 
 class Meaning(models.Model):
@@ -105,7 +105,7 @@ class Score(models.Model):
 
 
 class AppUser(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     picture = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
 
     def __str__(self):
