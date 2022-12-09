@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class Game(models.Model):
@@ -29,13 +30,23 @@ class Category(models.Model):
     def __str__(self):
         return self.category_name
 
+    class Meta:
+        verbose_name_plural = "Categories"
 
 class Article(models.Model):
     article_name = models.CharField(max_length=10)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.article_name + " (" + str(self.language) + ")"
+        return "{} ({})".format(self.article_name, self.language)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['article_name', 'language'],
+                name='article_unique_constraint'
+            )
+        ]
 
 
 class Word(models.Model):
@@ -47,7 +58,20 @@ class Word(models.Model):
     image = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
 
     def __str__(self):
-        return ((str(self.article.article_name) + " ") if (self.article is not None) else "") + self.word_name
+        article = ""
+        if self.article is not None:
+            article = "{}".format(self.article.article_name)
+            if not(self.article.article_name.endswith("'")):
+                article += " "
+        return "{}{}".format(article, self.word_name)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['word_name', 'language', 'article'],
+                name='word_unique_constraint'
+            )
+        ]
 
 
 class Meaning(models.Model):
@@ -69,7 +93,15 @@ class Conjugation(models.Model):
     tense = models.CharField(max_length=30)
 
     def __str__(self):
-        return self.word.word_name + " " + self.tense
+        return "{} - {}".format(self.word.word_name, self.tense)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['word', 'tense'],
+                name='conjugation_unique_constraint'
+            )
+        ]
 
 
 class Score(models.Model):
@@ -102,6 +134,14 @@ class Score(models.Model):
             return score
 
         return None
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'language', 'game'],
+                name='score_unique_constraint'
+            )
+        ]
 
 
 class AppUser(models.Model):
