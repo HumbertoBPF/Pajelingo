@@ -1,3 +1,6 @@
+from django.shortcuts import redirect
+
+
 def request_contains(method, params):
     """
     Verifies if a request method contains the variables whose name is specified as a list in the 'variables_required' argument.
@@ -18,3 +21,11 @@ def request_contains(method, params):
             return False
 
     return True
+
+
+def require_authentication(func):
+    def check_authentication(*args, **kwargs):
+        if args[0].user.is_authenticated:
+            return func(*args, **kwargs)
+        return redirect('account-login')
+    return check_authentication

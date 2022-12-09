@@ -32,7 +32,7 @@ def test_login_fail(client, account, username, password):
 
     response = client.post(url, data=data)
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_302_FOUND
     assert not is_user_authenticated(client, user)
 
 
