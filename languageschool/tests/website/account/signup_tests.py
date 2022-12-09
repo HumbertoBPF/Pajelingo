@@ -79,7 +79,7 @@ def test_signup_error_repeated_credentials(client, account, is_repeated_email, i
 
     response = client.post(URL, data=data)
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_302_FOUND
     assert not User.objects.filter(~Q(id=user.id), email=data["email"], username=data["username"]).exists()
     assert not AppUser.objects.filter(~Q(id=user.id), user__email=data["email"], user__username=data["username"])\
         .exists()

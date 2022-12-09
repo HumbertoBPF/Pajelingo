@@ -24,9 +24,8 @@ class TestsProfileSelenium:
         Checks that users cannot access their profile without authentication
         """
         selenium_driver.get(live_server.url + reverse("account-profile"))
-        warning_no_account = selenium_driver.find_element(By.ID, "warningNoAccount")
 
-        assert warning_no_account.text == "Create an account to have profile information including game metrics and a place in our rankings."
+        assert selenium_driver.current_url == live_server.url + reverse("account-login")
         assert_menu(selenium_driver, False)
 
     @pytest.mark.django_db
@@ -82,7 +81,7 @@ class TestsProfileSelenium:
         Checks that the page with the update account form requires authentication
         """
         selenium_driver.get(live_server.url + reverse("account-update-user"))
-        assert selenium_driver.current_url == live_server.url + reverse("index")
+        assert selenium_driver.current_url == live_server.url + reverse("account-login")
         assert_menu(selenium_driver, False)
 
     @pytest.mark.django_db
@@ -106,16 +105,6 @@ class TestsProfileSelenium:
         assert len(inputs_password_confirmation) == 1
         assert len(submit_buttons_form) == 1
         assert_menu(selenium_driver, True)
-
-    @pytest.mark.django_db
-    def test_update_account_requires_authentication(self, live_server, selenium_driver):
-        """
-        Checks that the update account endpoint requires authentication
-        """
-        selenium_driver.get(live_server.url + reverse("account-do-update-user"))
-        assert selenium_driver.current_url == live_server.url + reverse("index")
-        assert_menu(selenium_driver, False)
-
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [
             (get_random_email(), get_random_username(), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
@@ -217,16 +206,6 @@ class TestsProfileSelenium:
         assert User.objects.filter(id=user.id, username=username, email=email).exists()
         assert AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
         assert_menu(selenium_driver, True)
-
-    @pytest.mark.django_db
-    def test_delete_account_requires_authentication(self, live_server, selenium_driver, account):
-        """
-        Checks that users cannot delete other users by accessing the deletion endpoint from a browser
-        """
-        accounts = account(n=random.randint(5, 10))
-        selenium_driver.get(live_server.url + reverse("account-delete-user"))
-        assert len(accounts) == User.objects.count()
-        assert_menu(selenium_driver, False)
 
     @pytest.mark.django_db
     def test_delete_account_dialog_is_shown(self, live_server, selenium_driver, account):

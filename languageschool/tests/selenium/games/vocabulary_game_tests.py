@@ -118,12 +118,9 @@ class TestVocabularyGameSelenium:
         assert len(answer_submit_buttons) == 1
         assert_menu(selenium_driver, False)
 
-    @pytest.mark.parametrize(
-        "url_name", ["vocabulary-game", "vocabulary-game-verify-answer"]
-    )
     @pytest.mark.django_db
-    def test_vocabulary_game_without_setup(self, live_server, selenium_driver, vocabulary_game_dependencies, url_name):
-        selenium_driver.get(live_server.url + reverse(url_name))
+    def test_vocabulary_game_without_setup(self, live_server, selenium_driver, vocabulary_game_dependencies):
+        selenium_driver.get(live_server.url + reverse("vocabulary-game"))
         assert selenium_driver.current_url == (live_server.url + reverse("vocabulary-game-setup"))
         assert_menu(selenium_driver, False)
 

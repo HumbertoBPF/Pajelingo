@@ -73,12 +73,9 @@ class TestArticleGameSelenium:
         assert len(answer_submit_buttons) == 1
         assert_menu(selenium_driver, False)
 
-    @pytest.mark.parametrize(
-        "url_name", ["article-game", "article-game-verify-answer"]
-    )
     @pytest.mark.django_db
-    def test_article_game_without_setup(self, live_server, selenium_driver, article_game_dependencies, url_name):
-        selenium_driver.get(live_server.url + reverse(url_name))
+    def test_article_game_without_setup(self, live_server, selenium_driver, article_game_dependencies):
+        selenium_driver.get(live_server.url + reverse("article-game"))
         assert selenium_driver.current_url == (live_server.url + reverse("article-game-setup"))
         assert_menu(selenium_driver, False)
 

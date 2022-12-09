@@ -19,10 +19,8 @@ def test_profile_access_requires_authentication(client):
     url = reverse('account-profile')
     response = client.get(url)
 
-    assert response.context.get("scores") == []
-    assert response.context.get("app_user") is None
-    assert response.context.get("form_picture") is None
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_302_FOUND
+    assert response.url == reverse('account-login')
 
 
 @pytest.mark.django_db
@@ -51,7 +49,7 @@ def test_update_user_requires_authentication(client):
     response = client.get(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('index')
+    assert response.url == reverse('account-login')
 
 
 @pytest.mark.django_db
@@ -74,7 +72,7 @@ def test_do_update_user_requires_authentication(client):
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-update-user')
+    assert response.url == reverse('account-login')
 
 
 @pytest.mark.parametrize(
@@ -195,7 +193,7 @@ def test_delete_user_requires_authentication(client, account):
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('index')
+    assert response.url == reverse('account-login')
     assert User.objects.filter(id=user.id, email=user.email, username=user.username).exists()
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username).exists()
 
@@ -223,7 +221,7 @@ def test_change_profile_picture_requires_authentication(client, account):
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-profile')
+    assert response.url == reverse('account-login')
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username) \
                .first().picture == ""
 

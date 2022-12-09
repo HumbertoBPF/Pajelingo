@@ -93,13 +93,9 @@ class TestConjugationGameSelenium:
         assert len(answer_submit_buttons) == 1
         assert_menu(selenium_driver, False)
 
-    @pytest.mark.parametrize(
-        "url_name", ["conjugation-game", "conjugation-game-verify-answer"]
-    )
     @pytest.mark.django_db
-    def test_conjugation_game_without_setup(self, live_server, selenium_driver, conjugation_game_dependencies,
-                                            url_name):
-        selenium_driver.get(live_server.url + reverse(url_name))
+    def test_conjugation_game_without_setup(self, live_server, selenium_driver, conjugation_game_dependencies):
+        selenium_driver.get(live_server.url + reverse("conjugation-game"))
         assert selenium_driver.current_url == (live_server.url + reverse("conjugation-game-setup"))
         assert_menu(selenium_driver, False)
 
