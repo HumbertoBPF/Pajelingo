@@ -64,8 +64,11 @@ def logout(request):
 @require_GET
 @require_authentication
 def profile(request):
-    context = {"scores": Score.objects.filter(user=request.user).order_by('language'),
-               "app_user": AppUser.objects.filter(user=request.user)[0], "form_picture": FormPicture()}
+    context = {
+        "scores": Score.objects.filter(user=request.user).order_by('language', 'game'),
+        "app_user": AppUser.objects.filter(user=request.user)[0],
+        "form_picture": FormPicture()
+    }
     return render(request, 'account/profile.html', context)
 
 @require_GET

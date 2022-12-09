@@ -54,7 +54,7 @@ class TestsProfileSelenium:
         Checks that the scores of users are correctly rendered in their profile page
         """
         user, password = account()[0]
-        scores = score(users=[user], games=games, languages=languages).order_by('language')
+        scores = score(users=[user], games=games, languages=languages).order_by('language', 'game')
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("account-profile"))
 
@@ -68,6 +68,9 @@ class TestsProfileSelenium:
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
         assert header_score_tables.text == "{} {} {}".format("Language", "Game", "Score")
+
+        print(len(row_scores))
+        print(len(scores))
 
         for i in range(len(row_scores)):
             score = scores[i]
