@@ -1,6 +1,7 @@
 import base64
 import io
 import random
+import string
 
 from django.contrib import auth
 from django.utils.crypto import get_random_string
@@ -88,7 +89,7 @@ def get_valid_password():
 
     :return: a random valid password
     """
-    return get_random_string(random.randint(8, 30))
+    return password_factory(random.randint(8, 30), True, True, True)
 
 
 def get_random_email():
@@ -115,7 +116,7 @@ def get_too_short_password():
 
     :return: a too short password
     """
-    return get_random_string(random.randint(1, 7))
+    return password_factory(random.randint(1, 7), True, True, True)
 
 
 def get_too_long_password():
@@ -124,4 +125,53 @@ def get_too_long_password():
 
     :return: a too long password
     """
-    return get_random_string(random.randint(31, 50))
+    return password_factory(random.randint(31, 50), True, True, True)
+
+
+def get_password_without_letters():
+    """
+    Gets a random password without letters (alphabetic characters).
+
+    :return: a random password without letters
+    """
+    return password_factory(random.randint(8, 30), False, True, True)
+
+
+def get_password_without_digits():
+    """
+    Gets a random password without digits.
+
+    :return: a random password without digits
+    """
+    return password_factory(random.randint(8, 30), True, False, True)
+
+
+def get_password_without_special_characters():
+    """
+    Gets a random password without special characters.
+
+    :return: a random password without special characters
+    """
+    return password_factory(random.randint(8, 30), True, True, False)
+
+
+def password_factory(length, has_letters, has_digits, has_special_character):
+    password = ""
+    allowed_chars = ""
+
+    if has_letters:
+        allowed_chars += string.ascii_letters
+        password += get_random_string(1, string.ascii_letters)
+
+    if has_digits:
+        allowed_chars += string.digits
+        password +=  get_random_string(1, string.digits)
+
+    if has_special_character:
+        allowed_chars += string.punctuation
+        password += get_random_string(1, string.punctuation)
+
+    if length < len(password):
+        return get_random_string(length, password)
+
+    return password + get_random_string(length - len(password), allowed_chars)

@@ -10,9 +10,12 @@ from selenium.webdriver.common.by import By
 from languageschool.models import AppUser
 from languageschool.tests.selenium.utils import assert_menu, WARNING_REQUIRED_FIELD_HTML, WARNING_EMAIL_WITH_SPACE_HTML, \
     WARNING_REQUIRED_EMAIL_FIREFOX_HTML, submit_form_user, get_form_error_message
-from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
+    get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
+    get_password_without_special_characters
 from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASSWORD, ERROR_NOT_CONFIRMED_PASSWORD, \
-    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
+    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_SPECIAL_CHARACTER_PASSWORD, ERROR_DIGIT_PASSWORD, \
+    ERROR_LETTER_PASSWORD
 from languageschool.views.account import SUCCESSFUL_SIGN_UP
 
 
@@ -58,8 +61,11 @@ class TestSignupSelenium:
             ("", get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
             (get_random_string(random.randint(1, 10))+" "+get_random_email(), get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
             (get_random_email(), get_random_string(random.randint(1, 10))+" "+get_random_username(), get_valid_password(), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_email(), get_random_username(), get_random_string(random.randint(1, 7)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_random_string(random.randint(31, 50)), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, "alert-danger", [ERROR_LETTER_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, "alert-danger", [ERROR_DIGIT_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "alert-danger", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
             (get_random_email(), get_random_username(), get_valid_password(), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
         ]
     )
