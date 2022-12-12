@@ -7,7 +7,8 @@ from django.utils.crypto import get_random_string
 from rest_framework import status
 
 from languageschool.tests.utils import get_basic_auth_header, get_random_email, get_valid_password, \
-    get_too_long_password, get_too_short_password, get_random_username
+    get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
+    get_password_without_digits, get_password_without_special_characters
 
 URL = reverse("user-api")
 EMAIL = get_random_email()
@@ -110,6 +111,9 @@ def test_account_get(api_client, account):
         PASSWORD,
         get_too_long_password(),
         get_too_short_password(),
+        get_password_without_letters(),
+        get_password_without_digits(),
+        get_password_without_special_characters(),
         "",
         None
     ]
@@ -200,6 +204,9 @@ def test_account_post_requires_unique_email_and_username(api_client, account, re
         PASSWORD,
         get_too_long_password(),
         get_too_short_password(),
+        get_password_without_letters(),
+        get_password_without_digits(),
+        get_password_without_special_characters(),
         "",
         None
     ]

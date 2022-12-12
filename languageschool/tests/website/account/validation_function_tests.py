@@ -4,14 +4,16 @@ import pytest
 from django.utils.crypto import get_random_string
 
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
-    get_too_short_password, get_too_long_password
+    get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
+    get_password_without_special_characters
 from languageschool.validation import is_valid_user_data, ERROR_NOT_CONFIRMED_PASSWORD, ERROR_EMPTY_EMAIL, \
     ERROR_EMPTY_USERNAME, ERROR_EMPTY_PASSWORD, ERROR_LENGTH_PASSWORD, ERROR_SPACE_IN_EMAIL, ERROR_SPACE_IN_USERNAME, \
-    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
+    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_SPECIAL_CHARACTER_PASSWORD, ERROR_DIGIT_PASSWORD, \
+    ERROR_LETTER_PASSWORD
 
-TEST_EMAIL = "test_user@test.com"
-TEST_USERNAME = "test_user"
-TEST_PASSWORD = "strong-password"
+TEST_EMAIL = get_random_email()
+TEST_USERNAME = get_random_username()
+TEST_PASSWORD = get_valid_password()
 
 
 @pytest.mark.parametrize(
@@ -32,7 +34,10 @@ TEST_PASSWORD = "strong-password"
     "password", [
         TEST_PASSWORD,
         get_too_short_password(),
-        get_too_long_password()
+        get_too_long_password(),
+        get_password_without_letters(),
+        get_password_without_digits(),
+        get_password_without_special_characters()
     ]
 )
 @pytest.mark.parametrize(
@@ -57,6 +62,9 @@ def test_validation_function(email, username, password, is_password_confirmed):
         (TEST_EMAIL, TEST_USERNAME, "", True, ERROR_EMPTY_PASSWORD),
         (TEST_EMAIL, TEST_USERNAME, get_too_short_password(), True, ERROR_LENGTH_PASSWORD),
         (TEST_EMAIL, TEST_USERNAME, get_too_long_password(), True, ERROR_LENGTH_PASSWORD),
+        (TEST_EMAIL, TEST_USERNAME, get_password_without_letters(), True, ERROR_LETTER_PASSWORD),
+        (TEST_EMAIL, TEST_USERNAME, get_password_without_digits(), True, ERROR_DIGIT_PASSWORD),
+        (TEST_EMAIL, TEST_USERNAME, get_password_without_special_characters(), True, ERROR_SPECIAL_CHARACTER_PASSWORD),
         (get_random_string(random.randint(1, 10))+" "+get_random_email(), TEST_USERNAME, TEST_PASSWORD, True, ERROR_SPACE_IN_EMAIL),
         (TEST_EMAIL, get_random_string(random.randint(1, 10))+" "+get_random_username(), TEST_PASSWORD, True, ERROR_SPACE_IN_USERNAME),
         (TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD, False, ERROR_NOT_CONFIRMED_PASSWORD)

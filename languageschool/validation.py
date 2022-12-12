@@ -4,6 +4,9 @@ ERROR_EMPTY_EMAIL = "Email field is mandatory"
 ERROR_EMPTY_USERNAME = "Username field is mandatory"
 ERROR_EMPTY_PASSWORD = "Password field is mandatory"
 ERROR_LENGTH_PASSWORD = "The password must have a length between 8 and 30"
+ERROR_LETTER_PASSWORD = "The password must have at least one letter"
+ERROR_DIGIT_PASSWORD = "The password must have at least one digit"
+ERROR_SPECIAL_CHARACTER_PASSWORD = "The password must have at least one special character"
 ERROR_SPACE_IN_EMAIL = "Email field cannot contain spaces"
 ERROR_SPACE_IN_USERNAME = "Username field cannot contain spaces"
 ERROR_NOT_CONFIRMED_PASSWORD = "Passwords do not match"
@@ -41,6 +44,30 @@ def is_valid_user_data(email, username, password, password_confirmation, existin
     # Verifying length of the password
     if len(password) < 8 or len(password) > 30:
         return "password", ERROR_LENGTH_PASSWORD
+    # Verifying if password contains required character types
+    has_letter = False
+    has_digit = False
+    has_special_char = False
+
+    for char in password:
+        if char.isalpha():
+            has_letter = True
+        elif char.isdigit():
+            has_digit = True
+        else:
+            has_special_char = True
+
+        if has_letter and has_digit and has_special_char:
+            break
+
+    if not has_letter:
+        return "password", ERROR_LETTER_PASSWORD
+
+    if not has_digit:
+        return "password", ERROR_DIGIT_PASSWORD
+
+    if not has_special_char:
+        return "password", ERROR_SPECIAL_CHARACTER_PASSWORD
     # Verifying if a field contains spaces
     if username.find(" ") != -1:
         return "username", ERROR_SPACE_IN_USERNAME

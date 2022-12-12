@@ -9,7 +9,8 @@ from rest_framework import status
 
 from languageschool.models import AppUser
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
-    get_too_short_password, get_too_long_password
+    get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
+    get_password_without_special_characters
 from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
 
 URL = reverse('account-create-user')
@@ -33,7 +34,10 @@ URL = reverse('account-create-user')
     "password", [
         TEST_PASSWORD,
         get_too_short_password(),
-        get_too_long_password()
+        get_too_long_password(),
+        get_password_without_letters(),
+        get_password_without_digits(),
+        get_password_without_special_characters()
     ]
 )
 @pytest.mark.parametrize(
