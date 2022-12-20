@@ -23,3 +23,4 @@ class TestsLogoutSelenium:
 
         assert len(greetings) == 0
         assert_menu(selenium_driver, False)
+
