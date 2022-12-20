@@ -25,4 +25,4 @@ class TestsLogoutSelenium:
         assert_menu(selenium_driver, False)
 
     def new_function(self):
-        pass
+        print("Hello")

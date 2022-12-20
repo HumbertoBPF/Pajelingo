@@ -140,3 +140,6 @@ class ListScoresComparer(SimpleComparer):
         self.verify_sub_attribute("game", ["game", "id"])
 
         return self.are_attributes_and_keys_equal()
+
+    def new_function(self):
+        print("H")
