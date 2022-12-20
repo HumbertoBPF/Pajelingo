@@ -24,3 +24,5 @@ class TestsLogoutSelenium:
         assert len(greetings) == 0
         assert_menu(selenium_driver, False)
 
+    def new_function(self):
+        pass
