@@ -26,3 +26,4 @@ class TestsLogoutSelenium:
 
     def new_function(self):
         print("Hello 2")
+        
