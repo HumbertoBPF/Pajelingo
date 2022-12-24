@@ -1,5 +1,6 @@
 from django.contrib import auth
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
@@ -7,12 +8,12 @@ from django.views.decorators.http import require_GET, require_POST
 
 from languageschool.forms import FormPicture
 from languageschool.models import AppUser, Score
-from languageschool.utils import require_authentication
 from languageschool.validation import is_valid_user_data
 from languageschool.views.general import request_contains
 
 LOGIN_ERROR = "Incorrect username or password"
 SUCCESSFUL_SIGN_UP = "User successfully created"
+LOGIN_URL = "/account/login"
 
 @require_GET
 def sign_in(request):
@@ -39,7 +40,13 @@ def create_user(request):
 
 @require_GET
 def login(request):
-    return render(request, 'account/login.html')
+    context = None
+
+    next_url = request.GET.get("next")
+    if next_url is not None:
+        context = {"next": next_url}
+
+    return render(request, 'account/login.html', context)
 
 @require_POST
 def auth_user(request):
@@ -51,7 +58,11 @@ def auth_user(request):
 
         if user is not None:
             auth.login(request, user)
-            return redirect('index')
+            next_url = request.POST.get("next")
+            if next_url is None:
+                return redirect('index')
+            else:
+                return redirect(next_url)
         else:
             messages.error(request, LOGIN_ERROR)
     return redirect('account-login')
@@ -62,7 +73,7 @@ def logout(request):
     return redirect('index')
 
 @require_GET
-@require_authentication
+@login_required(login_url=LOGIN_URL)
 def profile(request):
     context = {
         "scores": Score.objects.filter(user=request.user).order_by('language', 'game'),
@@ -72,12 +83,12 @@ def profile(request):
     return render(request, 'account/profile.html', context)
 
 @require_GET
-@require_authentication
+@login_required(login_url=LOGIN_URL)
 def update_user(request):
     return render(request, 'account/update_user.html', {'user_id': request.user.id})
 
 @require_POST
-@require_authentication
+@login_required(login_url=LOGIN_URL)
 def do_update_user(request):
     if request_contains(request.POST, ["email", "username", "password", "password_confirmation"]):
         email = request.POST["email"]
@@ -101,13 +112,13 @@ def do_update_user(request):
     return redirect('account-update-user')
 
 @require_POST
-@require_authentication
+@login_required(login_url=LOGIN_URL)
 def delete_user(request):
     request.user.delete()
     return redirect('index')
 
 @require_POST
-@require_authentication
+@login_required(login_url=LOGIN_URL)
 def change_picture(request):
     form_picture = FormPicture(request.POST, request.FILES)
     if form_picture.is_valid():

@@ -18,11 +18,13 @@ def authenticate(live_server, selenium_driver, username, password):
     :type password: str
     """
     selenium_driver.get(live_server.url + reverse("account-login"))
+    input_login_credentials(selenium_driver, username, password)
 
+
+def input_login_credentials(selenium_driver, username, password):
     selenium_driver.find_element(By.ID, "inputUsername").send_keys(username)
     selenium_driver.find_element(By.ID, "inputPassword").send_keys(password)
     selenium_driver.find_element(By.ID, "submitLoginFormButton").click()
-
 
 def assert_menu(selenium_driver, is_authenticated):
     home_link_items = selenium_driver.find_elements(By.ID, "homeLink")

@@ -11,7 +11,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from languageschool.models import AppUser
 from languageschool.tests.selenium.utils import assert_menu, authenticate, WARNING_REQUIRED_FIELD_HTML, \
-    WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML, get_form_error_message, submit_form_user
+    WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML, get_form_error_message, submit_form_user, \
+    input_login_credentials
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_password_without_letters, get_password_without_digits, get_password_without_special_characters, \
     get_too_long_password, get_too_short_password
@@ -22,14 +23,21 @@ from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASS
 
 class TestsProfileSelenium:
     @pytest.mark.django_db
-    def test_profile_access_requires_authentication(self, live_server, selenium_driver):
+    def test_profile_access_requires_authentication(self, live_server, selenium_driver, account):
         """
         Checks that users cannot access their profile without authentication
         """
-        selenium_driver.get(live_server.url + reverse("account-profile"))
-
-        assert selenium_driver.current_url == live_server.url + reverse("account-login")
+        user, password = account()[0]
+        # Checks that the login form is displayed when trying to access the URL
+        url = reverse("account-profile")
+        selenium_driver.get(live_server.url + url)
+        assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("account-login"), url)
         assert_menu(selenium_driver, False)
+        # Logs in and check if user is redirected
+        input_login_credentials(selenium_driver, user.username, password)
+
+        assert selenium_driver.current_url == live_server.url + url
+        assert_menu(selenium_driver, True)
 
     @pytest.mark.django_db
     def test_profile_access_with_authenticated_user_without_scores(self, live_server, selenium_driver, account):
@@ -83,9 +91,17 @@ class TestsProfileSelenium:
         """
         Checks that the page with the update account form requires authentication
         """
-        selenium_driver.get(live_server.url + reverse("account-update-user"))
-        assert selenium_driver.current_url == live_server.url + reverse("account-login")
+        user, password = account()[0]
+        # Checks that the login form is displayed when trying to access the URL
+        url = reverse("account-update-user")
+        selenium_driver.get(live_server.url + url)
+        assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("account-login"), url)
         assert_menu(selenium_driver, False)
+        # Logs in and check if user is redirected
+        input_login_credentials(selenium_driver, user.username, password)
+
+        assert selenium_driver.current_url == live_server.url + url
+        assert_menu(selenium_driver, True)
 
     @pytest.mark.django_db
     def test_update_account_form_rendering(self, live_server, selenium_driver, account):

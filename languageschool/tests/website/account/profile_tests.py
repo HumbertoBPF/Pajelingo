@@ -18,10 +18,14 @@ from languageschool.tests.website.account.validation_function_tests import TEST_
 @pytest.mark.django_db
 def test_profile_access_requires_authentication(client):
     url = reverse('account-profile')
+
+    login_url = reverse('account-login')
+    login_url = '{}?next={}'.format(login_url, url)
+
     response = client.get(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-login')
+    assert response.url == login_url
 
 
 @pytest.mark.django_db
@@ -47,10 +51,13 @@ def test_profile_access(client, account, score, games, languages):
 def test_update_user_requires_authentication(client):
     url = reverse('account-update-user')
 
+    login_url = reverse('account-login')
+    login_url = '{}?next={}'.format(login_url, url)
+
     response = client.get(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-login')
+    assert response.url == login_url
 
 
 @pytest.mark.django_db
@@ -70,10 +77,13 @@ def test_update_user(client, account):
 def test_do_update_user_requires_authentication(client):
     url = reverse('account-do-update-user')
 
+    login_url = reverse('account-login')
+    login_url = '{}?next={}'.format(login_url, url)
+
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-login')
+    assert response.url == login_url
 
 
 @pytest.mark.parametrize(
@@ -194,10 +204,14 @@ def test_do_update_user_same_credentials(client, account, is_same_email, is_same
 def test_delete_user_requires_authentication(client, account):
     user, password = account()[0]
     url = reverse('account-delete-user')
+
+    login_url = reverse('account-login')
+    login_url = '{}?next={}'.format(login_url, url)
+
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-login')
+    assert response.url == login_url
     assert User.objects.filter(id=user.id, email=user.email, username=user.username).exists()
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username).exists()
 
@@ -222,10 +236,13 @@ def test_change_profile_picture_requires_authentication(client, account):
     user, password = account()[0]
     url = reverse('account-change-picture')
 
+    login_url = reverse('account-login')
+    login_url = '{}?next={}'.format(login_url, url)
+
     response = client.post(url)
 
     assert response.status_code == status.HTTP_302_FOUND
-    assert response.url == reverse('account-login')
+    assert response.url == login_url
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username) \
                .first().picture == ""
 
