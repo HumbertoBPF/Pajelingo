@@ -2,6 +2,7 @@ import random
 
 import pytest
 from django.contrib.auth.models import User
+from django.core import mail
 from django.db.models import Q
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -16,10 +17,31 @@ from languageschool.tests.utils import get_valid_password, get_random_email, get
 from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASSWORD, ERROR_NOT_CONFIRMED_PASSWORD, \
     ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_SPECIAL_CHARACTER_PASSWORD, ERROR_DIGIT_PASSWORD, \
     ERROR_LETTER_PASSWORD
-from languageschool.views.account import SUCCESSFUL_SIGN_UP
+from languageschool.views.account import SUCCESSFUL_SIGN_UP, SIGN_UP_SUBJECT, SIGN_UP_MESSAGE, SUCCESSFUL_ACTIVATION, \
+    ERROR_ACTIVATION
+from pajelingo import settings
 
 
 class TestSignupSelenium:
+    def successful_signup(self, live_server, selenium_driver):
+        """
+        Performs a successful signup with random credentials.
+
+        :param live_server: live server Django pytest fixture
+        :param selenium_driver: Selenium web driver
+
+        :return: tuple with the random email and the random username.
+        """
+        selenium_driver.get(live_server.url + reverse("account-sign-in"))
+
+        email = get_random_email()
+        username = get_random_username()
+        password = get_valid_password()
+
+        submit_form_user(selenium_driver, email, username, password, password)
+
+        return email, username
+
     @pytest.mark.django_db
     def test_signup_form_rendering(self, live_server, selenium_driver):
         selenium_driver.get(live_server.url+reverse("account-sign-in"))
@@ -39,20 +61,47 @@ class TestSignupSelenium:
 
     @pytest.mark.django_db
     def test_signup(self, live_server, selenium_driver):
-        selenium_driver.get(live_server.url + reverse("account-sign-in"))
-
-        email = get_random_email()
-        username = get_random_username()
-        password = get_valid_password()
-
-        submit_form_user(selenium_driver, email, username, password, password)
+        email, username = self.successful_signup(live_server, selenium_driver)
 
         alert_success = selenium_driver.find_element(By.CLASS_NAME, "alert-success")
 
         assert alert_success.text == SUCCESSFUL_SIGN_UP
-        assert User.objects.filter(username=username, email=email).exists()
-        assert AppUser.objects.filter(user__username=username, user__email=email).exists()
+        assert User.objects.filter(username=username, email=email, is_active=False).exists()
+        assert AppUser.objects.filter(user__username=username, user__email=email, user__is_active=False).exists()
+        # Checking that the activation email was received
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].subject == SIGN_UP_SUBJECT
+        assert SIGN_UP_MESSAGE.split("{}")[1] in mail.outbox[0].body
+        assert mail.outbox[0].to == [email]
+        assert mail.outbox[0].from_email == settings.EMAIL_FROM
+
         assert_menu(selenium_driver, False)
+
+    @pytest.mark.django_db
+    def test_activate_account(self, live_server, selenium_driver):
+        email, username = self.successful_signup(live_server, selenium_driver)
+
+        activation_link = "http://" + mail.outbox[0].body.split("http://")[1]
+
+        selenium_driver.get(activation_link)
+
+        alert_success = selenium_driver.find_element(By.CLASS_NAME, "alert-success")
+
+        assert alert_success.text == SUCCESSFUL_ACTIVATION
+        assert User.objects.filter(username=username, email=email, is_active=True).exists()
+
+    @pytest.mark.django_db
+    def test_activate_account_invalid_token(self, live_server, selenium_driver):
+        email, username = self.successful_signup(live_server, selenium_driver)
+
+        activation_link = "http://" + mail.outbox[0].body.split("http://")[1] + get_random_string(5)
+
+        selenium_driver.get(activation_link)
+
+        alert_danger = selenium_driver.find_element(By.CLASS_NAME, "alert-danger")
+
+        assert alert_danger.text == ERROR_ACTIVATION
+        assert User.objects.filter(username=username, email=email, is_active=False).exists()
 
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [

@@ -1,19 +1,30 @@
-from django.contrib import auth
-from django.contrib import messages
+from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_GET, require_POST
 
 from languageschool.forms import FormPicture
 from languageschool.models import AppUser, Score
 from languageschool.validation import is_valid_user_data
 from languageschool.views.general import request_contains
+from pajelingo import settings
+from pajelingo.tokens import account_activation_token
 
 LOGIN_ERROR = "Incorrect username or password"
+NOT_ACTIVE_ERROR = "The specified account has not been activated yet. Please check your email and activate it."
 SUCCESSFUL_SIGN_UP = "User successfully created"
 LOGIN_URL = "/account/login"
+SIGN_UP_SUBJECT = "Activate your user account."
+SIGN_UP_MESSAGE = "Hi {},\n\nPlease click on the link below to confirm your registration:\n\nhttp://{}{}"
+SUCCESSFUL_ACTIVATION = "Thank you for your email confirmation. Now you can login your account."
+ERROR_ACTIVATION = "Activation link is invalid!"
 
 @require_GET
 def sign_in(request):
@@ -28,10 +39,16 @@ def create_user(request):
         password_confirmation = request.POST["password_confirmation"]
         error_field, error_message = is_valid_user_data(email, username, password, password_confirmation)
         if error_field is None:
-            # Creating admin user
             user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_active = False
             user.save()
 
+            domain = get_current_site(request).domain
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = account_activation_token.make_token(user)
+            url = reverse("account-activate", kwargs={"uidb64": uid, "token": token})
+
+            send_mail(SIGN_UP_SUBJECT, SIGN_UP_MESSAGE.format(username, domain, url), settings.EMAIL_FROM, [email])
             messages.success(request, SUCCESSFUL_SIGN_UP)
             return redirect('account-sign-in')
         else:
@@ -64,7 +81,12 @@ def auth_user(request):
             else:
                 return redirect(next_url)
         else:
-            messages.error(request, LOGIN_ERROR)
+            user_with_username = User.objects.filter(username=username).first()
+
+            if (user_with_username is not None) and (not user_with_username.is_active):
+                messages.error(request, NOT_ACTIVE_ERROR)
+            else:
+                messages.error(request, LOGIN_ERROR)
     return redirect('account-login')
 
 @require_GET
@@ -126,3 +148,20 @@ def change_picture(request):
         app_user.picture = form_picture.cleaned_data.get('picture')
         app_user.save()
     return redirect('account-profile')
+
+@require_GET
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.filter(pk=uid).first()
+    except(TypeError, ValueError, OverflowError):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, SUCCESSFUL_ACTIVATION)
+    else:
+        messages.error(request, ERROR_ACTIVATION)
+
+    return render(request, "account/activate.html")

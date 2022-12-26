@@ -27,6 +27,7 @@ urlpatterns = [
     path('account/update-user', views.account.update_user, name='account-update-user'),
     path('account/do-update-user', views.account.do_update_user, name='account-do-update-user'),
     path('account/delete-user', views.account.delete_user, name='account-delete-user'),
+    path('activate/<uidb64>/<token>', views.account.activate, name='account-activate'),
     path('rankings', views.general.rankings, name='rankings'),
     path('account/change-picture', views.account.change_picture, name='account-change-picture'),
     path('api/games', GameViewSet.as_view(), name='games-api'),

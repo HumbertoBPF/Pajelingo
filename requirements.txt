@@ -18,3 +18,5 @@ sqlparse==0.4.2
 tomli==2.0.1
 tzdata==2022.1
 selenium~=4.4.3
+python-dotenv~=0.21.0
+six~=1.16.0
