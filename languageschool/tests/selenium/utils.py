@@ -17,7 +17,7 @@ def authenticate(live_server, selenium_driver, username, password):
     :param password: password input
     :type password: str
     """
-    selenium_driver.get(live_server.url + reverse("account-login"))
+    selenium_driver.get(live_server.url + reverse("login"))
     input_login_credentials(selenium_driver, username, password)
 
 

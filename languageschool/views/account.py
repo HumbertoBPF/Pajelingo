@@ -27,11 +27,11 @@ SUCCESSFUL_ACTIVATION = "Thank you for your email confirmation. Now you can logi
 ERROR_ACTIVATION = "Activation link is invalid!"
 
 @require_GET
-def sign_in(request):
-    return render(request, 'account/sign_in.html')
+def signup(request):
+    return render(request, 'account/signup.html')
 
 @require_POST
-def create_user(request):
+def signup_done(request):
     if request_contains(request.POST, ["email", "username", "password", "password_confirmation"]):
         email = request.POST["email"]
         username = request.POST["username"]
@@ -46,14 +46,14 @@ def create_user(request):
             domain = get_current_site(request).domain
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = account_activation_token.make_token(user)
-            url = reverse("account-activate", kwargs={"uidb64": uid, "token": token})
+            url = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
 
             send_mail(SIGN_UP_SUBJECT, SIGN_UP_MESSAGE.format(username, domain, url), settings.EMAIL_FROM, [email])
             messages.success(request, SUCCESSFUL_SIGN_UP)
-            return redirect('account-sign-in')
+            return redirect('signup')
         else:
             messages.error(request, error_message)
-    return redirect('account-sign-in')
+    return redirect('signup')
 
 @require_GET
 def login(request):
@@ -66,7 +66,7 @@ def login(request):
     return render(request, 'account/login.html', context)
 
 @require_POST
-def auth_user(request):
+def login_done(request):
     if request_contains(request.POST, ["username", "password"]):
         username = request.POST["username"]
         password = request.POST["password"]
@@ -87,7 +87,7 @@ def auth_user(request):
                 messages.error(request, NOT_ACTIVE_ERROR)
             else:
                 messages.error(request, LOGIN_ERROR)
-    return redirect('account-login')
+    return redirect('login')
 
 @require_GET
 def logout(request):
@@ -111,7 +111,7 @@ def update_user(request):
 
 @require_POST
 @login_required(login_url=LOGIN_URL)
-def do_update_user(request):
+def update_user_done(request):
     if request_contains(request.POST, ["email", "username", "password", "password_confirmation"]):
         email = request.POST["email"]
         username = request.POST["username"]
@@ -128,10 +128,10 @@ def do_update_user(request):
             user = auth.authenticate(request, username=username, password=password)
             if user is not None:
                 auth.login(request, user)
-            return redirect('account-profile')
+            return redirect('profile')
         else:
             messages.error(request, error_message)
-    return redirect('account-update-user')
+    return redirect('update-user')
 
 @require_POST
 @login_required(login_url=LOGIN_URL)
@@ -147,7 +147,7 @@ def change_picture(request):
         app_user = get_object_or_404(AppUser, user=request.user)
         app_user.picture = form_picture.cleaned_data.get('picture')
         app_user.save()
-    return redirect('account-profile')
+    return redirect('profile')
 
 @require_GET
 def activate(request, uidb64, token):

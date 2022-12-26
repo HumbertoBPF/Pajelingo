@@ -10,7 +10,7 @@ class TestsLogoutSelenium:
     def test_logout_with_authenticated_user(self, live_server, selenium_driver, account):
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-logout"))
+        selenium_driver.get(live_server.url + reverse("logout"))
         greetings = selenium_driver.find_elements(By.ID, "greeting")
 
         assert len(greetings) == 0
@@ -18,7 +18,7 @@ class TestsLogoutSelenium:
 
     @pytest.mark.django_db
     def test_logout_without_authenticated_user(self, live_server, selenium_driver):
-        selenium_driver.get(live_server.url + reverse("account-logout"))
+        selenium_driver.get(live_server.url + reverse("logout"))
         greetings = selenium_driver.find_elements(By.ID, "greeting")
 
         assert len(greetings) == 0

@@ -10,7 +10,7 @@ from languageschool.views.account import LOGIN_ERROR
 class TestsLoginSelenium:
     @pytest.mark.django_db
     def test_login_form_rendering(self, live_server, selenium_driver):
-        selenium_driver.get(live_server.url + reverse("account-login"))
+        selenium_driver.get(live_server.url + reverse("login"))
 
         inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
         inputs_password = selenium_driver.find_elements(By.ID, "inputPassword")

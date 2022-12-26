@@ -17,9 +17,9 @@ from languageschool.tests.website.account.validation_function_tests import TEST_
 
 @pytest.mark.django_db
 def test_profile_access_requires_authentication(client):
-    url = reverse('account-profile')
+    url = reverse('profile')
 
-    login_url = reverse('account-login')
+    login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)
 
     response = client.get(url)
@@ -36,7 +36,7 @@ def test_profile_access(client, account, score, games, languages):
 
     client.login(username=user.username, password=password)
 
-    url = reverse('account-profile')
+    url = reverse('profile')
     response = client.get(url)
 
     app_user = response.context.get("app_user")
@@ -49,9 +49,9 @@ def test_profile_access(client, account, score, games, languages):
 
 @pytest.mark.django_db
 def test_update_user_requires_authentication(client):
-    url = reverse('account-update-user')
+    url = reverse('update-user')
 
-    login_url = reverse('account-login')
+    login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)
 
     response = client.get(url)
@@ -65,7 +65,7 @@ def test_update_user(client, account):
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
-    url = reverse('account-update-user')
+    url = reverse('update-user')
 
     response = client.get(url)
 
@@ -75,9 +75,9 @@ def test_update_user(client, account):
 
 @pytest.mark.django_db
 def test_do_update_user_requires_authentication(client):
-    url = reverse('account-do-update-user')
+    url = reverse('update-user-done')
 
-    login_url = reverse('account-login')
+    login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)
 
     response = client.post(url)
@@ -121,7 +121,7 @@ def test_do_update_user(client, account, email, username, password, is_password_
     user, user_password = account()[0]
     client.login(username=user.username, password=user_password)
 
-    url = reverse('account-do-update-user')
+    url = reverse('update-user-done')
     data = {
         "email": email,
         "username": username,
@@ -156,7 +156,7 @@ def test_do_update_user_repeated_credentials(client, account, is_repeated_email,
     user2, password2 = accounts[1]
     client.login(username=user.username, password=password)
 
-    url = reverse('account-do-update-user')
+    url = reverse('update-user-done')
     new_password = get_valid_password()
     data = {
         "email": user2.email if is_repeated_email else get_random_email(),
@@ -184,7 +184,7 @@ def test_do_update_user_same_credentials(client, account, is_same_email, is_same
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
-    url = reverse('account-do-update-user')
+    url = reverse('update-user-done')
     new_password = get_valid_password()
     data = {
         "email": user.email if is_same_email else get_random_email(),
@@ -203,9 +203,9 @@ def test_do_update_user_same_credentials(client, account, is_same_email, is_same
 @pytest.mark.django_db
 def test_delete_user_requires_authentication(client, account):
     user, password = account()[0]
-    url = reverse('account-delete-user')
+    url = reverse('delete-user')
 
-    login_url = reverse('account-login')
+    login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)
 
     response = client.post(url)
@@ -221,7 +221,7 @@ def test_delete_user(client, account):
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
-    url = reverse('account-delete-user')
+    url = reverse('delete-user')
 
     response = client.post(url)
 
@@ -234,9 +234,9 @@ def test_delete_user(client, account):
 @pytest.mark.django_db
 def test_change_profile_picture_requires_authentication(client, account):
     user, password = account()[0]
-    url = reverse('account-change-picture')
+    url = reverse('change-picture')
 
-    login_url = reverse('account-login')
+    login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)
 
     response = client.post(url)
@@ -259,11 +259,11 @@ def test_change_profile_picture(client, account, filename, is_successful):
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
-    url = reverse('account-change-picture')
+    url = reverse('change-picture')
 
     with open(filename, 'rb') as fp:
         response = client.post(url, data={'picture': fp})
         assert response.status_code == status.HTTP_302_FOUND
-        assert response.url == reverse('account-profile')
+        assert response.url == reverse('profile')
         assert (AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username)
                 .first().picture != "") == is_successful

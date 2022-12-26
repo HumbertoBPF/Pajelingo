@@ -13,7 +13,7 @@ from languageschool.tests.utils import get_valid_password, get_random_email, get
     get_password_without_special_characters
 from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
 
-URL = reverse('account-create-user')
+URL = reverse('signup-done')
 
 
 @pytest.mark.parametrize(

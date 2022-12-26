@@ -29,9 +29,9 @@ class TestsProfileSelenium:
         """
         user, password = account()[0]
         # Checks that the login form is displayed when trying to access the URL
-        url = reverse("account-profile")
+        url = reverse("profile")
         selenium_driver.get(live_server.url + url)
-        assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("account-login"), url)
+        assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("login"), url)
         assert_menu(selenium_driver, False)
         # Logs in and check if user is redirected
         input_login_credentials(selenium_driver, user.username, password)
@@ -46,7 +46,7 @@ class TestsProfileSelenium:
         """
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-profile"))
+        selenium_driver.get(live_server.url + reverse("profile"))
 
         username = selenium_driver.find_element(By.ID, "username")
         email = selenium_driver.find_element(By.ID, "email")
@@ -67,7 +67,7 @@ class TestsProfileSelenium:
         user, password = account()[0]
         scores = score(users=[user], games=games, languages=languages).order_by('language', 'game')
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-profile"))
+        selenium_driver.get(live_server.url + reverse("profile"))
 
         username = selenium_driver.find_element(By.ID, "username")
         email = selenium_driver.find_element(By.ID, "email")
@@ -93,9 +93,9 @@ class TestsProfileSelenium:
         """
         user, password = account()[0]
         # Checks that the login form is displayed when trying to access the URL
-        url = reverse("account-update-user")
+        url = reverse("update-user")
         selenium_driver.get(live_server.url + url)
-        assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("account-login"), url)
+        assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("login"), url)
         assert_menu(selenium_driver, False)
         # Logs in and check if user is redirected
         input_login_credentials(selenium_driver, user.username, password)
@@ -110,7 +110,7 @@ class TestsProfileSelenium:
         """
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-update-user"))
+        selenium_driver.get(live_server.url + reverse("update-user"))
 
         inputs_email = selenium_driver.find_elements(By.ID, "inputEmail")
         inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
@@ -146,7 +146,7 @@ class TestsProfileSelenium:
         """
         user, user_password = account()[0]
         authenticate(live_server, selenium_driver, user.username, user_password)
-        selenium_driver.get(live_server.url + reverse("account-update-user"))
+        selenium_driver.get(live_server.url + reverse("update-user"))
 
         confirmation_password = password if is_password_confirmed else get_valid_password()
 
@@ -177,7 +177,7 @@ class TestsProfileSelenium:
         accounts = account(n=random.randint(2, 10))
         user, password = accounts[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-update-user"))
+        selenium_driver.get(live_server.url + reverse("update-user"))
 
         repeated_email = random.choice(accounts[1:])[0].email
         repeated_username = random.choice(accounts[1:])[0].username
@@ -215,7 +215,7 @@ class TestsProfileSelenium:
         accounts = account(n=random.randint(2, 10))
         user, password = accounts[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-update-user"))
+        selenium_driver.get(live_server.url + reverse("update-user"))
 
         email = user.email if is_same_email else get_random_email()
         username = user.username if is_same_username else get_random_username()
@@ -223,7 +223,7 @@ class TestsProfileSelenium:
 
         submit_form_user(selenium_driver, email, username, password, password)
         # Checks if the users are redirected to their profile
-        assert selenium_driver.current_url == live_server.url + reverse("account-profile")
+        assert selenium_driver.current_url == live_server.url + reverse("profile")
         # Checks that the update was successful
         assert User.objects.filter(id=user.id, username=username, email=email).exists()
         assert AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
@@ -236,7 +236,7 @@ class TestsProfileSelenium:
         """
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-profile"))
+        selenium_driver.get(live_server.url + reverse("profile"))
 
         selenium_driver.find_element(By.ID, "deleteAccountButton").click()
 
@@ -262,7 +262,7 @@ class TestsProfileSelenium:
         """
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-profile"))
+        selenium_driver.get(live_server.url + reverse("profile"))
 
         selenium_driver.find_element(By.ID, "deleteAccountButton").click()
         # Waits "confirm deletion" button to appear to hit it
@@ -283,7 +283,7 @@ class TestsProfileSelenium:
     def test_change_profile_pic_valid_file(self, live_server, selenium_driver, account, filename):
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-profile"))
+        selenium_driver.get(live_server.url + reverse("profile"))
 
         picture_uploader = selenium_driver.find_element(By.ID, "id_picture")
         picture_uploader.send_keys(filename)
@@ -302,7 +302,7 @@ class TestsProfileSelenium:
     def test_change_profile_pic_invalid_file(self, live_server, selenium_driver, account, filename):
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("account-profile"))
+        selenium_driver.get(live_server.url + reverse("profile"))
 
         picture_uploader = selenium_driver.find_element(By.ID, "id_picture")
         picture_uploader.send_keys(filename)

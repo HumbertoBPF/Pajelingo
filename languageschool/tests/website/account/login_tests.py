@@ -21,7 +21,7 @@ from languageschool.tests.utils import is_user_authenticated, get_random_usernam
 def test_login_fail(client, account, username, password):
     user, password = account()[0]
 
-    url = reverse('account-auth-user')
+    url = reverse('login-done')
     data = {}
 
     if username is not None:
@@ -40,7 +40,7 @@ def test_login_fail(client, account, username, password):
 def test_login_success(client, account):
     user, password = account()[0]
 
-    url = reverse('account-auth-user')
+    url = reverse('login-done')
     data = {
         "username": user.username,
         "password": password
@@ -59,7 +59,7 @@ def test_logout(client, account):
 
     assert is_user_authenticated(client, user)
 
-    url = reverse('account-logout')
+    url = reverse('logout')
     response = client.get(url)
 
     assert response.status_code == status.HTTP_302_FOUND

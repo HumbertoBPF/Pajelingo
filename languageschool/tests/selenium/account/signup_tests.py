@@ -32,7 +32,7 @@ class TestSignupSelenium:
 
         :return: tuple with the random email and the random username.
         """
-        selenium_driver.get(live_server.url + reverse("account-sign-in"))
+        selenium_driver.get(live_server.url + reverse("signup"))
 
         email = get_random_email()
         username = get_random_username()
@@ -44,7 +44,7 @@ class TestSignupSelenium:
 
     @pytest.mark.django_db
     def test_signup_form_rendering(self, live_server, selenium_driver):
-        selenium_driver.get(live_server.url+reverse("account-sign-in"))
+        selenium_driver.get(live_server.url+reverse("signup"))
 
         inputs_email = selenium_driver.find_elements(By.ID, "inputEmail")
         inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
@@ -120,7 +120,7 @@ class TestSignupSelenium:
     )
     @pytest.mark.django_db
     def test_signup_form_error(self, live_server, selenium_driver, email, username, password, is_password_confirmed, field, accepted_messages):
-        selenium_driver.get(live_server.url + reverse("account-sign-in"))
+        selenium_driver.get(live_server.url + reverse("signup"))
 
         confirmation_password = password if is_password_confirmed else get_valid_password()
 
@@ -146,7 +146,7 @@ class TestSignupSelenium:
     @pytest.mark.django_db
     def test_signup_form_error_not_available_credentials(self, live_server, selenium_driver, account, is_repeated_email, is_repeated_username):
         user, _ = account()[0]
-        selenium_driver.get(live_server.url + reverse("account-sign-in"))
+        selenium_driver.get(live_server.url + reverse("signup"))
 
         password = get_valid_password()
 

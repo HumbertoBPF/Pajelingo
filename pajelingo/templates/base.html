@@ -53,18 +53,18 @@
                         <ul class="dropdown-menu" aria-labelledby="account-dropdown-item">
                             {% if not user.is_authenticated %}
                                 <li>
-                                    <a id="signInLink" class="dropdown-item" href="{% url 'account-sign-in' %}">Sign in</a>
+                                    <a id="signInLink" class="dropdown-item" href="{% url 'signup' %}">Sign up</a>
                                 </li>
                                 <li>
-                                    <a id="loginLink" class="dropdown-item" href="{% url 'account-login' %}">Login</a>
+                                    <a id="loginLink" class="dropdown-item" href="{% url 'login' %}">Login</a>
                                 </li>
                             {% endif %}
                             {% if user.is_authenticated %}
                                 <li>
-                                    <a id="profileLink" class="dropdown-item" href="{% url 'account-profile' %}">Profile</a>
+                                    <a id="profileLink" class="dropdown-item" href="{% url 'profile' %}">Profile</a>
                                 </li>
                                     <li>
-                                    <a id="logoutLink" class="dropdown-item" href="{% url 'account-logout' %}">Logout</a>
+                                    <a id="logoutLink" class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                                 </li>
                             {% endif %}
                         </ul>
