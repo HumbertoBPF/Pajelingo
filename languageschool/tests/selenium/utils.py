@@ -56,6 +56,15 @@ def assert_menu(selenium_driver, is_authenticated):
 
 
 def get_form_error_message(selenium_driver, field):
+    """
+    Gets the error message referring to an HTML field. This message can be a Django message displayed in a tag with the
+    alert-danger class or as a popup in the HTML input field.
+
+    :param selenium_driver selenium_driver: Selenium web driver
+    :param field: string identifier of the field
+
+    :return: error message.
+    """
     if field == "alert-danger":
         return selenium_driver.find_element(By.CLASS_NAME, "alert-danger").text
 

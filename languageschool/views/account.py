@@ -1,4 +1,5 @@
 from django.contrib import auth, messages
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
@@ -10,7 +11,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_GET, require_POST
 
-from languageschool.forms import FormPicture
+from languageschool.forms import FormPicture, PasswordResetForm, SetPasswordForm
 from languageschool.models import AppUser, Score
 from languageschool.validation import is_valid_user_data
 from languageschool.views.general import request_contains
@@ -21,14 +22,14 @@ LOGIN_ERROR = "Incorrect username or password"
 NOT_ACTIVE_ERROR = "The specified account has not been activated yet. Please check your email and activate it."
 SUCCESSFUL_SIGN_UP = "User successfully created"
 LOGIN_URL = "/account/login"
-SIGN_UP_SUBJECT = "Activate your user account."
-SIGN_UP_MESSAGE = "Hi {},\n\nPlease click on the link below to confirm your registration:\n\nhttp://{}{}"
+SIGN_UP_SUBJECT = "Pajelingo account activation"
+SIGN_UP_MESSAGE = "Hi {},\n\nPlease click on the link below to activate your Pajelingo account:\n\nhttp://{}{}"
 SUCCESSFUL_ACTIVATION = "Thank you for your email confirmation. Now you can login your account."
-ERROR_ACTIVATION = "Activation link is invalid!"
+ACTIVATION_LINK_ERROR = "Activation link is invalid!"
 
 @require_GET
 def signup(request):
-    return render(request, 'account/signup.html')
+    return render(request, 'account/signup/signup.html')
 
 @require_POST
 def signup_done(request):
@@ -162,6 +163,24 @@ def activate(request, uidb64, token):
         user.save()
         messages.success(request, SUCCESSFUL_ACTIVATION)
     else:
-        messages.error(request, ERROR_ACTIVATION)
+        messages.error(request, ACTIVATION_LINK_ERROR)
 
-    return render(request, "account/activate.html")
+    return render(request, "account/signup/activate.html")
+
+class PasswordResetView(auth_views.PasswordResetView):
+    template_name = "account/reset_account/request_reset_account.html"
+    subject_template_name = "email/reset_email_subject.txt"
+    email_template_name = "email/reset_email_body.html"
+    success_url = "/account/request-reset-account-done"
+    from_email = settings.EMAIL_FROM
+    form_class = PasswordResetForm
+class PasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = "account/reset_account/request_reset_account_done.html"
+
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = "account/reset_account/reset_account.html"
+    success_url = "/account/reset-account-done"
+    form_class = SetPasswordForm
+
+class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    template_name = "account/reset_account/reset_account_done.html"

@@ -11,13 +11,13 @@
             </div>
         {% endfor %}
         </section>
-    {% endif%} 
+    {% endif%}
     <form class="mt-3 mx-3" action="{% url 'login-done' %}" method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label for="inputUsername" class="form-label">Username</label>
             <input id="inputUsername" type="text" class="form-control" name="username" aria-label="Username" aria-describedby="basic-addon1">
-          </div>
+        </div>
         <div class="mb-3">
             <label for="inputPassword" class="form-label">Password</label>
             <input id="inputPassword" type="password" class="form-control" name="password">
@@ -25,7 +25,9 @@
         {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
         {% endif %}
-        <button id="submitLoginFormButton" type="submit" class="btn btn-primary">Submit</button>
+        <a id="reset_account_link" href="{% url 'request-reset-account' %}">I forgot my username/password</a>
+        <br>
+        <button id="submitLoginFormButton" type="submit" class="btn btn-primary mt-3">Submit</button>
     </form>
 
 {% endblock %}

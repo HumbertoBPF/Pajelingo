@@ -1,6 +1,8 @@
 from django.urls import path
 
 from languageschool import views
+from languageschool.views.account import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
+    PasswordResetCompleteView
 from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet
@@ -28,6 +30,10 @@ urlpatterns = [
     path('account/update-user-done', views.account.update_user_done, name='update-user-done'),
     path('account/delete-user', views.account.delete_user, name='delete-user'),
     path('account/activate/<uidb64>/<token>', views.account.activate, name='activate-account'),
+    path('account/request-reset-account', PasswordResetView.as_view(), name='request-reset-account'),
+    path('account/request-reset-account-done', PasswordResetDoneView.as_view(), name='request-reset-account-done'),
+    path('account/reset-account/<uidb64>/<token>', PasswordResetConfirmView.as_view(), name='reset-account'),
+    path('account/reset-account-done', PasswordResetCompleteView.as_view(), name='reset-account-done'),
     path('rankings', views.general.rankings, name='rankings'),
     path('account/change-picture', views.account.change_picture, name='change-picture'),
     path('api/games', GameViewSet.as_view(), name='games-api'),

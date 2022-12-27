@@ -18,7 +18,7 @@ from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASS
     ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_SPECIAL_CHARACTER_PASSWORD, ERROR_DIGIT_PASSWORD, \
     ERROR_LETTER_PASSWORD
 from languageschool.views.account import SUCCESSFUL_SIGN_UP, SIGN_UP_SUBJECT, SIGN_UP_MESSAGE, SUCCESSFUL_ACTIVATION, \
-    ERROR_ACTIVATION
+    ACTIVATION_LINK_ERROR
 from pajelingo import settings
 
 
@@ -100,7 +100,7 @@ class TestSignupSelenium:
 
         alert_danger = selenium_driver.find_element(By.CLASS_NAME, "alert-danger")
 
-        assert alert_danger.text == ERROR_ACTIVATION
+        assert alert_danger.text == ACTIVATION_LINK_ERROR
         assert User.objects.filter(username=username, email=email, is_active=False).exists()
 
     @pytest.mark.parametrize(
