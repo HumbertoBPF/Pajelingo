@@ -13,10 +13,10 @@ from django.views.decorators.http import require_GET, require_POST
 
 from languageschool.forms import FormPicture, PasswordResetForm, SetPasswordForm
 from languageschool.models import AppUser, Score
-from languageschool.validation import is_valid_user_data
 from languageschool.views.general import request_contains
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
+from pajelingo.validators.validators import is_valid_user_data
 
 LOGIN_ERROR = "Incorrect username or password"
 NOT_ACTIVE_ERROR = "The specified account has not been activated yet. Please check your email and activate it."

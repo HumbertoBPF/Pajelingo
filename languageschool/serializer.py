@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
-from languageschool.validation import is_valid_user_data
+from pajelingo.validators.validators import is_valid_user_data
 
 
 class GameSerializer(serializers.ModelSerializer):

@@ -14,12 +14,13 @@ from languageschool.tests.selenium.utils import assert_menu, WARNING_REQUIRED_FI
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
     get_password_without_special_characters
-from languageschool.validation import ERROR_SPACE_IN_USERNAME, ERROR_LENGTH_PASSWORD, ERROR_NOT_CONFIRMED_PASSWORD, \
-    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_SPECIAL_CHARACTER_PASSWORD, ERROR_DIGIT_PASSWORD, \
-    ERROR_LETTER_PASSWORD
 from languageschool.views.account import SUCCESSFUL_SIGN_UP, SIGN_UP_SUBJECT, SIGN_UP_MESSAGE, SUCCESSFUL_ACTIVATION, \
     ACTIVATION_LINK_ERROR
 from pajelingo import settings
+from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD, ERROR_LETTER_PASSWORD, \
+    ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD
+from pajelingo.validators.validators import ERROR_SPACE_IN_USERNAME, ERROR_NOT_CONFIRMED_PASSWORD, \
+    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
 
 
 class TestSignupSelenium:

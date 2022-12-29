@@ -6,8 +6,12 @@ from selenium.webdriver.common.by import By
 
 from languageschool.tests.selenium.utils import assert_menu, get_form_error_message, WARNING_REQUIRED_FIELD_HTML, \
     authenticate
-from languageschool.tests.utils import get_random_email, get_valid_password
+from languageschool.tests.utils import get_random_email, get_valid_password, get_too_short_password, \
+    get_too_long_password, get_password_without_letters, get_password_without_digits, \
+    get_password_without_special_characters
 from pajelingo import settings
+from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD, ERROR_LETTER_PASSWORD, \
+    ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD
 
 
 class TestResetAccountSelenium:
@@ -130,7 +134,7 @@ class TestResetAccountSelenium:
         assert_menu(selenium_driver, False)
 
     @pytest.mark.django_db
-    def test_reset_different_passwords(self, live_server, selenium_driver, account):
+    def test_reset_account_different_passwords(self, live_server, selenium_driver, account):
         user, password = account()[0]
         selenium_driver.get(self.get_reset_account_link(live_server, selenium_driver, user.email))
 
@@ -156,8 +160,32 @@ class TestResetAccountSelenium:
 
         assert greeting.text == "Welcome back, {}".format(user.username)
 
+    @pytest.mark.parametrize(
+        "new_password, error_message", [
+            (get_too_short_password(), ERROR_LENGTH_PASSWORD),
+            (get_too_long_password(), ERROR_LENGTH_PASSWORD),
+            (get_password_without_letters(), ERROR_LETTER_PASSWORD),
+            (get_password_without_digits(), ERROR_DIGIT_PASSWORD),
+            (get_password_without_special_characters(), ERROR_SPECIAL_CHARACTER_PASSWORD)
+        ]
+    )
     @pytest.mark.django_db
-    def test_reset_same_passwords(self, live_server, selenium_driver, account):
+    def test_reset_account_invalid_password(self, live_server, selenium_driver, account, new_password, error_message):
+        user, _ = account()[0]
+        selenium_driver.get(self.get_reset_account_link(live_server, selenium_driver, user.email))
+
+        selenium_driver.find_element(By.ID, "id_new_password1").send_keys(new_password)
+        selenium_driver.find_element(By.ID, "id_new_password2").send_keys(new_password)
+        selenium_driver.find_element(By.ID, "submitResetAccountFormButton").click()
+
+        alert_dangers = selenium_driver.find_elements(By.CLASS_NAME, "alert-danger")
+
+        assert len(alert_dangers) == 1
+        assert error_message in alert_dangers[0].text
+        assert_menu(selenium_driver, False)
+
+    @pytest.mark.django_db
+    def test_reset_account_same_passwords(self, live_server, selenium_driver, account):
         user, _ = account()[0]
         selenium_driver.get(self.get_reset_account_link(live_server, selenium_driver, user.email))
 
