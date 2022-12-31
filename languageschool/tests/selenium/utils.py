@@ -81,4 +81,4 @@ def submit_form_user(selenium_driver, email, username, password, confirmation_pa
     selenium_driver.find_element(By.ID, "inputPassword").send_keys(password)
     selenium_driver.find_element(By.ID, "inputPasswordConf").clear()
     selenium_driver.find_element(By.ID, "inputPasswordConf").send_keys(confirmation_password)
-    selenium_driver.find_element(By.ID, "submitButtonSignup").click()
+    selenium_driver.find_element(By.ID, "formUserSubmitButton").click()

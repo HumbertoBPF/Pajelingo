@@ -4,13 +4,13 @@
 
 {% if messages %}
     {% for message in messages %}
-        <div class="mt-3 mx-3 alert alert-danger" role="alert">
+        <div class="alert alert-danger" role="alert">
             {{message}}
         </div>
     {% endfor %}
 {% endif %}
-<form class="mt-3 mx-3" action="{% url 'article-game' %}" method="GET">
-    <div class="mb-3">
+<form action="{% url 'article-game' %}" method="GET">
+    <div class="mb-4">
         <label for="selectLanguage" class="form-label">Language</label>
         <select id="selectLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="language">
             <option id="defaultItem" value="" selected>Choose a language</option>
@@ -19,7 +19,9 @@
             {% endfor %}
         </select>
     </div>
-    <button id="submitButtonSetupForm" type="submit" class="btn btn-primary">Play!</button>
+    <div class="text-center">
+        <button id="submitButtonSetupForm" type="submit" class="btn btn-success mx-auto">Start</button>
+    </div>
 </form>
 
 {% endblock %}

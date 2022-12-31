@@ -117,7 +117,7 @@ class TestsProfileSelenium:
         inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
         inputs_password = selenium_driver.find_elements(By.ID, "inputPassword")
         inputs_password_confirmation = selenium_driver.find_elements(By.ID, "inputPasswordConf")
-        submit_buttons_form = selenium_driver.find_elements(By.ID, "submitButtonSignup")
+        submit_buttons_form = selenium_driver.find_elements(By.ID, "formUserSubmitButton")
 
         assert len(inputs_email) == 1
         assert len(inputs_username) == 1

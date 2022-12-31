@@ -4,7 +4,7 @@
 {% block content %}
 
     {% if messages %}
-        <section class = "mt-3 mx-3 text-center">
+        <section class="text-center">
         {% for message in messages %}
             <div class="alert alert-{{message.tags}}" role="alert">
                 {{message}}
@@ -12,13 +12,13 @@
         {% endfor %}
         </section>
     {% endif%}
-    <form class="mt-3 mx-3" action="{% url 'login-done' %}" method="POST">
+    <form action="{% url 'login-done' %}" method="POST">
         {% csrf_token %}
-        <div class="mb-3">
+        <div class="mb-4">
             <label for="inputUsername" class="form-label">Username</label>
             <input id="inputUsername" type="text" class="form-control" name="username" aria-label="Username" aria-describedby="basic-addon1">
         </div>
-        <div class="mb-3">
+        <div class="mb-4">
             <label for="inputPassword" class="form-label">Password</label>
             <input id="inputPassword" type="password" class="form-control" name="password">
         </div>
@@ -27,7 +27,9 @@
         {% endif %}
         <a id="reset_account_link" href="{% url 'request-reset-account' %}">I forgot my username/password</a>
         <br>
-        <button id="submitLoginFormButton" type="submit" class="btn btn-primary mt-3">Submit</button>
+        <div class="text-center">
+            <button id="submitLoginFormButton" type="submit" class="btn btn-success mt-4">Sign in</button>
+        </div>
     </form>
 
 {% endblock %}

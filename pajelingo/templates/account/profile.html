@@ -3,9 +3,7 @@
 
 {% block content %}
 
-    <section class="mt-3 mx-3">
-        <h5 id="greeting">Welcome to your profile, {{user.username}}</h5>
-        <br>
+    <section>
         <section class="row">
             <div class="col-12 col-md-5 col-lg-3">
                 {% if app_user.picture %}
@@ -14,9 +12,9 @@
                     <img id="defaultPicture" src="{% static 'profile.jpg' %}" class="img-fluid rounded-start" alt="default profile picture">
                 {% endif %}
             </div>
-            <div class="col-12 col-md-7 col-lg-9 mt-3">
+            <div class="col-12 col-md-7 col-lg-9 mt-4">
                 <h5>Account details:</h5>
-                <p id="username" class="mt-3">Username: {{user.username}}</p>
+                <p id="username" class="mt-4">Username: {{user.username}}</p>
                 <p id="email">Email: {{user.email}}</p>
                 <!-- Button to access the update form -->
                 <a id="updateAccountButton" class="btn btn-info" href="{% url 'update-user' %}" role="button">
@@ -26,7 +24,7 @@
                 </a>
                 <br>
                 <!-- Button trigger modal for confirm the intention of deleting account-->
-                <button id="deleteAccountButton" type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <button id="deleteAccountButton" type="button" class="btn btn-danger mt-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-x-fill" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6.146-2.854a.5.5 0 0 1 .708 0L14 6.293l1.146-1.147a.5.5 0 0 1 .708.708L14.707 7l1.147 1.146a.5.5 0 0 1-.708.708L14 7.707l-1.146 1.147a.5.5 0 0 1-.708-.708L13.293 7l-1.147-1.146a.5.5 0 0 1 0-.708z"/>
                     </svg> Delete account
@@ -54,7 +52,7 @@
                     </div>
                 </div>
 
-                <form class="mt-3" action="{% url 'change-picture' %}" method="POST" enctype="multipart/form-data">
+                <form class="mt-4" action="{% url 'change-picture' %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{form_picture.as_p}}
                     <button id="changePictureButton" type="submit" class="btn btn-primary">Apply</button>
@@ -63,11 +61,10 @@
             </div>
         </section>
         <br>
-        <section class="mx-1">
+        <section>
             {% if scores %}
                 <!-- Score table -->
                 <h5>Your performance in our games:</h5>
-                <br>
                 <table class="table table-stripped">
                     <thead>
                         <tr>
