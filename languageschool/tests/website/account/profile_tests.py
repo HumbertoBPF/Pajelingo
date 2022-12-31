@@ -249,7 +249,7 @@ def test_change_profile_picture_requires_authentication(client, account):
 
 @pytest.mark.parametrize(
     "filename, is_successful", [
-        ('C:/Users/Humberto/Desktop/Humberto/Study/WebDev/Pajelingo/pajelingo/static/pajelingo.jpg', True),
+        ('C:/Users/Humberto/Desktop/Humberto/Study/WebDev/Pajelingo/pajelingo/static/pajelingo.png', True),
         ('C:/Users/Humberto/Downloads/PokemonApp.pdf', False),
         ('C:/Users/Humberto/Downloads/test.txt', False)
     ]

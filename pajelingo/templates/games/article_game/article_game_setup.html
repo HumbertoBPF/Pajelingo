@@ -2,6 +2,13 @@
 
 {% block content %}
 
+<h5>Guess the article</h5>
+<br>
+<p>As you may have inferred, in this game you must write the definite article that matches the displayed word. The
+    English language is not available for this game since there is only one definite article for this language (the). </p>
+
+<p>For the languages concerned by this game, the article indicates the gender and the number of the word. This might be
+    a bit weird for English speakers, but it’s just about getting used. Let’s start?</p>
 {% if messages %}
     {% for message in messages %}
         <div class="alert alert-danger" role="alert">
@@ -11,7 +18,6 @@
 {% endif %}
 <form action="{% url 'article-game' %}" method="GET">
     <div class="mb-4">
-        <label for="selectLanguage" class="form-label">Language</label>
         <select id="selectLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="language">
             <option id="defaultItem" value="" selected>Choose a language</option>
             {% for language in languages %}

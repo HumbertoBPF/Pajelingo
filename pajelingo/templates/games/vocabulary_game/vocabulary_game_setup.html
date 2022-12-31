@@ -2,6 +2,12 @@
 
 {% block content %}
 
+<h5>Vocabulary training</h5>
+<br>
+<p>This game will test your vocabulary. When learning a language, it is tricky to increase your repertory. For languages
+    different from the languages that you know, everything may seem random and unexpected. Even languages that share similarities,
+    such as Spanish and Portuguese, there are several “false friends”, that is words that seem to be a synonym of a word
+    in other language, but whose meaning is not the same. Let’s start?</p>
 {% if messages %}
     {% for message in messages %}
         <div class="alert alert-danger" role="alert">
@@ -11,18 +17,16 @@
 {% endif %}
 <form action="{% url 'vocabulary-game' %}" method="GET">
     <div class="mb-4">
-        <label for="selectBaseLanguage" class="form-label">Base language</label>
         <select id="selectBaseLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="base_language">
-            <option id="defaultBaseLanguageItem" value="" selected>Pick a base language</option>
+            <option id="defaultBaseLanguageItem" value="" selected>Choose a base language</option>
             {% for language in languages %}
                 <option id="{{ language.language_name }}BaseLanguageItem" value="{{ language.language_name }}">{{ language.language_name }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="mb-4">
-        <label for="selectTargetLanguage" class="form-label">Target language</label>
         <select id="selectTargetLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="target_language">
-            <option id="defaultTargetLanguageItem" value="" selected>Pick a target language</option>
+            <option id="defaultTargetLanguageItem" value="" selected>Choose a target language</option>
             {% for language in languages %}
                 <option id="{{ language.language_name }}TargetLanguageItem" value="{{ language.language_name }}">{{ language.language_name }}</option>
             {% endfor %}
