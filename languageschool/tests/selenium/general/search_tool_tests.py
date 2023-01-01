@@ -1,17 +1,44 @@
 import random
 import time
-from urllib.parse import urlencode
 
 import pytest
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word, Meaning
+from languageschool.models import Word, Meaning, Language
 from languageschool.tests.selenium.utils import assert_menu
 
 
 class TestSearchSelenium:
+    def fill_search_form(self, live_server, selenium_driver, search_pattern, languages):
+        url = live_server.url + reverse("search")
+        selenium_driver.get(url)
+
+        selenium_driver.find_element(By.ID, "searchInput").send_keys(search_pattern)
+
+        for language in languages:
+            selenium_driver.find_element(By.ID, "checkbox" + language.language_name).click()
+
+        selenium_driver.find_element(By.ID, "searchSubmitButton").click()
+
+    @pytest.mark.django_db
+    def test_rendering_search_form(self, live_server, selenium_driver, words):
+        url = live_server.url + reverse("search")
+        selenium_driver.get(url)
+
+        search_inputs = selenium_driver.find_elements(By.ID, "searchInput")
+
+        for language in Language.objects.all():
+            checkbox_languages = selenium_driver.find_elements(By.ID, "checkbox{}".format(language.language_name))
+            assert len(checkbox_languages) == 1
+
+        search_buttons = selenium_driver.find_elements(By.ID, "searchSubmitButton")
+
+        assert len(search_inputs) == 1
+        assert len(search_buttons) == 1
+
+
     @pytest.mark.parametrize(
         "search_pattern", [
             "",
@@ -19,19 +46,22 @@ class TestSearchSelenium:
             get_random_string(random.randint(1, 5))
         ]
     )
+    @pytest.mark.parametrize("all_languages", [True, False])
     @pytest.mark.django_db
-    def test_search(self, live_server, selenium_driver, words, search_pattern):
-        base_url = live_server.url + reverse("search")
-        query_string = urlencode({"search": search_pattern})
-        url = '{}?{}'.format(base_url, query_string)
+    def test_search(self, live_server, selenium_driver, words, search_pattern, all_languages):
+        number_languages = Language.objects.count()
+        k = number_languages if all_languages else random.randint(1, number_languages)
+        languages = random.sample(list(Language.objects.all()), k)
 
-        selenium_driver.get(url)
+        self.fill_search_form(live_server, selenium_driver, search_pattern, languages)
+
+        url = selenium_driver.current_url
 
         page_hrefs = set()
         page_hrefs.add(url)
         dict_words = {}
 
-        words = words.filter(word_name__icontains=search_pattern)
+        words = words.filter(word_name__icontains=search_pattern, language__in=languages)
 
         pages = selenium_driver.find_elements(By.CLASS_NAME, "page-link")
         n = len(pages)
@@ -50,7 +80,7 @@ class TestSearchSelenium:
             for i in range(n):
                 word_name = results_title[i].text
                 language_name = results_text[i].text
-                word_id = results_link[i].get_attribute("href").split("/dictionary/")[1]
+                word_id = results_link[i].get_attribute("href").split("/meaning/")[1]
                 word = words.filter(id=word_id, word_name=word_name, language__language_name=language_name).first()
                 # Check if all the words that are expected to appear occur only once
                 assert dict_words.get(word.id) is None
@@ -63,15 +93,11 @@ class TestSearchSelenium:
 
     @pytest.mark.django_db
     def test_dictionary_access_with_click(self, live_server, selenium_driver, words, meanings):
-        base_url = live_server.url + reverse("search")
-        query_string = urlencode({"search": ""})
-        url = '{}?{}'.format(base_url, query_string)
-
-        selenium_driver.get(url)
+        self.fill_search_form(live_server, selenium_driver, "", Language.objects.all())
         # Exclude the two last items because they correspond to the social network links
         results_page = selenium_driver.find_elements(By.CLASS_NAME, "text-decoration-none")[:-2]
         result_page = random.choice(results_page)
-        word_id = result_page.get_attribute("href").split("/dictionary/")[1]
+        word_id = result_page.get_attribute("href").split("/meaning/")[1]
 
         selenium_driver.execute_script("arguments[0].click();", result_page)
 

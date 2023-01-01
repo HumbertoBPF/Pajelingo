@@ -14,22 +14,32 @@ def index(request):
 
 @require_GET
 def search(request):
+    languages = Language.objects.all()
+    return render(request, 'search_tool/search_form.html', {"languages": languages})
+
+@require_GET
+def search_done(request):
     if request_contains(request.GET, ["search"]):
         search_pattern = request.GET["search"]
+        languages = []
+        for language in Language.objects.all():
+            if request.GET.get(language.language_name) == "True":
+                languages.append(language)
         # Results containing the specified string
-        search_results = Word.objects.filter(word_name__icontains=search_pattern).order_by(Lower('word_name'))
+        search_results = Word.objects\
+            .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
         # Pagination(getting page number and the results of the current page)
         paginator = Paginator(search_results, 12)
         page = request.GET.get('page')
         search_results_current_page = paginator.get_page(page)
 
-        return render(request, 'search.html', {'search_results': search_results_current_page, 'search': search_pattern})
+        return render(request, 'search_tool/search.html', {'search_results': search_results_current_page, 'base_url': request.get_full_path().split("&page")[0]})
     return index(request)
 
 @require_GET
-def dictionary(request, word_id):
+def meaning(request, word_id):
     meanings = Meaning.objects.filter(word=word_id)
-    return render(request, 'meaning.html', {'meanings': meanings})
+    return render(request, 'search_tool/meaning.html', {'meanings': meanings})
 
 @require_GET
 def rankings(request):

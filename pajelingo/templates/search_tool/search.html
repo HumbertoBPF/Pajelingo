@@ -7,7 +7,7 @@
         {% if search_results %}
             {% for result in search_results %}
                 <div class="col-6 col-sm-4 my-1">
-                    <a class="text-reset text-decoration-none" href="/dictionary/{{result.id}}">
+                    <a class="text-reset text-decoration-none" href="/meaning/{{result.id}}">
                         <div class="card bg-light">
                             <div class="card-body">
                                 <h5 class="card-title">{{result.word_name}}</h5>
@@ -27,21 +27,21 @@
         <ul class="pagination">
             {% if search_results.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?search={{search}}&page={{search_results.previous_page_number}}" aria-label="Previous">
+                    <a class="page-link" href="{{base_url}}&page={{search_results.previous_page_number}}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
             {% endif %}
             {% for page in search_results.paginator.page_range %}
                 {% if search_results.number == page %}
-                    <li class="page-item active"><a class="page-link" href="?search={{search}}&page={{page}}">{{page}}</a></li>
+                    <li class="page-item active"><a class="page-link" href="{{base_url}}&page={{page}}">{{page}}</a></li>
                 {% else %}
-                    <li class="page-item"><a class="page-link" href="?search={{search}}&page={{page}}">{{page}}</a></li>
+                    <li class="page-item"><a class="page-link" href="{{base_url}}&page={{page}}">{{page}}</a></li>
                 {% endif %}
             {% endfor %}
             {% if search_results.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?search={{search}}&page={{search_results.next_page_number}}" aria-label="Next">
+                    <a class="page-link" href="{{base_url}}&page={{search_results.next_page_number}}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>

@@ -7,7 +7,7 @@
         {% for message in messages %}
             <div class="alert alert-{{message.tags}}">{{message|linebreaksbr}}</div>
         {% endfor %}
-        <a id="newWordButton" class="btn btn-success" href="/conjugation-game?language={{ word.language.language_name }}" role="button">New word</a>
+        <a id="newWordButton" class="btn btn-success" href="/conjugation-game?language={{ word.language.language_name }}" role="button">New verb</a>
     </section>
 {% else %}
     <form class="text-center" action="{% url 'conjugation-game-verify-answer' %}" method="POST">
