@@ -58,7 +58,7 @@ class TestSignupSelenium:
         assert len(inputs_password) == 1
         assert len(inputs_password_confirmation) == 1
         assert len(submit_buttons_form) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_signup(self, live_server, selenium_driver):
@@ -75,8 +75,7 @@ class TestSignupSelenium:
         assert SIGN_UP_MESSAGE.split("{}")[1] in mail.outbox[0].body
         assert mail.outbox[0].to == [email]
         assert mail.outbox[0].from_email == settings.EMAIL_FROM
-
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_activate_account(self, live_server, selenium_driver):
@@ -135,7 +134,7 @@ class TestSignupSelenium:
         assert is_valid_message
         assert not User.objects.filter(username=username, email=email).exists()
         assert not AppUser.objects.filter(user__username=username, user__email=email).exists()
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
         "is_repeated_email, is_repeated_username", [
@@ -165,4 +164,4 @@ class TestSignupSelenium:
         # Verifies if there is a user other than the fixture user with the specified credentials
         assert not User.objects.filter(username=username, email=email).filter(~Q(id=user.id)).exists()
         assert not AppUser.objects.filter(user__username=username, user__email=email).filter(~Q(user__id=user.id)).exists()
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)

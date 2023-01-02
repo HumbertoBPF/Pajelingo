@@ -46,14 +46,14 @@ class TestArticleGameSelenium:
                 option_items = selenium_driver.find_elements(By.ID, language.language_name+"Item")
                 assert len(option_items) == 1
 
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_article_game_setup_error(self, live_server, selenium_driver, article_game_dependencies):
         self.select_language(live_server, selenium_driver)
         error_message = selenium_driver.find_element(By.CLASS_NAME, "alert-danger").text
         assert error_message == "You must choose a language"
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_article_game(self, live_server, selenium_driver, article_game_dependencies):
@@ -71,13 +71,13 @@ class TestArticleGameSelenium:
         assert word.word_name == word_name
         assert len(article_inputs) == 1
         assert len(answer_submit_buttons) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_article_game_without_setup(self, live_server, selenium_driver, article_game_dependencies):
         selenium_driver.get(live_server.url + reverse("article-game"))
         assert selenium_driver.current_url == (live_server.url + reverse("article-game-setup"))
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_article_game_correct_answer(self, live_server, selenium_driver, article_game_dependencies):
@@ -89,7 +89,7 @@ class TestArticleGameSelenium:
         feedback_message = self.input_answer(selenium_driver, word.article.article_name)
 
         assert feedback_message == "Correct :)\n" + str(word)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_article_game_wrong_answer(self, live_server, selenium_driver, article_game_dependencies):
@@ -101,7 +101,7 @@ class TestArticleGameSelenium:
         feedback_message = self.input_answer(selenium_driver)
 
         assert feedback_message == 'Wrong answer\n' + str(word)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_article_game_correct_answer_authenticated_user(self, live_server, selenium_driver, article_game_dependencies, account, score):
@@ -124,7 +124,7 @@ class TestArticleGameSelenium:
 
         assert feedback_message == ("Correct :)\n" + str(word) + "\nYour score is " + str(initial_score + 1))
         assert final_score == (initial_score + 1)
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_article_game_wrong_answer_authenticated_user(self, live_server, selenium_driver,
@@ -148,4 +148,4 @@ class TestArticleGameSelenium:
 
         assert feedback_message == 'Wrong answer\n' + str(word)
         assert final_score == initial_score
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)

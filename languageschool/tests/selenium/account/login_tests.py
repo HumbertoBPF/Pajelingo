@@ -19,16 +19,14 @@ class TestsLoginSelenium:
         assert len(inputs_username) == 1
         assert len(inputs_password) == 1
         assert len(submits_button) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_successful_login_attempt(self, live_server, selenium_driver, account):
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
-        greeting = selenium_driver.find_element(By.ID, "greeting")
         assert selenium_driver.current_url == live_server.url + reverse("index")
-        assert greeting.text == "Welcome back, {}".format(user.username)
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_failed_login_attempt(self, live_server, selenium_driver, account):
@@ -36,4 +34,4 @@ class TestsLoginSelenium:
         authenticate(live_server, selenium_driver, get_random_username(), get_valid_password())
         alert_danger = selenium_driver.find_element(By.CLASS_NAME, "alert-danger")
         assert alert_danger.text == LOGIN_ERROR
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)

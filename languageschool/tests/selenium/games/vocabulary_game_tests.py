@@ -55,7 +55,7 @@ class TestVocabularyGameSelenium:
 
         error_message = selenium_driver.find_element(By.CLASS_NAME, "alert-danger").text
         assert error_message == "The target and base languages must be different"
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
         "is_base_language_none, is_target_language_none, expected_message", [
@@ -77,7 +77,7 @@ class TestVocabularyGameSelenium:
         self.select_languages(live_server, selenium_driver, base_language, target_language)
         error_message = selenium_driver.find_element(By.CLASS_NAME, "alert-danger").text
         assert error_message == expected_message
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_vocabulary_game_setup(self, live_server, selenium_driver, vocabulary_game_dependencies):
@@ -95,7 +95,7 @@ class TestVocabularyGameSelenium:
             assert len(base_language_item) == 1
             assert len(target_language_item) == 1
 
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_vocabulary_game(self, live_server, selenium_driver, vocabulary_game_dependencies):
@@ -116,13 +116,13 @@ class TestVocabularyGameSelenium:
         assert word.word_name == word_name
         assert len(translation_inputs) == 1
         assert len(answer_submit_buttons) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_vocabulary_game_without_setup(self, live_server, selenium_driver, vocabulary_game_dependencies):
         selenium_driver.get(live_server.url + reverse("vocabulary-game"))
         assert selenium_driver.current_url == (live_server.url + reverse("vocabulary-game-setup"))
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_vocabulary_game_correct_answer(self, live_server, selenium_driver, vocabulary_game_dependencies):
@@ -136,7 +136,7 @@ class TestVocabularyGameSelenium:
         feedback_message = self.input_answer(selenium_driver, answer)
 
         assert feedback_message == "Correct :)\n" + str(word.word_name) + ": " + str(answer)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_vocabulary_game_wrong_answer(self, live_server, selenium_driver, article_game_dependencies):
@@ -150,7 +150,7 @@ class TestVocabularyGameSelenium:
         feedback_message = self.input_answer(selenium_driver)
 
         assert feedback_message == 'Wrong answer\n' + str(word.word_name) + ": " + str(answer)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_vocabulary_game_correct_answer_authenticated_user(self, live_server, selenium_driver,
@@ -176,7 +176,7 @@ class TestVocabularyGameSelenium:
         assert feedback_message == (
                 "Correct :)\n" + str(word.word_name) + ": " + str(answer) + "\nYour score is " + str(initial_score + 1))
         assert final_score == (initial_score + 1)
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_vocabulary_game_wrong_answer_authenticated_user(self, live_server, selenium_driver,
@@ -201,4 +201,4 @@ class TestVocabularyGameSelenium:
 
         assert feedback_message == 'Wrong answer\n' + str(word.word_name) + ": " + str(correct_answer)
         assert final_score == initial_score
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)

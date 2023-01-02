@@ -33,12 +33,12 @@ class TestsProfileSelenium:
         url = reverse("profile")
         selenium_driver.get(live_server.url + url)
         assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("login"), url)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
         # Logs in and check if user is redirected
         input_login_credentials(selenium_driver, user.username, password)
 
         assert selenium_driver.current_url == live_server.url + url
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_profile_access_with_authenticated_user_without_scores(self, live_server, selenium_driver, account):
@@ -58,7 +58,7 @@ class TestsProfileSelenium:
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
         assert warning_no_scores.text == "Play a game to have a history of your scores"
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_profile_access_with_authenticated_user_with_scores(self, live_server, selenium_driver, account, score, games, languages):
@@ -85,7 +85,7 @@ class TestsProfileSelenium:
             score = scores[i]
             assert row_scores[i].text == "{} {} {}".format(score.language, score.game.game_name, score.score)
 
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_update_account_form_requires_authentication(self, live_server, selenium_driver, account):
@@ -97,12 +97,12 @@ class TestsProfileSelenium:
         url = reverse("update-user")
         selenium_driver.get(live_server.url + url)
         assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("login"), url)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
         # Logs in and check if user is redirected
         input_login_credentials(selenium_driver, user.username, password)
 
         assert selenium_driver.current_url == live_server.url + url
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_update_account_form_rendering(self, live_server, selenium_driver, account):
@@ -124,7 +124,7 @@ class TestsProfileSelenium:
         assert len(inputs_password) == 1
         assert len(inputs_password_confirmation) == 1
         assert len(submit_buttons_form) == 1
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [
             (get_random_email(), get_random_username(), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
@@ -161,7 +161,7 @@ class TestsProfileSelenium:
         assert is_valid_message
         assert not User.objects.filter(id=user.id, username=username, email=email).exists()
         assert not AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.parametrize(
         "is_repeated_email, is_repeated_username", [
@@ -198,7 +198,7 @@ class TestsProfileSelenium:
         # Checks that the authenticated user did not have its credentials changed
         assert not User.objects.filter(id=user.id, username=username, email=email).exists()
         assert not AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.parametrize(
         "is_same_email, is_same_username", [
@@ -228,7 +228,9 @@ class TestsProfileSelenium:
         # Checks that the update was successful
         assert User.objects.filter(id=user.id, username=username, email=email).exists()
         assert AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
-        assert_menu(selenium_driver, True)
+
+        new_user = User.objects.filter(id=user.id, username=username, email=email).first()
+        assert_menu(selenium_driver, user=new_user)
 
     @pytest.mark.django_db
     def test_delete_account_dialog_is_shown(self, live_server, selenium_driver, account):
@@ -254,7 +256,7 @@ class TestsProfileSelenium:
         # Checks that the user still exists in database
         assert User.objects.filter(id=user.id).exists()
         assert AppUser.objects.filter(user__id=user.id).exists()
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_delete_account(self, live_server, selenium_driver, account):
@@ -272,7 +274,7 @@ class TestsProfileSelenium:
 
         assert not User.objects.filter(id=user.id).exists()
         assert not AppUser.objects.filter(user__id=user.id).exists()
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
         "filename", [
@@ -291,7 +293,7 @@ class TestsProfileSelenium:
         selenium_driver.find_element(By.ID, "changePictureButton").click()
 
         assert AppUser.objects.filter(user__id=user.id).first().picture.url.endswith(filename.split(".")[1])
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.parametrize(
         "filename", [
@@ -310,4 +312,4 @@ class TestsProfileSelenium:
         selenium_driver.find_element(By.ID, "changePictureButton").click()
 
         assert not AppUser.objects.filter(user__id=user.id).first().picture
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)

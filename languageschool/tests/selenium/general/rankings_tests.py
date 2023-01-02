@@ -76,7 +76,7 @@ class TestsRankingsSelenium:
         """
         self.prepare_test_scenario(live_server, selenium_driver, account, score)
         self.assert_ranking(live_server, selenium_driver, selected_language)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
         "selected_language", [
@@ -114,4 +114,4 @@ class TestsRankingsSelenium:
         assert ths[0].text == "(You) {}".format(my_position)
         assert ths[1].text == user.username
         assert ths[2].text == my_score
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)

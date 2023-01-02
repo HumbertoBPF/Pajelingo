@@ -60,7 +60,7 @@ class TestResetAccountSelenium:
         assert len(email_labels) == 1
         assert len(email_inputs) == 1
         assert len(submit_buttons) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_request_reset_account_no_email(self, live_server, selenium_driver):
@@ -73,7 +73,7 @@ class TestResetAccountSelenium:
         email_warning = get_form_error_message(selenium_driver, "id_email")
 
         assert email_warning == WARNING_REQUIRED_FIELD_HTML
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_request_reset_account_invalid_email(self, live_server, selenium_driver):
@@ -83,7 +83,7 @@ class TestResetAccountSelenium:
 
         assert len(alert_successes) == 1
         assert len(mail.outbox) == 0
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_request_reset_account_valid_email(self, live_server, selenium_driver, account):
@@ -102,7 +102,7 @@ class TestResetAccountSelenium:
         assert mail.outbox[0].subject == "Pajelingo - reset account"
         assert mail.outbox[0].body.startswith(starting_text)
         assert mail.outbox[0].body.endswith(ending_text)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_reset_account_form_rendering(self, live_server, selenium_driver, account):
@@ -120,7 +120,7 @@ class TestResetAccountSelenium:
         assert len(confirmation_password_labels) == 1
         assert len(confirmation_input_labels) == 1
         assert len(submit_buttons) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_reset_account_invalid_link(self, live_server, selenium_driver, account):
@@ -131,7 +131,7 @@ class TestResetAccountSelenium:
 
         assert len(alert_dangers) == 1
         assert alert_dangers[0].text == "Invalid token!"
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_reset_account_different_passwords(self, live_server, selenium_driver, account):
@@ -152,13 +152,9 @@ class TestResetAccountSelenium:
 
         assert len(alert_dangers) == 1
         assert alert_dangers[0].text == "The two password fields didn’t match."
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
         # Verifies that the user credentials keep the same
         authenticate(live_server, selenium_driver, user.username, password)
-
-        greeting = selenium_driver.find_element(By.ID, "greeting")
-
-        assert greeting.text == "Welcome back, {}".format(user.username)
 
     @pytest.mark.parametrize(
         "new_password, error_message", [
@@ -182,7 +178,7 @@ class TestResetAccountSelenium:
 
         assert len(alert_dangers) == 1
         assert error_message in alert_dangers[0].text
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_reset_account_same_passwords(self, live_server, selenium_driver, account):
@@ -199,10 +195,6 @@ class TestResetAccountSelenium:
 
         assert len(alert_successes) == 1
         assert alert_successes[0].text == "Password successfully updated!"
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
         # Verifies if the user credentials changed
         authenticate(live_server, selenium_driver, user.username, new_password)
-
-        greeting = selenium_driver.find_element(By.ID, "greeting")
-
-        assert greeting.text == "Welcome back, {}".format(user.username)

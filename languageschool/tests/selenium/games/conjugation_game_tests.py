@@ -56,14 +56,14 @@ class TestConjugationGameSelenium:
             option_items = selenium_driver.find_elements(By.ID, language.language_name + "Item")
             assert len(option_items) == 1
 
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_conjugation_game_setup_error(self, live_server, selenium_driver, conjugation_game_dependencies):
         self.select_language(live_server, selenium_driver)
         error_message = selenium_driver.find_element(By.CLASS_NAME, "alert-danger").text
         assert error_message == "You must choose a language"
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_conjugation_game(self, live_server, selenium_driver, conjugation_game_dependencies):
@@ -91,13 +91,13 @@ class TestConjugationGameSelenium:
         assert len(conjugation_5_inputs) == 1
         assert len(conjugation_6_inputs) == 1
         assert len(answer_submit_buttons) == 1
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_conjugation_game_without_setup(self, live_server, selenium_driver, conjugation_game_dependencies):
         selenium_driver.get(live_server.url + reverse("conjugation-game"))
         assert selenium_driver.current_url == (live_server.url + reverse("conjugation-game-setup"))
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_conjugation_game_correct_answer(self, live_server, selenium_driver, conjugation_game_dependencies):
@@ -119,7 +119,7 @@ class TestConjugationGameSelenium:
                language.personal_pronoun_4 + " " + conjugation.conjugation_4 + "\n" + \
                language.personal_pronoun_5 + " " + conjugation.conjugation_5 + "\n" + \
                language.personal_pronoun_6 + " " + conjugation.conjugation_6
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_conjugation_game_wrong_answer(self, live_server, selenium_driver, conjugation_game_dependencies):
@@ -139,7 +139,7 @@ class TestConjugationGameSelenium:
                language.personal_pronoun_4 + " " + conjugation.conjugation_4 + "\n" + \
                language.personal_pronoun_5 + " " + conjugation.conjugation_5 + "\n" + \
                language.personal_pronoun_6 + " " + conjugation.conjugation_6
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_conjugation_game_correct_answer_authenticated_user(self, live_server, selenium_driver,
@@ -173,7 +173,7 @@ class TestConjugationGameSelenium:
                language.personal_pronoun_6 + " " + conjugation.conjugation_6 + "\n" + \
                "\nYour score is " + str(initial_score + 1)
         assert final_score == (initial_score + 1)
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
     def test_conjugation_game_wrong_answer_authenticated_user(self, live_server, selenium_driver,
@@ -204,4 +204,4 @@ class TestConjugationGameSelenium:
                language.personal_pronoun_5 + " " + conjugation.conjugation_5 + "\n" + \
                language.personal_pronoun_6 + " " + conjugation.conjugation_6
         assert final_score == initial_score
-        assert_menu(selenium_driver, True)
+        assert_menu(selenium_driver, user=user)

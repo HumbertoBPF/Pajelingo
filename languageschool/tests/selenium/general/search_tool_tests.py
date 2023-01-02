@@ -89,7 +89,7 @@ class TestSearchSelenium:
                 assert search_pattern.lower() in word_name.lower()
 
         assert len(dict_words) == len(words)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
 
     @pytest.mark.django_db
     def test_dictionary_access_with_click(self, live_server, selenium_driver, words, meanings):
@@ -122,4 +122,4 @@ class TestSearchSelenium:
             meanings_dict[meaning.id] = True
         # Verifying that all the expected meanings were displayed
         assert len(meanings) == len(meanings_dict)
-        assert_menu(selenium_driver, False)
+        assert_menu(selenium_driver)
