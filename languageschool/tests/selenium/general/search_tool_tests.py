@@ -37,7 +37,19 @@ class TestSearchSelenium:
 
         assert len(search_inputs) == 1
         assert len(search_buttons) == 1
+        assert_menu(selenium_driver)
 
+    @pytest.mark.django_db
+    def test_search_no_results(self, live_server, selenium_driver, words):
+        self.fill_search_form(live_server, selenium_driver, "", [])
+
+        no_result_imgs = selenium_driver.find_elements(By.ID, "noResultImg")
+        no_result_ps = selenium_driver.find_elements(By.ID, "noResultP")
+
+        assert len(no_result_imgs) == 1
+        assert len(no_result_ps) == 1
+        assert no_result_ps[0].text == "No result matching your search was found"
+        assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
         "search_pattern", [
