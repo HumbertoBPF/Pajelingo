@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="card mb-4 p-4">
+  <div class="row g-0">
+    <div class="col-6 col-sm-4 col-md-3">
+      <img src="{% static 'about_us/onboarding_0.png' %}" class="img-fluid rounded-start" alt="Welcome to Pajelingo">
+    </div>
+    <div class="col-6 col-sm-8 col-md-9 row">
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <p class="card-text text-center">Welcome to Pajelingo!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4 p-4">
+  <div class="row g-0">
+    <div class="col-6 col-sm-4 col-md-3">
+      <img src="{% static 'about_us/onboarding_1.png' %}" class="img-fluid rounded-start" alt="Foreign languages">
+    </div>
+    <div class="col-6 col-sm-8 col-md-9 row">
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <p class="card-text text-center">Here you find help to learn foreign languages :)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4 p-4">
+  <div class="row g-0">
+    <div class="col-6 col-sm-4 col-md-3">
+      <img src="{% static 'about_us/onboarding_2.png' %}" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-6 col-sm-8 col-md-9 row">
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <p class="card-text text-center">Use the search tool to expand your vocabulary! In order to keep your imersion in your target
+            language, we provide meanings instead of translations :)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4 p-4">
+  <div class="row g-0">
+    <div class="col-6 col-sm-4 col-md-3">
+      <img src="{% static 'about_us/onboarding_3.png' %}" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-6 col-sm-8 col-md-9 row">
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <p class="card-text text-center">We have several games that you can play to practice different competences of your target language!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4 p-4">
+  <div class="row g-0">
+    <div class="col-6 col-sm-4 col-md-3">
+      <img src="{% static 'about_us/onboarding_4.png' %}" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-6 col-sm-8 col-md-9 row">
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <p class="card-text text-center">No registration is needed to access the search tool neither to play our games! However, by signing up,
+            you can participate in our games rankings and compete with other players.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

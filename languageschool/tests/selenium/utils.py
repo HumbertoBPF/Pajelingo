@@ -27,13 +27,15 @@ def input_login_credentials(selenium_driver, username, password):
     selenium_driver.find_element(By.ID, "submitLoginFormButton").click()
 
 def assert_menu(selenium_driver, user=None):
-    home_link_items = selenium_driver.find_elements(By.ID, "homeLink")
+    search_tool_items = selenium_driver.find_elements(By.ID, "searchToolLink")
     game_dropdown_items = selenium_driver.find_elements(By.ID, "gameDropdownItem")
     account_dropdown_items = selenium_driver.find_elements(By.ID, "accountDropdownItem")
+    about_us_items = selenium_driver.find_elements(By.ID, "aboutUsLink")
 
-    assert len(home_link_items) == 1
+    assert len(search_tool_items) == 1
     assert len(game_dropdown_items) == 1
     assert len(account_dropdown_items) == 1
+    assert len(about_us_items) == 1
 
     article_game_link_items = selenium_driver.find_elements(By.ID, "articleGameLink")
     conjugation_game_link_items = selenium_driver.find_elements(By.ID, "conjugationGameLink")
@@ -45,16 +47,21 @@ def assert_menu(selenium_driver, user=None):
 
     greetings = selenium_driver.find_elements(By.ID, "greeting")
 
+    profile_link_items = selenium_driver.find_elements(By.ID, "profileLink")
+    logout_link_items = selenium_driver.find_elements(By.ID, "logoutLink")
+    sign_in_link_items = selenium_driver.find_elements(By.ID, "signInLink")
+    login_link_items = selenium_driver.find_elements(By.ID, "loginLink")
+
     if user is not None:
-        profile_link_items = selenium_driver.find_elements(By.ID, "profileLink")
-        logout_link_items = selenium_driver.find_elements(By.ID, "logoutLink")
         assert len(profile_link_items) == 1
         assert len(logout_link_items) == 1
+        assert len(sign_in_link_items) == 0
+        assert len(login_link_items) == 0
         assert len(greetings) == 1
         assert greetings[0].text == "Hello, {}".format(user.username)
     else:
-        sign_in_link_items = selenium_driver.find_elements(By.ID, "signInLink")
-        login_link_items = selenium_driver.find_elements(By.ID, "loginLink")
+        assert len(profile_link_items) == 0
+        assert len(logout_link_items) == 0
         assert len(sign_in_link_items) == 1
         assert len(login_link_items) == 1
         assert len(greetings) == 0

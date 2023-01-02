@@ -27,7 +27,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a id="homeLink" class="nav-link" aria-current="page" href="{% url 'search' %}">Search tool</a>
+                        <a id="searchToolLink" class="nav-link" aria-current="page" href="{% url 'search' %}">Search tool</a>
                     </li>
                     <!-- Games -->
                     <li class="nav-item dropdown">
@@ -72,6 +72,9 @@
                                 </li>
                             {% endif %}
                         </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a id="aboutUsLink" class="nav-link" aria-current="page" href="{% url 'about-us' %}">About us</a>
                     </li>
                 </ul>
             </div>

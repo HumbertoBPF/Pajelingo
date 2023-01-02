@@ -18,6 +18,10 @@ def search(request):
     return render(request, 'search_tool/search_form.html', {"languages": languages})
 
 @require_GET
+def about_us(request):
+    return render(request, 'about_us.html')
+
+@require_GET
 def search_done(request):
     if request_contains(request.GET, ["search"]):
         search_pattern = request.GET["search"]

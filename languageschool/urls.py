@@ -19,6 +19,7 @@ urlpatterns = [
     path('conjugation-game', conjugation_game.play, name='conjugation-game'),
     path('conjugation-game/verify-answer', conjugation_game.verify_answer, name='conjugation-game-verify-answer'),
     path('search', views.general.search, name='search'),
+    path('about-us', views.general.about_us, name='about-us'),
     path('meaning/<int:word_id>', views.general.meaning, name='meaning'),
     path('search-done', views.general.search_done, name='search-done'),
     path('account/signup', views.account.signup, name='signup'),
