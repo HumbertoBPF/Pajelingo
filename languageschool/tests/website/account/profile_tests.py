@@ -245,25 +245,3 @@ def test_change_profile_picture_requires_authentication(client, account):
     assert response.url == login_url
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username) \
                .first().picture == ""
-
-
-@pytest.mark.parametrize(
-    "filename, is_successful", [
-        ('C:/Users/Humberto/Desktop/Humberto/Study/WebDev/Pajelingo/pajelingo/static/pajelingo.png', True),
-        ('C:/Users/Humberto/Downloads/PokemonApp.pdf', False),
-        ('C:/Users/Humberto/Downloads/test.txt', False)
-    ]
-)
-@pytest.mark.django_db
-def test_change_profile_picture(client, account, filename, is_successful):
-    user, password = account()[0]
-    client.login(username=user.username, password=password)
-
-    url = reverse('change-picture')
-
-    with open(filename, 'rb') as fp:
-        response = client.post(url, data={'picture': fp})
-        assert response.status_code == status.HTTP_302_FOUND
-        assert response.url == reverse('profile')
-        assert (AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username)
-                .first().picture != "") == is_successful

@@ -16,7 +16,7 @@ class GameSerializer(serializers.ModelSerializer):
 class LanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Language
-        fields = '__all__'
+        exclude = ('flag_image',)
 
 
 class CategorySerializer(serializers.ModelSerializer):

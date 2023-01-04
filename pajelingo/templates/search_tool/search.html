@@ -8,10 +8,20 @@
             {% for result in search_results %}
                 <div class="col-6 col-sm-4 my-1">
                     <a class="text-reset text-decoration-none" href="/meaning/{{result.id}}">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">{{result.word_name}}</h5>
-                                <p class="card-text">{{result.language}}</p>
+                        <div class="card">
+                            <div class="row g-0">
+                                <div class="col-md-4 px-4 d-flex align-items-center justify-content-center">
+                                    <div>
+                                        {% if result.language.flag_image %}
+                                            <img src="{{result.language.flag_image.url}}" class="img-fluid rounded-start" alt="{{result.language.language_name}}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-8 d-flex align-items-center justify-content-center">
+                                  <div class="card-body text-center">
+                                      <p class="card-text">{{result.word_name}}</p>
+                                  </div>
+                                </div>
                             </div>
                         </div>
                     </a>

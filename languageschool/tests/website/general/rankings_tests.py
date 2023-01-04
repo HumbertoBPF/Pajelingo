@@ -7,7 +7,7 @@ from pytest_django.asserts import assertQuerysetEqual
 from rest_framework import status
 
 
-def access_rankings(client, accounts, games, languages, score, language):
+def access_rankings(client, accounts, games, languages, score, language_name):
     users = []
 
     for user, password in accounts:
@@ -18,8 +18,8 @@ def access_rankings(client, accounts, games, languages, score, language):
     url = reverse('rankings')
     data = {}
 
-    if language is not None:
-        data["language"] = language
+    if language_name is not None:
+        data["language"] = language_name
 
     response = client.get(url, data=data)
 
@@ -27,8 +27,8 @@ def access_rankings(client, accounts, games, languages, score, language):
 
     assert response.status_code == status.HTTP_200_OK
     assertQuerysetEqual(response.context.get("languages"), languages, ordered=False)
-    if language is not None:
-        assert response.context.get("language").language_name == language
+    if language_name is not None:
+        assert response.context.get("language").language_name == language_name
     assert len(scores) == min(len(accounts), 10)
     # Checking if the scores are in decreasing order
     last_score = scores[0]
@@ -40,19 +40,13 @@ def access_rankings(client, accounts, games, languages, score, language):
 
 
 @pytest.mark.parametrize(
-    "language", [
-        None,
-        "English",
-        "Spanish",
-        "Portuguese",
-        "French",
-        "German"
-    ]
+    "has_language_filter", [True, False]
 )
 @pytest.mark.django_db
-def test_rankings(client, account, games, languages, score, language):
+def test_rankings(client, account, games, languages, score, has_language_filter):
     accounts = account(n=random.randint(5, 30))
-    access_rankings(client, accounts, games, languages, score, language)
+    language_name = random.choice(languages).language_name if has_language_filter else None
+    access_rankings(client, accounts, games, languages, score, language_name)
 
 
 @pytest.mark.django_db
@@ -66,22 +60,17 @@ def test_rankings_invalid_language_filter(client, account, games, languages, sco
 
 
 @pytest.mark.parametrize(
-    "language", [
-        None,
-        "English",
-        "Spanish",
-        "Portuguese",
-        "French",
-        "German"
-    ]
+    "has_language_filter", [True, False]
 )
 @pytest.mark.django_db
-def test_rankings_authenticated_user(client, account, games, languages, score, language):
+def test_rankings_authenticated_user(client, account, games, languages, score, has_language_filter):
     accounts = account(n=random.randint(5, 30))
     user, password = accounts[0]
+    language_name = random.choice(languages).language_name if has_language_filter else None
+
     client.login(username=user.username, password=password)
 
-    response = access_rankings(client, accounts, games, languages, score, language)
+    response = access_rankings(client, accounts, games, languages, score, language_name)
 
     assert response.context.get('my_position') is not None
     assert response.context.get('my_score') is not None

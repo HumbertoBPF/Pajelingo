@@ -26,20 +26,20 @@ class TestsRankingsSelenium:
             authenticate(live_server, selenium_driver, user.username, password)
             return user, password
 
-    def get_ranking(self, selected_language):
+    def get_ranking(self, language):
         scores = Score.objects.all()
 
-        if selected_language is not None:
-            scores = scores.filter(language__language_name=selected_language)
+        if language is not None:
+            scores = scores.filter(language__language_name=language.language_name)
 
         return scores.values('user__username').annotate(score=Sum('score')).order_by('-score')
 
-    def assert_ranking(self, live_server, selenium_driver, selected_language):
-        scores = self.get_ranking(selected_language)[:10]
+    def assert_ranking(self, live_server, selenium_driver, language):
+        scores = self.get_ranking(language)[:10]
 
         url = live_server.url + reverse("rankings")
-        if selected_language is not None:
-            query_string = urlencode({'language': selected_language})
+        if language is not None:
+            query_string = urlencode({'language': language.language_name})
             url = '{}?{}'.format(url, query_string)
 
         selenium_driver.get(url)
@@ -48,7 +48,7 @@ class TestsRankingsSelenium:
         ths = selenium_driver.find_elements(By.TAG_NAME, "th")
         tds = selenium_driver.find_element(By.CLASS_NAME, "table").find_elements(By.TAG_NAME, "td")
 
-        assert header.text == "General ranking" if selected_language is None else (selected_language + " ranking")
+        assert header.text == "General ranking" if language is None else (language.language_name + " ranking")
 
         assert ths[0].text == "Position"
         assert ths[1].text == "Username"
@@ -60,43 +60,32 @@ class TestsRankingsSelenium:
             assert tds[3 * i + 2].text == str(scores[i].get("score"))
 
     @pytest.mark.parametrize(
-        "selected_language", [
-            "English",
-            "French",
-            "Spanish",
-            "German",
-            "Portuguese",
-            None
-        ]
+        "has_language_filter", [True, False]
     )
     @pytest.mark.django_db
-    def test_game_filters(self, live_server, selenium_driver, account, score, games, languages, selected_language):
+    def test_game_filters(self, live_server, selenium_driver, account, score, games, languages, has_language_filter):
         """
         Checking that ranking is correctly rendered when no user is authenticated
         """
         self.prepare_test_scenario(live_server, selenium_driver, account, score)
-        self.assert_ranking(live_server, selenium_driver, selected_language)
+        language = random.choice(languages) if has_language_filter else None
+        self.assert_ranking(live_server, selenium_driver, language)
         assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
-        "selected_language", [
-            "English",
-            "French",
-            "Spanish",
-            "German",
-            "Portuguese",
-            None
-        ]
+        "has_language_filter", [True, False]
     )
     @pytest.mark.django_db
-    def test_game_filters_with_authenticated_user(self, live_server, selenium_driver, account, score, games, languages, selected_language):
+    def test_game_filters_with_authenticated_user(self, live_server, selenium_driver, account, score, games, languages, has_language_filter):
         """
         Checking that the ranking is correctly rendered when users are authenticated
         """
         user, _ = self.prepare_test_scenario(live_server, selenium_driver, account, score, True)
-        self.assert_ranking(live_server, selenium_driver, selected_language)
+        language = random.choice(languages) if has_language_filter else None
 
-        scores = self.get_ranking(selected_language)
+        self.assert_ranking(live_server, selenium_driver, language)
+
+        scores = self.get_ranking(language)
 
         my_position = None
         my_score = None

@@ -278,25 +278,6 @@ class TestsProfileSelenium:
 
     @pytest.mark.parametrize(
         "filename", [
-            "C:\\Users\\Humberto\\Desktop\\Humberto\\Study\\WebDev\\Pajelingo\\pajelingo\\static\\test0.jfif",
-            "C:\\Users\\Humberto\\Desktop\\Humberto\\Study\\WebDev\\Pajelingo\\pajelingo\\static\\test1.jpg"
-        ]
-    )
-    @pytest.mark.django_db
-    def test_change_profile_pic_valid_file(self, live_server, selenium_driver, account, filename):
-        user, password = account()[0]
-        authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("profile"))
-
-        picture_uploader = selenium_driver.find_element(By.ID, "id_picture")
-        picture_uploader.send_keys(filename)
-        selenium_driver.find_element(By.ID, "changePictureButton").click()
-
-        assert AppUser.objects.filter(user__id=user.id).first().picture.url.endswith(filename.split(".")[1])
-        assert_menu(selenium_driver, user=user)
-
-    @pytest.mark.parametrize(
-        "filename", [
             "C:\\Users\\Humberto\\Desktop\\Humberto\\Study\\WebDev\\Pajelingo\\pajelingo\\templates\\games\\article_game\\article_game_setup.html",
             "C:\\Users\\Humberto\\Desktop\\Humberto\\Study\\WebDev\\Pajelingo\\languageschool\\views\\games\\conjugation_game.py"
         ]

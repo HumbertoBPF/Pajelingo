@@ -85,15 +85,13 @@ class TestSearchSelenium:
         for page in page_hrefs:
             selenium_driver.get(page)
             results_page = selenium_driver.find_elements(By.CLASS_NAME, "card-body")
-            results_title = selenium_driver.find_elements(By.CLASS_NAME, "card-title")
             results_text = selenium_driver.find_elements(By.CLASS_NAME, "card-text")
             results_link = selenium_driver.find_elements(By.CLASS_NAME, "text-decoration-none")[:-2]
             n = len(results_page)
             for i in range(n):
-                word_name = results_title[i].text
-                language_name = results_text[i].text
+                word_name = results_text[i].text
                 word_id = results_link[i].get_attribute("href").split("/meaning/")[1]
-                word = words.filter(id=word_id, word_name=word_name, language__language_name=language_name).first()
+                word = words.filter(id=word_id, word_name=word_name).first()
                 # Check if all the words that are expected to appear occur only once
                 assert dict_words.get(word.id) is None
                 dict_words[word.id] = True

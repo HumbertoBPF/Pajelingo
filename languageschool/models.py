@@ -3,6 +3,11 @@ from django.db import models
 from django.db.models import UniqueConstraint
 
 
+def get_upload_to(instance, filename):
+    # file will be uploaded to models/Language/<id>/<filename>
+    return 'images/models/{}/{}/{}'.format(instance.__class__.__name__, instance.id, filename)
+
+
 class Game(models.Model):
     game_name = models.CharField(max_length=30, unique=True, null=True, blank=True)
     android_game_activity = models.CharField(max_length=100, null=True, blank=True)
@@ -19,6 +24,7 @@ class Language(models.Model):
     personal_pronoun_4 = models.CharField(max_length=30, blank=True, null=True)
     personal_pronoun_5 = models.CharField(max_length=30, blank=True, null=True)
     personal_pronoun_6 = models.CharField(max_length=30, blank=True, null=True)
+    flag_image = models.ImageField(upload_to=get_upload_to, blank=True)
 
     def __str__(self):
         return self.language_name
@@ -55,7 +61,7 @@ class Word(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
     synonyms = models.ManyToManyField("self", blank=True)
-    image = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
+    image = models.ImageField(upload_to=get_upload_to, blank=True)
 
     def __str__(self):
         article = ""
@@ -146,7 +152,7 @@ class Score(models.Model):
 
 class AppUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    picture = models.ImageField(upload_to='images/%d/%m/%Y', blank=True)
+    picture = models.ImageField(upload_to=get_upload_to, blank=True)
 
     def __str__(self):
         return str(self.user)

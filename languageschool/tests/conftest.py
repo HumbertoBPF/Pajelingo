@@ -1,3 +1,4 @@
+import os
 import random
 
 import pytest
@@ -21,41 +22,14 @@ def api_client():
 
 @pytest.fixture
 def languages():
-    Language.objects.create(language_name="English",
-                            personal_pronoun_1="I",
-                            personal_pronoun_2="you",
-                            personal_pronoun_3="he/she/it",
-                            personal_pronoun_4="we",
-                            personal_pronoun_5="you",
-                            personal_pronoun_6="they")
-    Language.objects.create(language_name="French",
-                            personal_pronoun_1="je",
-                            personal_pronoun_2="tu",
-                            personal_pronoun_3="il/elle",
-                            personal_pronoun_4="nous",
-                            personal_pronoun_5="vous",
-                            personal_pronoun_6="ils/elles")
-    Language.objects.create(language_name="Portuguese",
-                            personal_pronoun_1="eu",
-                            personal_pronoun_2="tu",
-                            personal_pronoun_3="ele/ela",
-                            personal_pronoun_4="nós",
-                            personal_pronoun_5="vós",
-                            personal_pronoun_6="eles/elas")
-    Language.objects.create(language_name="Spanish",
-                            personal_pronoun_1="yo",
-                            personal_pronoun_2="tú",
-                            personal_pronoun_3="él/ella/usted",
-                            personal_pronoun_4="nosotros",
-                            personal_pronoun_5="vosotros",
-                            personal_pronoun_6="ellos/ellas/ustedes")
-    Language.objects.create(language_name="German",
-                            personal_pronoun_1="ich",
-                            personal_pronoun_2="du",
-                            personal_pronoun_3="er/sie/es",
-                            personal_pronoun_4="wir",
-                            personal_pronoun_5="ihr",
-                            personal_pronoun_6="sie/Sie")
+    for _ in range(5):
+        Language.objects.create(language_name=get_random_string(random.randint(10, 15)),
+                               personal_pronoun_1=get_random_string(random.randint(1, 8)),
+                               personal_pronoun_2=get_random_string(random.randint(1, 8)),
+                               personal_pronoun_3=get_random_string(random.randint(1, 8)),
+                               personal_pronoun_4=get_random_string(random.randint(1, 8)),
+                               personal_pronoun_5=get_random_string(random.randint(1, 8)),
+                               personal_pronoun_6=get_random_string(random.randint(1, 8)))
     return Language.objects.all()
 
 
