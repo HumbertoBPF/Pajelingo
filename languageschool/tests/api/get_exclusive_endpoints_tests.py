@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from languageschool.tests.api.comparers import SimpleComparer, ArticleComparer, MeaningComparer, ConjugationComparer, \
-    WordComparer, ListScoresComparer
+    WordComparer, ListScoresComparer, LanguageComparer
 from languageschool.tests.utils import deserialize_data, is_model_objects_equal_to_dict_array
 
 
@@ -26,7 +26,7 @@ def test_language_endpoint(api_client, languages):
     data = deserialize_data(response.data)
 
     assert response.status_code == status.HTTP_200_OK
-    assert is_model_objects_equal_to_dict_array(languages, data, SimpleComparer())
+    assert is_model_objects_equal_to_dict_array(languages, data, LanguageComparer())
 
 
 @pytest.mark.django_db

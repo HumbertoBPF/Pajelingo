@@ -1,13 +1,16 @@
+import base64
+
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, views, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word
+from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word, AppUser
 from languageschool.permissions import AllowPostOnly
-from languageschool.serializer import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
+from languageschool.serializers import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer
+from pajelingo import settings
 
 MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE = "You must specify a language and a game"
 CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."
@@ -81,23 +84,36 @@ class UserViewSet(views.APIView):
     authentication_classes = [BasicAuthentication]
     permission_classes = [AllowPostOnly]
 
+    def get_profile_picture(self, app_user):
+        if app_user.picture:
+            try:
+                img = app_user.picture.open("rb")
+                return base64.b64encode(img.read())
+            except FileNotFoundError as e:
+                print(e)
+
     def get(self, request):
-        user = request.user
+        app_user = AppUser.objects.filter(user__id=request.user.id).first()
+
         return Response({
-            "username": user.username,
-            "email": user.email
-         }, status.HTTP_200_OK)
+            "username": app_user.user.username,
+            "email": app_user.user.email,
+            "picture": self.get_profile_picture(app_user)
+        }, status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            new_user = serializer.save()
+
+        app_user = AppUser.objects.filter(user__id=new_user.id).first()
 
         return Response({
-            "username": serializer.data.get("username"),
-            "email": serializer.data.get("email")
-         }, status.HTTP_201_CREATED)
+            "username": app_user.user.username,
+            "email": app_user.user.email,
+            "picture": self.get_profile_picture(app_user)
+        }, status.HTTP_201_CREATED)
 
     def put(self, request):
         serializer = UserSerializer(instance=request.user, data=request.data, partial=True)
@@ -105,10 +121,13 @@ class UserViewSet(views.APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
 
+        app_user = AppUser.objects.filter(user__id=request.user.id).first()
+
         return Response({
-            "username": serializer.data.get("username"),
-            "email": serializer.data.get("email")
-         }, status.HTTP_200_OK)
+            "username": app_user.user.username,
+            "email": app_user.user.email,
+            "picture": self.get_profile_picture(app_user)
+        }, status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user
@@ -170,3 +189,34 @@ class ScoreViewSet(views.APIView):
             score = serializer.save()
             serializer = ListScoreSerializer(score)
             return Response(serializer.data)
+
+
+class PublicImageViewSet(views.APIView):
+    def get(self, request):
+        resource = request.GET.get("url")
+
+        if resource is None:
+            return Response({
+                "error": "The resource requested is null"
+            }, status.HTTP_400_BAD_REQUEST)
+
+        resource = resource.split("/images/models/")[1]
+
+        if resource.startswith(AppUser.__class__.__name__):
+            return Response({
+                "error": "This picture is private"
+            }, status.HTTP_403_FORBIDDEN)
+
+        url = settings.MEDIA_ROOT.replace("\\", "/") + "/images/models/" + resource
+
+        try:
+            with open(url, "rb") as img:
+                converted_string = base64.b64encode(img.read())
+        except FileNotFoundError:
+            return Response({
+                "error": "The requested image does not exist"
+            }, status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            "image": converted_string
+        }, status.HTTP_200_OK)

@@ -1,3 +1,5 @@
+import base64
+
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -14,9 +16,24 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class LanguageSerializer(serializers.ModelSerializer):
+    flag_image = serializers.SerializerMethodField()
+    flag_image_uri = serializers.SerializerMethodField()
+
     class Meta:
         model = Language
-        exclude = ('flag_image',)
+        fields = '__all__'
+
+    def get_flag_image(self, obj):
+        if obj.flag_image:
+            try:
+                img = obj.flag_image.open("rb")
+                return base64.b64encode(img.read())
+            except FileNotFoundError as e:
+                print(e)
+
+    def get_flag_image_uri(self, obj):
+        if obj.flag_image:
+            return obj.flag_image.url
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -36,10 +53,15 @@ class ArticleSerializer(serializers.ModelSerializer):
 class WordSerializer(serializers.ModelSerializer):
     language = serializers.ReadOnlyField(source='language.language_name')
     category = serializers.ReadOnlyField(source='category.category_name')
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Word
-        exclude = ('image',)
+        fields = '__all__'
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
 
 
 class MeaningSerializer(serializers.ModelSerializer):

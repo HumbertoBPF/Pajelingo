@@ -1,3 +1,4 @@
+import base64
 import random
 
 import pytest
@@ -6,6 +7,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
+from languageschool.models import AppUser
 from languageschool.tests.utils import get_basic_auth_header, get_random_email, get_valid_password, \
     get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
     get_password_without_digits, get_password_without_special_characters
@@ -14,6 +16,13 @@ URL = reverse("user-api")
 EMAIL = get_random_email()
 USERNAME = get_random_username()
 PASSWORD = get_valid_password()
+
+
+def get_profile_picture_base64(user):
+    app_user = AppUser.objects.filter(user__id=user.id).first()
+    if app_user.picture:
+        img = app_user.picture.open("rb")
+        return base64.b64encode(img.read())
 
 
 @pytest.mark.django_db
@@ -87,6 +96,7 @@ def test_account_get(api_client, account):
     assert response.status_code == status.HTTP_200_OK
     assert response.data.get("username") == user.username
     assert response.data.get("email") == user.email
+    assert response.data.get("picture") == get_profile_picture_base64(user)
 
 
 @pytest.mark.parametrize(
@@ -141,7 +151,9 @@ def test_account_post(api_client, email, username, password):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data.get("username") == username
         assert response.data.get("email") == email
-        assert User.objects.filter(email=email, username=username).exists()
+        user = User.objects.filter(email=email, username=username).first()
+        assert user is not None
+        assert response.data.get("picture") == get_profile_picture_base64(user)
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert User.objects.count() == 0
@@ -236,6 +248,7 @@ def test_account_put(api_client, account, email, username, password):
         assert response.status_code == status.HTTP_200_OK
         assert response.data.get("username") == username
         assert response.data.get("email") == email
+        assert response.data.get("picture") == get_profile_picture_base64(user)
         assert User.objects.filter(id=user.id, email=email, username=username).exists()
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST

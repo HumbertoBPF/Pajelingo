@@ -1,3 +1,4 @@
+import base64
 from abc import ABC, abstractmethod
 
 
@@ -115,6 +116,12 @@ class ConjugationComparer(SimpleComparer):
 
 class WordComparer(SimpleComparer):
     def are_equal(self, word, dictionary):
+        # Verifying image URL
+        image_url = dictionary.get("image")
+        assert (image_url == word.image.url) if word.image else (image_url is None)
+
+        del dictionary["image"]
+
         self.obj_1 = word
         self.obj_2 = dictionary
 
@@ -126,6 +133,29 @@ class WordComparer(SimpleComparer):
             self.error_message("synonyms", list(word.synonyms.all().values_list('id', flat=True)), self.obj_2.get("synonyms"))
             return False
         del self.obj_2["synonyms"]
+
+        return self.are_attributes_and_keys_equal()
+
+
+class LanguageComparer(SimpleComparer):
+    def are_equal(self, language, dictionary):
+        # Verifying image content and its URL
+        image = dictionary.get("flag_image")
+        image_url = dictionary.get("flag_image_uri")
+
+        expected_image = None
+        if language.flag_image:
+            img = language.flag_image.open("rb")
+            expected_image = base64.b64encode(img.read())
+
+        assert image == expected_image
+        assert (image_url == language.flag_image.url) if language.flag_image else (image_url is None)
+
+        del dictionary["flag_image"]
+        del dictionary["flag_image_uri"]
+
+        self.obj_1 = language
+        self.obj_2 = dictionary
 
         return self.are_attributes_and_keys_equal()
 
