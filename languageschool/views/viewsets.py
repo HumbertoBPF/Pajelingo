@@ -200,14 +200,13 @@ class PublicImageViewSet(views.APIView):
                 "error": "The resource requested is null"
             }, status.HTTP_400_BAD_REQUEST)
 
-        resource = resource.split("/images/models/")[1]
-
-        if resource.startswith(AppUser.__class__.__name__):
+        app_user = AppUser()
+        if resource.startswith("/media/images/models/{}/".format(app_user.__class__.__name__)):
             return Response({
                 "error": "This picture is private"
             }, status.HTTP_403_FORBIDDEN)
 
-        url = settings.MEDIA_ROOT.replace("\\", "/") + "/images/models/" + resource
+        url = settings.MEDIA_ROOT.replace("\\", "/").split("/media")[0] + resource
 
         try:
             with open(url, "rb") as img:
