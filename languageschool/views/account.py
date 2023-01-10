@@ -3,16 +3,14 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_GET, require_POST
 
 from languageschool.forms import FormPicture, PasswordResetForm, SetPasswordForm
 from languageschool.models import AppUser, Score
+from languageschool.utils import send_activation_account_email
 from languageschool.views.general import request_contains
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
@@ -22,8 +20,6 @@ LOGIN_ERROR = "Incorrect username or password"
 NOT_ACTIVE_ERROR = "The specified account has not been activated yet. Please check your email and activate it."
 SUCCESSFUL_SIGN_UP = "User successfully created"
 LOGIN_URL = "/account/login"
-SIGN_UP_SUBJECT = "Pajelingo account activation"
-SIGN_UP_MESSAGE = "Hi {},\n\nPlease click on the link below to activate your Pajelingo account:\n\nhttp://{}{}"
 SUCCESSFUL_ACTIVATION = "Thank you for your email confirmation. Now you can login your account."
 ACTIVATION_LINK_ERROR = "Activation link is invalid!"
 
@@ -44,12 +40,7 @@ def signup_done(request):
             user.is_active = False
             user.save()
 
-            domain = get_current_site(request).domain
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = account_activation_token.make_token(user)
-            url = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
-
-            send_mail(SIGN_UP_SUBJECT, SIGN_UP_MESSAGE.format(username, domain, url), settings.EMAIL_FROM, [email])
+            send_activation_account_email(request, user)
             messages.success(request, SUCCESSFUL_SIGN_UP)
             return redirect('signup')
         else:

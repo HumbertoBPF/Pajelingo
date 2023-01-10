@@ -102,6 +102,8 @@ class UserSerializer(serializers.Serializer):
             raise ValidationError({error_field: [error_message]})
 
         user = User.objects.create_user(email=email, username=username, password=password)
+        user.is_active = False
+        user.save()
 
         return user
 

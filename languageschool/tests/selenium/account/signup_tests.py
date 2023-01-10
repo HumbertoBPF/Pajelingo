@@ -6,6 +6,7 @@ from django.core import mail
 from django.db.models import Q
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from rest_framework import status
 from selenium.webdriver.common.by import By
 
 from languageschool.models import AppUser
@@ -14,7 +15,8 @@ from languageschool.tests.selenium.utils import assert_menu, WARNING_REQUIRED_FI
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
     get_password_without_special_characters
-from languageschool.views.account import SUCCESSFUL_SIGN_UP, SIGN_UP_SUBJECT, SIGN_UP_MESSAGE, SUCCESSFUL_ACTIVATION, \
+from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE
+from languageschool.views.account import SUCCESSFUL_SIGN_UP, SUCCESSFUL_ACTIVATION, \
     ACTIVATION_LINK_ERROR
 from pajelingo import settings
 from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD, ERROR_LETTER_PASSWORD, \
@@ -165,3 +167,29 @@ class TestSignupSelenium:
         assert not User.objects.filter(username=username, email=email).filter(~Q(id=user.id)).exists()
         assert not AppUser.objects.filter(user__username=username, user__email=email).filter(~Q(user__id=user.id)).exists()
         assert_menu(selenium_driver)
+
+    @pytest.mark.django_db
+    def test_activate_account_after_signup_via_api(self, live_server, api_client, selenium_driver):
+        url = reverse("user-api")
+
+        payload = {
+            "email": get_random_email(),
+            "username": get_random_username(),
+            "password": get_valid_password()
+        }
+
+        response = api_client.post(url, payload)
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert User.objects.filter(username=payload["username"], email=payload["email"], is_active=False).exists()
+
+        activation_link = "http://" + mail.outbox[0].body.split("http://")[1]
+        activation_link = activation_link.replace("http://testserver", live_server.url)
+
+        selenium_driver.get(activation_link)
+
+        alert_success = selenium_driver.find_element(By.CLASS_NAME, "alert-success")
+
+        assert alert_success.text == SUCCESSFUL_ACTIVATION
+        assert User.objects.filter(username=payload["username"], email=payload["email"], is_active=True).exists()
+

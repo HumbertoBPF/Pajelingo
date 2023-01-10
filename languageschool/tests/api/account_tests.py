@@ -3,6 +3,7 @@ import random
 
 import pytest
 from django.contrib.auth.models import User
+from django.core import mail
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
@@ -11,6 +12,8 @@ from languageschool.models import AppUser
 from languageschool.tests.utils import get_basic_auth_header, get_random_email, get_valid_password, \
     get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
     get_password_without_digits, get_password_without_special_characters
+from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE, RESET_SUBJECT, RESET_MESSAGE
+from pajelingo import settings
 
 URL = reverse("user-api")
 EMAIL = get_random_email()
@@ -151,9 +154,15 @@ def test_account_post(api_client, email, username, password):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data.get("username") == username
         assert response.data.get("email") == email
-        user = User.objects.filter(email=email, username=username).first()
+        user = User.objects.filter(email=email, username=username, is_active=False).first()
         assert user is not None
         assert response.data.get("picture") == get_profile_picture_base64(user)
+        # Check that activation email was sent
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].subject == SIGN_UP_SUBJECT
+        assert SIGN_UP_MESSAGE.split("{}")[1] in mail.outbox[0].body
+        assert mail.outbox[0].to == [email]
+        assert mail.outbox[0].from_email == settings.EMAIL_FROM
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert User.objects.count() == 0
@@ -343,3 +352,60 @@ def test_account_delete(api_client, account):
     response = api_client.delete(URL, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert User.objects.count() == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "email", [None, "", get_random_email()]
+)
+def test_request_reset_account_with_invalid_email(api_client, email):
+    """
+    Tests that an email allowing to define a new password is not sent when the corresponding account is inactive.
+    """
+    url = reverse('request-reset-account-api')
+
+    payload = {}
+
+    if email is not None:
+        payload["email"] = email
+
+    response = api_client.post(url, payload)
+
+    assert response.status_code == status.HTTP_200_OK
+    # Check that activation email was sent
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.django_db
+def test_request_reset_account_non_active_account(api_client, account):
+    """
+    Tests that an email allowing to define a new password is not sent when the corresponding account is inactive.
+    """
+    url = reverse('request-reset-account-api')
+    user, password = account()[0]
+    user.is_active = False
+    user.save()
+
+    response = api_client.post(url, {"email": user.email})
+
+    assert response.status_code == status.HTTP_200_OK
+    # Check that activation email was sent
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.django_db
+def test_request_reset_account(api_client, account):
+    """
+    Tests that an email allowing to define a new password is sent.
+    """
+    url = reverse('request-reset-account-api')
+    user, password = account()[0]
+    response = api_client.post(url, {"email": user.email})
+
+    assert response.status_code == status.HTTP_200_OK
+    # Check that activation email was sent
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].subject == RESET_SUBJECT
+    assert RESET_MESSAGE.split("{}")[1] in mail.outbox[0].body
+    assert mail.outbox[0].to == [user.email]
+    assert mail.outbox[0].from_email == settings.EMAIL_FROM

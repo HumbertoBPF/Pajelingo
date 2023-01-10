@@ -1,5 +1,6 @@
 import base64
 
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, views, status
 from rest_framework.authentication import BasicAuthentication
@@ -10,6 +11,7 @@ from languageschool.models import Article, Category, Conjugation, Game, Language
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer
+from languageschool.utils import send_activation_account_email, send_reset_account_email
 from pajelingo import settings
 
 MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE = "You must specify a language and a game"
@@ -107,13 +109,15 @@ class UserViewSet(views.APIView):
         if serializer.is_valid(raise_exception=True):
             new_user = serializer.save()
 
-        app_user = AppUser.objects.filter(user__id=new_user.id).first()
+            send_activation_account_email(request, new_user)
 
-        return Response({
-            "username": app_user.user.username,
-            "email": app_user.user.email,
-            "picture": self.get_profile_picture(app_user)
-        }, status.HTTP_201_CREATED)
+            app_user = AppUser.objects.filter(user__id=new_user.id).first()
+
+            return Response({
+                "username": app_user.user.username,
+                "email": app_user.user.email,
+                "picture": self.get_profile_picture(app_user)
+            }, status.HTTP_201_CREATED)
 
     def put(self, request):
         serializer = UserSerializer(instance=request.user, data=request.data, partial=True)
@@ -219,3 +223,14 @@ class PublicImageViewSet(views.APIView):
         return Response({
             "image": converted_string
         }, status.HTTP_200_OK)
+
+
+class ResetPasswordViewSet(views.APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        user = User.objects.filter(email=email, is_active=True).first()
+
+        if user is not None:
+            send_reset_account_email(request, user)
+
+        return Response(status.HTTP_200_OK)
