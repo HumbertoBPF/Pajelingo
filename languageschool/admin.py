@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 
 from languageschool.models import AppUser, Article, Category, Conjugation, Game, Language, Meaning, Score, Word
 
@@ -71,6 +72,13 @@ class GameDisplay(admin.ModelAdmin):
     list_per_page = 10
 
 
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login')
+    list_display_links = ('username', 'email')
+    search_fields = ('username', 'email')
+    list_per_page = 10
+
+
 # Register your models here.
 admin.site.register(Language, LanguageDisplay)
 admin.site.register(Category, CategoryDisplay)
@@ -81,3 +89,5 @@ admin.site.register(Conjugation, ConjugationDisplay)
 admin.site.register(Score, ScoreDisplay)
 admin.site.register(AppUser, AppUserDisplay)
 admin.site.register(Game, GameDisplay)
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
