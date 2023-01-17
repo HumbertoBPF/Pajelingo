@@ -1,5 +1,6 @@
 import random
 import time
+from urllib.parse import urlencode
 
 import pytest
 from django.contrib.auth.models import User
@@ -9,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from languageschool.models import AppUser
+from languageschool.models import AppUser, Language
 from languageschool.tests.selenium.utils import assert_menu, authenticate, WARNING_REQUIRED_FIELD_HTML, \
     WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML, get_form_error_message, submit_form_user, \
     input_login_credentials
@@ -41,7 +42,7 @@ class TestsProfileSelenium:
         assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
-    def test_profile_access_with_authenticated_user_without_scores(self, live_server, selenium_driver, account):
+    def test_profile_access_with_authenticated_user_without_scores(self, live_server, selenium_driver, account, languages):
         """
         Checks that the credentials of users (username and email) are correctly rendered on their profile page
         """
@@ -57,34 +58,48 @@ class TestsProfileSelenium:
         assert default_picture_filename == live_server.url + "/static/profile.jpg"
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
-        assert warning_no_scores.text == "Play a game to have a history of your scores"
+        assert warning_no_scores.text == "It seems that you haven't played games in this language yet..."
         assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
-    def test_profile_access_with_authenticated_user_with_scores(self, live_server, selenium_driver, account, score, games, languages):
+    @pytest.mark.parametrize("has_language_filter", [True, False])
+    def test_profile_access_with_authenticated_user_with_scores(self, live_server, selenium_driver, account, score,
+                                                                games, languages, has_language_filter):
         """
         Checks that the scores of users are correctly rendered in their profile page
         """
         user, password = account()[0]
-        scores = score(users=[user], games=games, languages=languages).order_by('language', 'game')
+        scores = score(users=[user], games=games, languages=languages)
         authenticate(live_server, selenium_driver, user.username, password)
-        selenium_driver.get(live_server.url + reverse("profile"))
+
+        selected_language = random.choice(list(languages)) if has_language_filter else Language.objects.first()
+        scores = scores.filter(language=selected_language).order_by('game')
+
+        url = live_server.url + reverse("profile")
+        if has_language_filter is not None:
+            query_string = urlencode({'language': selected_language.language_name})
+            url = '{}?{}'.format(url, query_string)
+
+        selenium_driver.get(url)
 
         username = selenium_driver.find_element(By.ID, "username")
         email = selenium_driver.find_element(By.ID, "email")
         default_picture_filename = selenium_driver.find_element(By.ID, "defaultPicture").get_attribute("src")
         header_score_tables = selenium_driver.find_element(By.TAG_NAME, "thead").find_element(By.TAG_NAME, "tr")
+        dropdown_button = selenium_driver.find_element(By.ID, "dropdownButtonFilter")
         row_scores = selenium_driver.find_element(By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "tr")
 
         assert default_picture_filename == live_server.url + "/static/profile.jpg"
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
+        assert dropdown_button.text == selected_language.language_name
         assert header_score_tables.text == "{} {} {}".format("Language", "Game", "Score")
 
         for i in range(len(row_scores)):
             score = scores[i]
             assert row_scores[i].text == "{} {} {}".format(score.language, score.game.game_name, score.score)
 
+        assert len(scores) == len(row_scores)
         assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db

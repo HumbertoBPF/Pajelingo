@@ -1,4 +1,5 @@
 import random
+from urllib.parse import urlencode
 
 import pytest
 from django.contrib.auth.models import User
@@ -29,14 +30,25 @@ def test_profile_access_requires_authentication(client):
 
 
 @pytest.mark.django_db
-def test_profile_access(client, account, score, games, languages):
+@pytest.mark.parametrize(
+    "has_language_filter", [True, False]
+)
+def test_profile_access(client, account, score, games, languages, has_language_filter):
     user, password = account()[0]
 
+    language_filter = languages.first() if has_language_filter else random.choice(list(languages))
+
     scores = score(users=[user], games=games, languages=languages)
+    scores = scores.filter(user=user, language=languages.first()).order_by('game')
 
     client.login(username=user.username, password=password)
 
     url = reverse('profile')
+
+    if has_language_filter:
+        query_string = urlencode({'language': language_filter.language_name})
+        url = '{}?{}'.format(url, query_string)
+
     response = client.get(url)
 
     app_user = response.context.get("app_user")
@@ -44,6 +56,8 @@ def test_profile_access(client, account, score, games, languages):
     assertQuerysetEqual(response.context.get("scores"), scores, ordered=False)
     assert app_user.user.id == user.id
     assert isinstance(response.context.get("form_picture"), FormPicture)
+    assert response.context.get("language") == languages.first()
+    assertQuerysetEqual(response.context.get("languages"), languages, ordered=False)
     assert response.status_code == status.HTTP_200_OK
 
 

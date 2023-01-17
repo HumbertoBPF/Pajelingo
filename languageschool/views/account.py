@@ -9,7 +9,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_GET, require_POST
 
 from languageschool.forms import FormPicture, PasswordResetForm, SetPasswordForm
-from languageschool.models import AppUser, Score
+from languageschool.models import AppUser, Score, Language
 from languageschool.utils import send_activation_account_email
 from languageschool.views.general import request_contains
 from pajelingo import settings
@@ -89,11 +89,25 @@ def logout(request):
 @require_GET
 @login_required(login_url=LOGIN_URL)
 def profile(request):
+    language_name = request.GET.get("language")
+    language = Language.objects.filter(language_name=language_name).first()
+    languages = Language.objects.all()
+
+    if language is None:
+        language = languages.first()
+
+    scores = None
+    if language is not None:
+        scores = Score.objects.filter(user=request.user, language=language).order_by('game')
+
     context = {
-        "scores": Score.objects.filter(user=request.user).order_by('language', 'game'),
+        "scores": scores,
         "app_user": AppUser.objects.filter(user=request.user)[0],
-        "form_picture": FormPicture()
+        "form_picture": FormPicture(),
+        "languages": languages,
+        "language": language
     }
+
     return render(request, 'account/profile.html', context)
 
 @require_GET

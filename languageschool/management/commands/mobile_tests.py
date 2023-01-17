@@ -3,6 +3,7 @@ import argparse
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 
+
 class SetUpAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         list_of_ids = [self.create_test_user("test-android@test.com", "test-android", "str0ng-p4ssw0rd"),

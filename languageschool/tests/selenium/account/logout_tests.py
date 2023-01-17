@@ -1,6 +1,5 @@
 import pytest
 from django.urls import reverse
-from selenium.webdriver.common.by import By
 
 from languageschool.tests.selenium.utils import authenticate, assert_menu
 

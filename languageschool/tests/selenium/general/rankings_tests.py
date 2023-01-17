@@ -27,14 +27,13 @@ class TestsRankingsSelenium:
             return user, password
 
     def get_ranking(self, language):
-        scores = Score.objects.all()
+        if language is None:
+            language = Language.objects.first()
 
-        if language is not None:
-            scores = scores.filter(language__language_name=language.language_name)
+        return Score.objects.filter(language=language).values('user__username')\
+            .annotate(score=Sum('score')).order_by('-score')
 
-        return scores.values('user__username').annotate(score=Sum('score')).order_by('-score')
-
-    def assert_ranking(self, live_server, selenium_driver, language):
+    def request_and_assert_ranking(self, live_server, selenium_driver, language):
         scores = self.get_ranking(language)[:10]
 
         url = live_server.url + reverse("rankings")
@@ -45,11 +44,14 @@ class TestsRankingsSelenium:
         selenium_driver.get(url)
 
         header = selenium_driver.find_element(By.TAG_NAME, "h5")
+        dropdown_button = selenium_driver.find_element(By.ID, "dropdownButtonFilter")
         ths = selenium_driver.find_elements(By.TAG_NAME, "th")
         tds = selenium_driver.find_element(By.CLASS_NAME, "table").find_elements(By.TAG_NAME, "td")
 
-        assert header.text == "General ranking" if language is None else (language.language_name + " ranking")
+        language_selected = Language.objects.first() if (language is None) else language
 
+        assert header.text == "Rankings"
+        assert dropdown_button.text == language_selected.language_name
         assert ths[0].text == "Position"
         assert ths[1].text == "Username"
         assert ths[2].text == "Score"
@@ -69,7 +71,7 @@ class TestsRankingsSelenium:
         """
         self.prepare_test_scenario(live_server, selenium_driver, account, score)
         language = random.choice(languages) if has_language_filter else None
-        self.assert_ranking(live_server, selenium_driver, language)
+        self.request_and_assert_ranking(live_server, selenium_driver, language)
         assert_menu(selenium_driver)
 
     @pytest.mark.parametrize(
@@ -83,7 +85,7 @@ class TestsRankingsSelenium:
         user, _ = self.prepare_test_scenario(live_server, selenium_driver, account, score, True)
         language = random.choice(languages) if has_language_filter else None
 
-        self.assert_ranking(live_server, selenium_driver, language)
+        self.request_and_assert_ranking(live_server, selenium_driver, language)
 
         scores = self.get_ranking(language)
 

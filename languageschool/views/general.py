@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.db.models.functions import Lower
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
 from languageschool.models import Language, Meaning, Score, Word
@@ -47,28 +47,30 @@ def meaning(request, word_id):
 
 @require_GET
 def rankings(request):
+    language_name = request.GET.get("language")
+    language = Language.objects.filter(language_name=language_name).first()
     # List of languages for the select field
     languages = Language.objects.all()
-    scores_dict = {'languages': languages}
-    # If some language was specified, add the ranking associated with this language
-    if request_contains(request.GET, ["language"]) and len(request.GET["language"]) != 0:
-        language_name = request.GET["language"]
-        language = get_object_or_404(Language, language_name=language_name)
-        scores = Score.objects.filter(language=language).values('user__username')\
+
+    if language is None:
+        language = languages.first()
+
+    scores = None
+    if language is not None:
+        scores = Score.objects.filter(language=language).values('user__username') \
             .annotate(score=Sum('score')).order_by('-score')
-        scores_dict['language'] = language
-        # Otherwise, show the general ranking
-    else:
-        # Show the sum of the scores in all the games for each user
-        scores = Score.objects.values('user__username').annotate(score=Sum('score')).order_by('-score')
+    # Only the top 10 of each ranking is shown
+    context = {
+        "languages": languages,
+        "language": language,
+        "scores": scores[:10]
+    }
     # If the users are logged in, their position in the ranking is shown
     if request.user.is_authenticated:
         for i, item in enumerate(scores):
-            if item['user__username'] == request.user.username:
-                scores_dict['my_position'] = i + 1
-                scores_dict['my_score'] = item
+            if item["user__username"] == request.user.username:
+                context["my_position"] = i + 1
+                context["my_score"] = item
                 break
-    # Only the top 10 of each ranking is shown
-    scores_dict['scores'] = scores[:10]
 
-    return render(request, 'games/rankings.html', scores_dict)
+    return render(request, 'games/rankings.html', context)

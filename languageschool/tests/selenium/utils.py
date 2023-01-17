@@ -1,5 +1,6 @@
 from django.urls import reverse
 from selenium.webdriver.common.by import By
+from django.contrib.auth.models import User
 
 WARNING_REQUIRED_EMAIL_FIREFOX_HTML = "Please enter an email address."
 WARNING_REQUIRED_FIELD_HTML = "Please fill out this field."
@@ -27,6 +28,14 @@ def input_login_credentials(selenium_driver, username, password):
     selenium_driver.find_element(By.ID, "submitLoginFormButton").click()
 
 def assert_menu(selenium_driver, user=None):
+    """
+    Asserts that the top screen menu is properly displayed. The content to be displayed depends on whether the user is
+    authenticated or not.
+
+    :param selenium_driver: Selenium's web driver
+    :param user: user that is authenticated
+    :type user: User
+    """
     search_tool_items = selenium_driver.find_elements(By.ID, "searchToolLink")
     game_dropdown_items = selenium_driver.find_elements(By.ID, "gameDropdownItem")
     account_dropdown_items = selenium_driver.find_elements(By.ID, "accountDropdownItem")
@@ -85,6 +94,19 @@ def get_form_error_message(selenium_driver, field):
 
 
 def submit_form_user(selenium_driver, email, username, password, confirmation_password):
+    """
+    Fills and submits the user form (displayed on the signup page and on the update account page).
+
+    :param selenium_driver: Selenium web driver
+    :param email: email to be input
+    :type email: str
+    :param username: username to be input
+    :type username: str
+    :param password: password to be input
+    :type password: str
+    :param confirmation_password: password confirmation to be input
+    :type confirmation_password: str
+    """
     selenium_driver.find_element(By.ID, "inputEmail").clear()
     selenium_driver.find_element(By.ID, "inputEmail").send_keys(email)
     selenium_driver.find_element(By.ID, "inputUsername").clear()
