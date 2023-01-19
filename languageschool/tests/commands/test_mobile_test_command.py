@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.core.management import call_command
 
-from languageschool.models import AppUser
+from languageschool.models import AppUser, Game, Language, Score
 
 
 @pytest.mark.django_db
@@ -35,6 +35,12 @@ def test_mobile_test_setup():
                                   user__username="update-test-android4").exists()
     assert AppUser.objects.filter(user__email="test-android-delete@test.com",
                                   user__username="test-android-delete").exists()
+
+    test_user = User.objects.filter(email="test-android@test.com", username="test-android").first()
+
+    for game in Game.objects.all():
+        for language in Language.objects.all():
+            assert Score.objects.filter(user=test_user, game=game, language=language).exists()
 
 
 @pytest.mark.django_db
@@ -88,3 +94,5 @@ def test_mobile_test_teardown(account, has_new_test_android):
                                   user__username="update-test-android4").exists()
     assert not AppUser.objects.filter(user__email="test-android-delete@test.com",
                                   user__username="test-android-delete").exists()
+
+    assert not Score.objects.filter(user__email="test-android@test.com", user__username="test-android").exists()

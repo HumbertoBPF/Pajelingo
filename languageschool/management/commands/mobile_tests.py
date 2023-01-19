@@ -1,7 +1,10 @@
 import argparse
+import random
 
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
+
+from languageschool.models import Game, Language, Score
 
 
 class SetUpAction(argparse.Action):
@@ -18,6 +21,13 @@ class SetUpAction(argparse.Action):
                        self.create_test_user("update-test-android4@test.com", "update-test-android4",
                                              "upd4te-str0ng-p4ssw0rd4"),
                        self.create_test_user("test-android-delete@test.com", "test-android-delete", "str0ng-p4ssw0rd")]
+
+        test_user = User.objects.get(pk=list_of_ids[0])
+
+        for game in Game.objects.all():
+            for language in Language.objects.all():
+                Score.objects.create(user=test_user, language=language, game=game, score=random.randint(1, 1000))
+
         print("Users created for mobile tests:")
         print(list_of_ids)
 

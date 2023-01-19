@@ -93,11 +93,11 @@ class TestsProfileSelenium:
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
         assert dropdown_button.text == selected_language.language_name
-        assert header_score_tables.text == "{} {} {}".format("Language", "Game", "Score")
+        assert header_score_tables.text == "{} {}".format("Game", "Score")
 
         for i in range(len(row_scores)):
             score = scores[i]
-            assert row_scores[i].text == "{} {} {}".format(score.language, score.game.game_name, score.score)
+            assert row_scores[i].text == "{} {}".format(score.game.game_name, score.score)
 
         assert len(scores) == len(row_scores)
         assert_menu(selenium_driver, user=user)

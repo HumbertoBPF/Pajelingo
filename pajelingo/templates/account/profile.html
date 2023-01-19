@@ -86,7 +86,6 @@
                 <table class="table table-stripped">
                     <thead>
                         <tr>
-                            <th scope="col">Language</th>
                             <th scope="col">Game</th>
                             <th scope="col">Score</th>
                         </tr>
@@ -94,7 +93,6 @@
                     <tbody>
                     {% for score in scores %}
                         <tr>
-                            <td>{{score.language}}</td>
                             <td>{{score.game.game_name}}</td>
                             <td>{{score.score}}</td>
                         </tr>
