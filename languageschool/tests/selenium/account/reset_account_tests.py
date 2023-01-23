@@ -77,7 +77,7 @@ class TestResetAccountSelenium:
 
         selenium_driver.find_element(By.ID, "reset_account_link").click()
 
-        email_labels = selenium_driver.find_elements(By.ID, "id_email_label")
+        email_labels = selenium_driver.find_elements(By.ID, "idEmailLabel")
         email_inputs = selenium_driver.find_elements(By.ID, "id_email")
         submit_buttons = selenium_driver.find_elements(By.ID, "submitRequestResetAccountFormButton")
 

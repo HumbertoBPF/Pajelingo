@@ -13,7 +13,7 @@
                                 <div class="col-md-4 px-4 d-flex align-items-center justify-content-center">
                                     <div>
                                         {% if result.language.flag_image %}
-                                            <img src="{{result.language.flag_image.url}}" class="img-fluid rounded-start" alt="{{result.language.language_name}}">
+                                            <img src="{{result.language.flag_image.url}}" class="img-fluid rounded-start" alt="{{result.language.language_name}} image">
                                         {% endif %}
                                     </div>
                                 </div>
@@ -29,7 +29,7 @@
             {% endfor %}
         {% else %}
             <div class="text-center col-sm-8 col-md-4">
-                <img id="noResultImg" src="{% static 'no_result.jpg' %}" class="img-fluid rounded" alt="No results">
+                <img id="noResultImg" src="{% static 'no_result.jpg' %}" class="img-fluid rounded" alt="No results image">
                 <p id="noResultP">No result matching your search was found</p>
             </div>
         {% endif %}

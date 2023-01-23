@@ -11,56 +11,60 @@
     </h5>
     {% if languages %}
 
-        <div class="dropdown mb-4">
-            <button id="dropdownButtonFilter" class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <!-- If a language is specified, return the ranking concerning this language -->
-                {% if language %}
-                    {{language.language_name}}
-                {% endif %}
-            </button>
-            <ul class="dropdown-menu w-100">
-                {% for language in languages %}
-                    <li><a class="dropdown-item" href="{% url 'rankings'%}?language={{language.language_name}}">{{language.language_name}}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- If there are data to be shown, display the table -->
-        {% if scores %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Position</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for score in scores %}
-                    <tr>
-                        <td>{{forloop.counter}}</td>
-                        <td>{{score.user__username}}</td>
-                        <td>{{score.score}}</td>
-                    </tr>
-                    {% endfor %}
-                    <!-- If users are logged in, their position in the ranking is also specified and the website shows it -->
-                    {% if my_position %}
-                        <tr id="separator">
-                            <td>...</td>
-                            <td>...</td>
-                            <td>...</td>
-                        </tr>
-                        <tr id="my_position">
-                            <th scope="row">(You) {{my_position}}</th>
-                            <th scope="row">{{my_score.user__username}}</th>
-                            <th scope="row">{{my_score.score}}</th>
-                        </tr>
+        <section>
+            <div class="dropdown mb-4">
+                <button id="dropdownButtonFilter" class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <!-- If a language is specified, return the ranking concerning this language -->
+                    {% if language %}
+                        {{language.language_name}}
                     {% endif %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>It seems that no one has played this game yet... Be the first to play it and get ahead the other competitors!</p>
-        {% endif %}
+                </button>
+                <ul class="dropdown-menu w-100">
+                    {% for language in languages %}
+                        <li><a class="dropdown-item" href="{% url 'rankings'%}?language={{language.language_name}}">{{language.language_name}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <!-- If there are data to be shown, display the table -->
+            {% if scores %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Position</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for score in scores %}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{score.user__username}}</td>
+                            <td>{{score.score}}</td>
+                        </tr>
+                        {% endfor %}
+                        <!-- If users are logged in, their position in the ranking is also specified and the website shows it -->
+                        {% if my_position %}
+                            <tr id="separator">
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                            </tr>
+                            <tr id="my_position">
+                                <th scope="row">(You) {{my_position}}</th>
+                                <th scope="row">{{my_score.user__username}}</th>
+                                <th scope="row">{{my_score.score}}</th>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>It seems that no one has played this game yet... Be the first to play it and get ahead the other competitors!</p>
+            {% endif %}
+        </section>
 
     {% endif %}
 

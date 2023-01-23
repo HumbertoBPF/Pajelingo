@@ -4,16 +4,20 @@
 
 <h5>Conjugation game</h5>
 <br>
-<p>A key part of learning a language is about conjugating verbs. Some languages have tenses that are not present in other
-    ones. The conjugation of regular verbs is determined by some rules. On the other hand, irregular verbs are a bit random,
-    but there are still some patterns that can be identified. The common point between all tenses and kind of verbs is that
-    mastering them requires practice, so let’s start! </p>
+<section>
+    <p>A key part of learning a language is about conjugating verbs. Some languages have tenses that are not present in other
+        ones. The conjugation of regular verbs is determined by some rules. On the other hand, irregular verbs are a bit random,
+        but there are still some patterns that can be identified. The common point between all tenses and kind of verbs is that
+        mastering them requires practice, so let’s start! </p>
+</section>
 {% if messages %}
+    <section>
     {% for message in messages %}
         <div class="alert alert-danger" role="alert">
             {{message}}
         </div>
     {% endfor %}
+    </section>
 {% endif %}
 <form action="{% url 'conjugation-game' %}" method="GET">
     <div class="mb-4">

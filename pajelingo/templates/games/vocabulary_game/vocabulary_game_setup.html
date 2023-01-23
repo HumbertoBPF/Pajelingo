@@ -4,18 +4,22 @@
 
 <h5>Vocabulary training</h5>
 <br>
-<p>This game will test your vocabulary. </p>
+<section>
+    <p>This game will test your vocabulary. </p>
 
-<p>When learning a language, it is tricky to increase your repertory. For languages
-    different from the languages that you know, everything may seem random and unexpected. Even languages that share similarities,
-    such as Spanish and Portuguese, there are several “false friends”, that is words that seem to be a synonym of a word
-    in other language, but whose meaning is not the same. Let’s start?</p>
+    <p>When learning a language, it is tricky to increase your repertory. For languages
+        different from the languages that you know, everything may seem random and unexpected. Even languages that share similarities,
+        such as Spanish and Portuguese, there are several “false friends”, that is words that seem to be a synonym of a word
+        in other language, but whose meaning is not the same. Let’s start?</p>
+</section>
 {% if messages %}
+    <section>
     {% for message in messages %}
         <div class="alert alert-danger" role="alert">
             {{message}}
         </div>
     {% endfor %}
+    </section>
 {% endif %}
 <form action="{% url 'vocabulary-game' %}" method="GET">
     <div class="mb-4">

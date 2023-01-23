@@ -4,17 +4,21 @@
 
 <h5>Guess the article</h5>
 <br>
-<p>As you may have inferred, in this game you must write the definite article that matches the displayed word. The
-    English language is not available for this game since there is only one definite article for this language (the). </p>
+<section>
+    <p>As you may have inferred, in this game you must write the definite article that matches the displayed word. The
+        English language is not available for this game since there is only one definite article for this language (the). </p>
 
-<p>For the languages concerned by this game, the article indicates the gender and the number of the word. This might be
-    a bit weird for English speakers, but it’s just about getting used. Let’s start?</p>
+    <p>For the languages concerned by this game, the article indicates the gender and the number of the word. This might be
+        a bit weird for English speakers, but it’s just about getting used. Let’s start?</p>
+</section>
 {% if messages %}
+    <section>
     {% for message in messages %}
         <div class="alert alert-danger" role="alert">
             {{message}}
         </div>
     {% endfor %}
+    </section>
 {% endif %}
 <form action="{% url 'article-game' %}" method="GET">
     <div class="mb-4">
