@@ -8,7 +8,7 @@
             {% for result in search_results %}
                 <div class="col-6 col-sm-4 my-1">
                     <a class="text-reset text-decoration-none" href="/meaning/{{result.id}}">
-                        <div class="card">
+                        <div class="card primary-color-card">
                             <div class="row g-0">
                                 <div class="col-md-4 px-4 d-flex align-items-center justify-content-center">
                                     <div>
@@ -29,7 +29,7 @@
             {% endfor %}
         {% else %}
             <div class="text-center col-sm-8 col-md-4">
-                <img id="noResultImg" src="{% static 'no_result.jpg' %}" class="img-fluid rounded" alt="No results image">
+                <img id="noResultImg" src="{% static 'images/no_result.jpg' %}" class="img-fluid rounded" alt="No results image">
                 <p id="noResultP">No result matching your search was found</p>
             </div>
         {% endif %}

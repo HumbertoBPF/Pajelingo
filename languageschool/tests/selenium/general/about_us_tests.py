@@ -10,11 +10,11 @@ class TestSearchSelenium:
         selenium_driver.get(url)
 
         image_names = [
-            "about_us/onboarding_0.png",
-            "about_us/onboarding_1.png",
-            "about_us/onboarding_2.png",
-            "about_us/onboarding_3.png",
-            "about_us/onboarding_4.png"
+            "images/about_us/onboarding_0.png",
+            "images/about_us/onboarding_1.png",
+            "images/about_us/onboarding_2.png",
+            "images/about_us/onboarding_3.png",
+            "images/about_us/onboarding_4.png"
         ]
         captions = [
             "Welcome to Pajelingo!",

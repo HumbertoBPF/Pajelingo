@@ -7,11 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
-    <link rel="icon" href="{% static 'pajelingo.png' %}">
+    <link rel="icon" href="{% static 'images/pajelingo.png' %}">
     <!--Get your own code at fontawesome.com-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>Pajelingo</title>
 </head>
 
@@ -21,7 +21,7 @@
         <nav class="navbar navbar-expand-lg navbar-light mb-4">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'index' %}">
-                    <img src="{% static 'brand.png' %}" alt="Pajelingo logo" height="48">
+                    <img src="{% static 'images/brand.png' %}" alt="Pajelingo logo" height="48">
                 </a>
                 {% if user.is_authenticated %}
                     <div id="greeting">

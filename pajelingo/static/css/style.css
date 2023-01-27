@@ -1,6 +1,6 @@
 :root {
-  --blue: #6EB6FF;
-  --grey: #D9D9D9;
+  --primary-color: #6EB6FF;
+  --primary-hover-color: #D9D9D9;
 }
 
 body {
@@ -8,7 +8,7 @@ body {
 }
 
 header, footer {
-    background-color: var(--blue);
+    background-color: var(--primary-color);
     color: white;
 }
 
@@ -17,9 +17,18 @@ header, footer {
 }
 
 .navbar-light .navbar-brand:hover, .navbar-light .navbar-nav .nav-link:hover {
-  color: var(--grey);
+  color: var(--primary-hover-color);
 }
 
 .navbar-light .navbar-brand:focus, .navbar-light .navbar-nav .nav-link:focus {
-  color: var(--grey);
+  color: var(--primary-hover-color);
+}
+
+.primary-color-card {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-info {
+  color: white;
 }

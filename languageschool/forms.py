@@ -14,7 +14,8 @@ class PasswordResetForm(PasswordResetForm):
         widget=forms.EmailInput(
             attrs={
                 "autocomplete": "email",
-                "class": "form-control"
+                "class": "form-control",
+                "placeholder": "Your email address"
             }
         ),
     )
@@ -28,7 +29,8 @@ class SetPasswordForm(SetPasswordForm):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "new-password",
-                "class": "form-control"
+                "class": "form-control",
+                "placeholder": "New password"
             }
         ),
         strip=False,
@@ -40,7 +42,8 @@ class SetPasswordForm(SetPasswordForm):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "new-password",
-                "class": "form-control"
+                "class": "form-control",
+                "placeholder": "Confirm password"
             }
         ),
     )

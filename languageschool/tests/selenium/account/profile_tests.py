@@ -55,7 +55,7 @@ class TestsProfileSelenium:
         default_picture_filename = selenium_driver.find_element(By.ID, "defaultPicture").get_attribute("src")
         warning_no_scores = selenium_driver.find_element(By.ID, "warningNoScores")
 
-        assert default_picture_filename == live_server.url + "/static/profile.jpg"
+        assert default_picture_filename == live_server.url + "/static/images/profile.jpg"
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
         assert warning_no_scores.text == "It seems that you haven't played games in this language yet..."
@@ -89,7 +89,7 @@ class TestsProfileSelenium:
         dropdown_button = selenium_driver.find_element(By.ID, "dropdownButtonFilter")
         row_scores = selenium_driver.find_element(By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "tr")
 
-        assert default_picture_filename == live_server.url + "/static/profile.jpg"
+        assert default_picture_filename == live_server.url + "/static/images/profile.jpg"
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
         assert dropdown_button.text == selected_language.language_name

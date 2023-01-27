@@ -3,8 +3,8 @@
 
 {% block content %}
 
-<form id="search-form" action="{% url 'search-done' %}" method="GET">
-    <div class="form-floating mb-3">
+<form action="{% url 'search-done' %}" method="GET">
+    <div class="form-floating mb-4">
         <input id="searchInput" type="search" class="form-control" name="search" placeholder="Search for..." aria-label="Search for">
         <label for="searchInput">Search for...</label>
     </div>

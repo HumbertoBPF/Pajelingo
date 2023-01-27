@@ -1,19 +1,19 @@
 {% csrf_token %}
-<div class="mb-4">
-    <label for="inputEmail" class="form-label">Email address</label>
-    <input id="inputEmail" type="email" class="form-control" name="email" value="{{user.email}}" required>
+<div class="form-floating mb-4">
+    <input id="inputEmail" type="email" class="form-control" name="email" value="{{user.email}}" placeholder="Email address" required>
+    <label for="inputEmail">Email address</label>
 </div>
-<div class="mb-4">
-    <label for="inputUsername" class="form-label">Username</label>
-    <input id="inputUsername" type="text" class="form-control" name="username" value="{{user.username}}" required>
+<div class="form-floating mb-4">
+    <input id="inputUsername" type="text" class="form-control" name="username" value="{{user.username}}" placeholder="Username" required>
+    <label for="inputUsername">Username</label>
     </div>
-<div class="mb-4">
-    <label for="inputPassword" class="form-label">Password</label>
-    <input id="inputPassword" type="password" class="form-control" name="password" required>
+<div class="form-floating mb-4">
+    <input id="inputPassword" type="password" class="form-control" name="password" placeholder="Password" required>
+    <label for="inputPassword">Password</label>
 </div>
-<div class="mb-4">
-    <label for="inputPasswordConf" class="form-label">Confirm your password</label>
-    <input id="inputPasswordConf" type="password" class="form-control" name = "password_confirmation" required>
+<div class="form-floating mb-4">
+    <input id="inputPasswordConf" type="password" class="form-control" name = "password_confirmation" placeholder="Confirm your password" required>
+    <label for="inputPasswordConf">Confirm your password</label>
 </div>
 <div class="text-center">
     {% if user.is_authenticated %}

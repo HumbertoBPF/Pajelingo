@@ -6,8 +6,12 @@
         {% csrf_token %}
         {{ form.non_field_errors }}
         {{ form.email.errors }}
-        <label id="idEmailLabel" for="{{ form.email.id_for_label }}" class="form-label">Email address</label>
-        {{ form.email }}
-        <button id="submitRequestResetAccountFormButton" type="submit" class="btn btn-primary mt-4">Reset password</button>
+        <div class="form-floating">
+            {{ form.email }}
+            <label id="idEmailLabel" for="{{ form.email.id_for_label }}">Your email address</label>
+        </div>
+        <div class="text-center">
+            <button id="submitRequestResetAccountFormButton" type="submit" class="btn btn-success mt-4">Reset password</button>
+        </div>
     </form>
 {% endblock %}

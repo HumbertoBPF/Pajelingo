@@ -7,25 +7,27 @@
         <p>Fill the form below to reset your password:</p>
         <form method="POST">
             {% csrf_token %}
-            <div class="mb-4">
-                <label id="id_new_password1_label" for="{{ form.new_password1.id_for_label }}" class="form-label">New password</label>
+            <div class="form-floating mb-4">
                 {{ form.new_password1 }}
+                <label id="id_new_password1_label" for="{{ form.new_password1.id_for_label }}">New password</label>
                 {% if form.new_password1.errors %}
                     <div class="alert alert-danger mt-4" role="alert">
                         {{ form.new_password1.errors }}
                     </div>
                 {% endif %}
             </div>
-            <div class="mb-4">
-                <label id="id_new_password2_label" for="{{ form.new_password2.id_for_label }}" class="form-label">Confirm password</label>
+            <div class="form-floating mb-4">
                 {{form.new_password2}}
+                <label id="id_new_password2_label" for="{{ form.new_password2.id_for_label }}">Confirm password</label>
                 {% if form.new_password2.errors %}
                     <div class="alert alert-danger mt-4" role="alert">
                         {{ form.new_password2.errors }}
                     </div>
                 {% endif %}
             </div>
-            <button id="submitResetAccountFormButton" type="submit" class="btn btn-primary mt-3">Submit</button>
+            <div class="text-center">
+                <button id="submitResetAccountFormButton" type="submit" class="btn btn-success mt-3">Submit</button>
+            </div>
         </form>
         {% else %}
         <div class="alert alert-danger" role="alert">
