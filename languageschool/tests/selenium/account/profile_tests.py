@@ -20,7 +20,7 @@ from languageschool.tests.utils import get_valid_password, get_random_email, get
 from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD, ERROR_LETTER_PASSWORD, \
     ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD
 from pajelingo.validators.validators import ERROR_SPACE_IN_USERNAME, ERROR_NOT_CONFIRMED_PASSWORD, \
-    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
+    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_IMAGE_FILE_FORMAT
 
 
 class TestsProfileSelenium:
@@ -128,31 +128,33 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("update-user"))
 
-        inputs_email = selenium_driver.find_elements(By.ID, "inputEmail")
-        inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
-        inputs_password = selenium_driver.find_elements(By.ID, "inputPassword")
-        inputs_password_confirmation = selenium_driver.find_elements(By.ID, "inputPasswordConf")
-        submit_buttons_form = selenium_driver.find_elements(By.ID, "formUserSubmitButton")
+        inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
+        inputs_email = inputs[0]
+        inputs_username = inputs[1]
+        inputs_password = inputs[2]
+        inputs_password_confirmation = inputs[3]
+        submits_button = selenium_driver.find_elements(By.CSS_SELECTOR, "form div .btn-info")
 
-        assert len(inputs_email) == 1
-        assert len(inputs_username) == 1
-        assert len(inputs_password) == 1
-        assert len(inputs_password_confirmation) == 1
-        assert len(submit_buttons_form) == 1
+        assert len(inputs) == 4
+        assert inputs_email.get_attribute("placeholder") == "Email address"
+        assert inputs_username.get_attribute("placeholder") == "Username"
+        assert inputs_password.get_attribute("placeholder") == "Password"
+        assert inputs_password_confirmation.get_attribute("placeholder") == "Confirm your password"
+        assert len(submits_button) == 1
         assert_menu(selenium_driver, user=user)
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [
-            (get_random_email(), get_random_username(), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_email(), "", get_valid_password(), True, "inputUsername", [WARNING_REQUIRED_FIELD_HTML]),
-            ("", get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
-            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(), get_valid_password(), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_email(), get_random_username(), get_too_short_password(), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_too_long_password(), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_letters(), True, "alert-danger", [ERROR_LETTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_digits(), True, "alert-danger", [ERROR_DIGIT_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "alert-danger", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_valid_password(), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
+            (get_random_email(), get_random_username(), "", True, "form .form-floating:nth-child(4) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_email(), "", get_valid_password(), True, "form .form-floating:nth-child(3) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
+            ("", get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
+            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(), get_valid_password(), True, "form-error", [ERROR_SPACE_IN_USERNAME]),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, "form-error", [ERROR_LETTER_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, "form-error", [ERROR_DIGIT_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "form-error", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
+            (get_random_email(), get_random_username(), get_valid_password(), False, "form-error", [ERROR_NOT_CONFIRMED_PASSWORD])
         ]
     )
     @pytest.mark.django_db
@@ -204,12 +206,16 @@ class TestsProfileSelenium:
 
         submit_form_user(selenium_driver, email, username, password, password)
 
-        alert_danger = selenium_driver.find_element(By.CLASS_NAME, "alert-danger")
+        form_errors = selenium_driver.find_elements(By.CLASS_NAME, "form-error")
+        nb_errors = 0
 
         if is_repeated_email:
-            assert alert_danger.text == ERROR_NOT_AVAILABLE_EMAIL
-        elif is_repeated_username:
-            assert alert_danger.text == ERROR_NOT_AVAILABLE_USERNAME
+            assert form_errors[nb_errors].text == ERROR_NOT_AVAILABLE_EMAIL
+            nb_errors += 1
+
+        if is_repeated_username:
+            assert form_errors[nb_errors].text  == ERROR_NOT_AVAILABLE_USERNAME
+
         # Checks that the authenticated user did not have its credentials changed
         assert not User.objects.filter(id=user.id, username=username, email=email).exists()
         assert not AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
@@ -248,7 +254,7 @@ class TestsProfileSelenium:
         assert_menu(selenium_driver, user=new_user)
 
     @pytest.mark.django_db
-    def test_delete_account_dialog_is_shown(self, live_server, selenium_driver, account):
+    def test_delete_account_dialog_rendering(self, live_server, selenium_driver, account):
         """
         Checks that a dialog to confirm deletion is shown when users try to delete their accounts.
         """
@@ -256,16 +262,16 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("profile"))
 
-        selenium_driver.find_element(By.ID, "deleteAccountButton").click()
+        selenium_driver.find_element(By.CSS_SELECTOR, ".btn-danger").click()
 
-        dialog_header = selenium_driver.find_element(By.ID, "deleteAccountDialogHeaderText")
-        dialog_body = selenium_driver.find_element(By.ID, "deleteAccountDialogBodyText")
-        confirm_button = selenium_driver.find_element(By.ID, "confirmDeletion")
-        decline_button = selenium_driver.find_element(By.ID, "declineDeletion")
+        modal_header = selenium_driver.find_element(By.CSS_SELECTOR, "#deleteModal .modal-dialog .modal-content .modal-header .modal-title")
+        modal_body = selenium_driver.find_element(By.CSS_SELECTOR, "#deleteModal .modal-dialog .modal-content .modal-body")
+        confirm_button = selenium_driver.find_element(By.CSS_SELECTOR, "#deleteModal .modal-dialog .modal-content .modal-footer .btn-danger")
+        decline_button = selenium_driver.find_element(By.CSS_SELECTOR, "#deleteModal .modal-dialog .modal-content .modal-footer .btn-secondary")
         # Time to render the text
         time.sleep(1)
-        assert dialog_header.text == "Are you sure?"
-        assert dialog_body.text == "Are you sure that you want to delete your profile? All information such as scores in the games is going to be permanently lost!"
+        assert modal_header.text == "Are you sure?"
+        assert modal_body.text == "Are you sure that you want to delete your profile? All information such as scores in the games is going to be permanently lost!"
         assert confirm_button.text == "Yes, I want to delete my profile"
         assert decline_button.text == "Decline"
         # Checks that the user still exists in database
@@ -282,14 +288,41 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("profile"))
 
-        selenium_driver.find_element(By.ID, "deleteAccountButton").click()
+        selenium_driver.find_element(By.CSS_SELECTOR, ".btn-danger").click()
         # Waits "confirm deletion" button to appear to hit it
         wait = WebDriverWait(selenium_driver, 3)
-        wait.until(EC.element_to_be_clickable((By.ID, "confirmDeletion"))).click()
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".modal-dialog .modal-content .modal-footer .btn-danger"))).click()
 
         assert not User.objects.filter(id=user.id).exists()
         assert not AppUser.objects.filter(user__id=user.id).exists()
         assert_menu(selenium_driver)
+
+    @pytest.mark.django_db
+    def test_update_picture_dialog_rendering(self, live_server, selenium_driver, account):
+        """
+        Checks that a dialog to confirm deletion is shown when users try to delete their accounts.
+        """
+        user, password = account()[0]
+        authenticate(live_server, selenium_driver, user.username, password)
+        selenium_driver.get(live_server.url + reverse("profile"))
+
+        selenium_driver.find_element(By.CSS_SELECTOR, "section div div .btn-info").click()
+
+        modal_header = selenium_driver.find_element(By.CSS_SELECTOR,
+                                                    "#updateProfilePictureModal .modal-dialog .modal-content .modal-header .modal-title")
+        file_inputs = selenium_driver.find_elements(By.CSS_SELECTOR,
+                                                  "#updateProfilePictureModal .modal-dialog .modal-content .modal-body .form-control")
+        confirm_button = selenium_driver.find_element(By.CSS_SELECTOR,
+                                                      "#updateProfilePictureModal .modal-dialog .modal-content .modal-footer .btn-success")
+        decline_button = selenium_driver.find_element(By.CSS_SELECTOR,
+                                                      "#updateProfilePictureModal .modal-dialog .modal-content .modal-footer .btn-secondary")
+        # Time to render the text
+        time.sleep(1)
+        assert modal_header.text == "Update profile picture"
+        assert len(file_inputs) == 1
+        assert confirm_button.text == "Update"
+        assert decline_button.text == "Cancel"
+        assert_menu(selenium_driver, user=user)
 
     @pytest.mark.parametrize(
         "filename", [
@@ -303,9 +336,18 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("profile"))
 
-        picture_uploader = selenium_driver.find_element(By.ID, "id_picture")
-        picture_uploader.send_keys(filename)
-        selenium_driver.find_element(By.ID, "changePictureButton").click()
+        selenium_driver.find_element(By.CSS_SELECTOR, "section div div .btn-info").click()
+
+        # Waits the change profile picture modal to be displayed
+        wait = WebDriverWait(selenium_driver, 3)
+        wait.until(EC.element_to_be_clickable((By.ID, "id_picture"))).send_keys(filename)
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".modal-dialog .modal-content .modal-footer .btn-success"))).click()
+
+        # Waits the change profile picture modal to display the error
+        time.sleep(3)
+        form_error = selenium_driver.find_element(By.CSS_SELECTOR,
+                                                  "#updateProfilePictureModal .modal-dialog .modal-content .modal-body .form-error")
+        assert form_error.text == ERROR_IMAGE_FILE_FORMAT
 
         assert not AppUser.objects.filter(user__id=user.id).first().picture
         assert_menu(selenium_driver, user=user)

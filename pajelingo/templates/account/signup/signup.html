@@ -12,8 +12,11 @@
         {% endfor %}
         </section>
     {% endif%} 
-    <form action="{% url 'signup-done' %}" method="POST">
+    <form action="{% url 'signup' %}" method="POST">
         {% include '../../partials/form_user.html' %}
+        <div class="text-center">
+            <button id="formUserSubmitButton" type="submit" class="btn btn-success">Sign up</button>
+        </div>
     </form>
 
 {% endblock %}

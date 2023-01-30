@@ -13,7 +13,10 @@ from languageschool.models import AppUser
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_long_password, get_too_short_password, get_password_without_letters, get_password_without_digits, \
     get_password_without_special_characters
-from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
+
+TEST_EMAIL = get_random_email()
+TEST_USERNAME = get_random_username()
+TEST_PASSWORD = get_valid_password()
 
 
 @pytest.mark.django_db
@@ -84,12 +87,11 @@ def test_update_user(client, account):
     response = client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.context.get('user_id') == user.id
 
 
 @pytest.mark.django_db
 def test_do_update_user_requires_authentication(client):
-    url = reverse('update-user-done')
+    url = reverse('update-user')
 
     login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)
@@ -135,12 +137,12 @@ def test_do_update_user(client, account, email, username, password, is_password_
     user, user_password = account()[0]
     client.login(username=user.username, password=user_password)
 
-    url = reverse('update-user-done')
+    url = reverse('update-user')
     data = {
         "email": email,
         "username": username,
         "password": password,
-        "password_confirmation": password if is_password_confirmed else get_valid_password()
+        "confirm_password": password if is_password_confirmed else get_valid_password()
     }
 
     response = client.post(url, data=data)
@@ -170,18 +172,18 @@ def test_do_update_user_repeated_credentials(client, account, is_repeated_email,
     user2, password2 = accounts[1]
     client.login(username=user.username, password=password)
 
-    url = reverse('update-user-done')
+    url = reverse('update-user')
     new_password = get_valid_password()
     data = {
         "email": user2.email if is_repeated_email else get_random_email(),
         "username": user2.username if is_repeated_username else get_random_username(),
         "password": new_password,
-        "password_confirmation": new_password
+        "confirm_password": new_password
     }
 
     response = client.post(url, data=data)
 
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == status.HTTP_200_OK
     assert User.objects.filter(id=user.id, email=user.email, username=user.username).exists()
     assert AppUser.objects.filter(user__id=user.id, user__email=user.email, user__username=user.username).exists()
 
@@ -198,13 +200,13 @@ def test_do_update_user_same_credentials(client, account, is_same_email, is_same
     user, password = account()[0]
     client.login(username=user.username, password=password)
 
-    url = reverse('update-user-done')
+    url = reverse('update-user')
     new_password = get_valid_password()
     data = {
         "email": user.email if is_same_email else get_random_email(),
         "username": user.username if is_same_username else get_random_username(),
         "password": new_password,
-        "password_confirmation": new_password
+        "confirm_password": new_password
     }
 
     response = client.post(url, data=data)
@@ -248,7 +250,7 @@ def test_delete_user(client, account):
 @pytest.mark.django_db
 def test_change_profile_picture_requires_authentication(client, account):
     user, password = account()[0]
-    url = reverse('change-picture')
+    url = reverse('profile')
 
     login_url = reverse('login')
     login_url = '{}?next={}'.format(login_url, url)

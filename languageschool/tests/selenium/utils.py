@@ -23,9 +23,13 @@ def authenticate(live_server, selenium_driver, username, password):
 
 
 def input_login_credentials(selenium_driver, username, password):
-    selenium_driver.find_element(By.ID, "inputUsername").send_keys(username)
-    selenium_driver.find_element(By.ID, "inputPassword").send_keys(password)
-    selenium_driver.find_element(By.ID, "submitLoginFormButton").click()
+    inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
+    username_input = inputs[0]
+    password_input = inputs[1]
+
+    username_input.send_keys(username)
+    password_input.send_keys(password)
+    selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn-success").click()
 
 def assert_menu(selenium_driver, user=None):
     """
@@ -76,21 +80,21 @@ def assert_menu(selenium_driver, user=None):
         assert len(greetings) == 0
 
 
-def get_form_error_message(selenium_driver, field):
+def get_form_error_message(selenium_driver, selector):
     """
     Gets the error message referring to an HTML field. This message can be a Django message displayed in a tag with the
     alert-danger class or as a popup in the HTML input field.
 
     :param selenium_driver selenium_driver: Selenium web driver
-    :param field: string identifier of the field
+    :param selector: CSS selector for the concerned field
 
     :return: error message.
     """
-    if field == "alert-danger":
-        return selenium_driver.find_element(By.CLASS_NAME, "alert-danger").text
+    if selector == "form-error":
+        return selenium_driver.find_element(By.CSS_SELECTOR, "form .form-error").text
 
-    field = selenium_driver.find_element(By.ID, field)
-    return selenium_driver.execute_script("return arguments[0].validationMessage;", field)
+    selector = selenium_driver.find_element(By.CSS_SELECTOR, selector)
+    return selenium_driver.execute_script("return arguments[0].validationMessage;", selector)
 
 
 def submit_form_user(selenium_driver, email, username, password, confirmation_password):
@@ -107,12 +111,19 @@ def submit_form_user(selenium_driver, email, username, password, confirmation_pa
     :param confirmation_password: password confirmation to be input
     :type confirmation_password: str
     """
-    selenium_driver.find_element(By.ID, "inputEmail").clear()
-    selenium_driver.find_element(By.ID, "inputEmail").send_keys(email)
-    selenium_driver.find_element(By.ID, "inputUsername").clear()
-    selenium_driver.find_element(By.ID, "inputUsername").send_keys(username)
-    selenium_driver.find_element(By.ID, "inputPassword").clear()
-    selenium_driver.find_element(By.ID, "inputPassword").send_keys(password)
-    selenium_driver.find_element(By.ID, "inputPasswordConf").clear()
-    selenium_driver.find_element(By.ID, "inputPasswordConf").send_keys(confirmation_password)
-    selenium_driver.find_element(By.ID, "formUserSubmitButton").click()
+    inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
+    inputs_email = inputs[0]
+    inputs_username = inputs[1]
+    inputs_password = inputs[2]
+    inputs_password_confirmation = inputs[3]
+
+    inputs_email.clear()
+    inputs_email.send_keys(email)
+    inputs_username.clear()
+    inputs_username.send_keys(username)
+    inputs_password.clear()
+    inputs_password.send_keys(password)
+    inputs_password_confirmation.clear()
+    inputs_password_confirmation.send_keys(confirmation_password)
+
+    selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn").click()

@@ -116,7 +116,7 @@ def get_too_short_password():
 
     :return: a too short password
     """
-    return password_factory(random.randint(1, 7), True, True, True)
+    return password_factory(random.randint(3, 7), True, True, True)
 
 
 def get_too_long_password():

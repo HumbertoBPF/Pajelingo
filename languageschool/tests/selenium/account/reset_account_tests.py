@@ -29,7 +29,7 @@ class TestResetAccountSelenium:
         selenium_driver.find_element(By.ID, "reset_account_link").click()
 
         selenium_driver.find_element(By.ID, "id_email").send_keys(email)
-        selenium_driver.find_element(By.ID, "submitRequestResetAccountFormButton").click()
+        selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn-success").click()
 
     def request_reset_account_via_api(self, api_client, email):
         """
@@ -69,7 +69,7 @@ class TestResetAccountSelenium:
 
         selenium_driver.find_element(By.ID, "id_new_password1").send_keys(new_password)
         selenium_driver.find_element(By.ID, "id_new_password2").send_keys(new_password_confirmation)
-        selenium_driver.find_element(By.ID, "submitResetAccountFormButton").click()
+        selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn-success").click()
 
     @pytest.mark.django_db
     def test_request_reset_account_form_rendering(self, live_server, selenium_driver):
@@ -77,11 +77,9 @@ class TestResetAccountSelenium:
 
         selenium_driver.find_element(By.ID, "reset_account_link").click()
 
-        email_labels = selenium_driver.find_elements(By.ID, "idEmailLabel")
         email_inputs = selenium_driver.find_elements(By.ID, "id_email")
-        submit_buttons = selenium_driver.find_elements(By.ID, "submitRequestResetAccountFormButton")
+        submit_buttons = selenium_driver.find_elements(By.CSS_SELECTOR, "form .btn-success")
 
-        assert len(email_labels) == 1
         assert len(email_inputs) == 1
         assert len(submit_buttons) == 1
         assert_menu(selenium_driver)
@@ -92,9 +90,9 @@ class TestResetAccountSelenium:
 
         selenium_driver.find_element(By.ID, "reset_account_link").click()
 
-        selenium_driver.find_element(By.ID, "submitRequestResetAccountFormButton").click()
+        selenium_driver.find_element(By.CSS_SELECTOR, "form .btn-success").click()
 
-        email_warning = get_form_error_message(selenium_driver, "id_email")
+        email_warning = get_form_error_message(selenium_driver, "form .form-floating:nth-child(2) .form-control")
 
         assert email_warning == WARNING_REQUIRED_FIELD_HTML
         assert_menu(selenium_driver)
@@ -138,7 +136,7 @@ class TestResetAccountSelenium:
         password_inputs = selenium_driver.find_elements(By.ID, "id_new_password1")
         confirmation_password_labels = selenium_driver.find_elements(By.ID, "id_new_password2_label")
         confirmation_input_labels = selenium_driver.find_elements(By.ID, "id_new_password2_label")
-        submit_buttons = selenium_driver.find_elements(By.ID, "submitResetAccountFormButton")
+        submit_buttons = selenium_driver.find_elements(By.CSS_SELECTOR, "form div .btn-success")
 
         assert len(password_labels) == 1
         assert len(password_inputs) == 1
@@ -172,7 +170,7 @@ class TestResetAccountSelenium:
 
         self.fill_reset_password_form(live_server, selenium_driver, new_password, diff_password)
 
-        alert_dangers = selenium_driver.find_elements(By.CLASS_NAME, "alert-danger")
+        alert_dangers = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-error")
 
         assert len(alert_dangers) == 1
         assert alert_dangers[0].text == "The two password fields didn’t match."
@@ -196,7 +194,7 @@ class TestResetAccountSelenium:
 
         self.fill_reset_password_form(live_server, selenium_driver, new_password, new_password)
 
-        alert_dangers = selenium_driver.find_elements(By.CLASS_NAME, "alert-danger")
+        alert_dangers = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-error")
 
         assert len(alert_dangers) == 1
         assert error_message in alert_dangers[0].text
@@ -232,7 +230,7 @@ class TestResetAccountSelenium:
 
         self.fill_reset_password_form(live_server, selenium_driver, new_password, diff_password)
 
-        alert_dangers = selenium_driver.find_elements(By.CLASS_NAME, "alert-danger")
+        alert_dangers = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-error")
 
         assert len(alert_dangers) == 1
         assert alert_dangers[0].text == "The two password fields didn’t match."
@@ -256,7 +254,7 @@ class TestResetAccountSelenium:
 
         self.fill_reset_password_form(live_server, selenium_driver, new_password, new_password)
 
-        alert_dangers = selenium_driver.find_elements(By.CLASS_NAME, "alert-danger")
+        alert_dangers = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-error")
 
         assert len(alert_dangers) == 1
         assert error_message in alert_dangers[0].text

@@ -49,16 +49,18 @@ class TestSignupSelenium:
     def test_signup_form_rendering(self, live_server, selenium_driver):
         selenium_driver.get(live_server.url+reverse("signup"))
 
-        inputs_email = selenium_driver.find_elements(By.ID, "inputEmail")
-        inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
-        inputs_password = selenium_driver.find_elements(By.ID, "inputPassword")
-        inputs_password_confirmation = selenium_driver.find_elements(By.ID, "inputPasswordConf")
-        submit_buttons_form = selenium_driver.find_elements(By.ID, "formUserSubmitButton")
+        inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
+        inputs_email = inputs[0]
+        inputs_username = inputs[1]
+        inputs_password = inputs[2]
+        inputs_password_confirmation = inputs[3]
+        submit_buttons_form = selenium_driver.find_elements(By.CSS_SELECTOR, "form div .btn-success")
 
-        assert len(inputs_email) == 1
-        assert len(inputs_username) == 1
-        assert len(inputs_password) == 1
-        assert len(inputs_password_confirmation) == 1
+        assert len(inputs) == 4
+        assert inputs_email.get_attribute("placeholder") == "Email address"
+        assert inputs_username.get_attribute("placeholder") == "Username"
+        assert inputs_password.get_attribute("placeholder") == "Password"
+        assert inputs_password_confirmation.get_attribute("placeholder") == "Confirm your password"
         assert len(submit_buttons_form) == 1
         assert_menu(selenium_driver)
 
@@ -107,17 +109,17 @@ class TestSignupSelenium:
 
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field, accepted_messages", [
-            (get_random_email(), get_random_username(), "", True, "inputPassword", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_email(), "", get_valid_password(), True, "inputUsername", [WARNING_REQUIRED_FIELD_HTML]),
-            ("", get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 10))+" "+get_random_email(), get_random_username(), get_valid_password(), True, "inputEmail", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
-            (get_random_email(), get_random_string(random.randint(1, 10))+" "+get_random_username(), get_valid_password(), True, "alert-danger", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_email(), get_random_username(), get_too_short_password(), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_too_long_password(), True, "alert-danger", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_letters(), True, "alert-danger", [ERROR_LETTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_digits(), True, "alert-danger", [ERROR_DIGIT_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "alert-danger", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_valid_password(), False, "alert-danger", [ERROR_NOT_CONFIRMED_PASSWORD])
+            (get_random_email(), get_random_username(), "", True, "form .form-floating:nth-child(4) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_email(), "", get_valid_password(), True, "form .form-floating:nth-child(3) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
+            ("", get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
+            (get_random_string(random.randint(1, 10))+" "+get_random_email(), get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
+            (get_random_email(), get_random_string(random.randint(1, 10))+" "+get_random_username(), get_valid_password(), True, "form-error", [ERROR_SPACE_IN_USERNAME]),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, "form-error", [ERROR_LETTER_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, "form-error", [ERROR_DIGIT_PASSWORD]),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "form-error", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
+            (get_random_email(), get_random_username(), get_valid_password(), False, "form-error", [ERROR_NOT_CONFIRMED_PASSWORD])
         ]
     )
     @pytest.mark.django_db
@@ -157,12 +159,16 @@ class TestSignupSelenium:
 
         submit_form_user(selenium_driver, email, username, password, password)
 
-        alert_danger = selenium_driver.find_element(By.CLASS_NAME, "alert-danger")
+        form_errors = selenium_driver.find_elements(By.CLASS_NAME, "form-error")
+        nb_errors = 0
 
         if is_repeated_email:
-            assert alert_danger.text == ERROR_NOT_AVAILABLE_EMAIL
-        elif is_repeated_username:
-            assert alert_danger.text == ERROR_NOT_AVAILABLE_USERNAME
+            assert form_errors[nb_errors].text == ERROR_NOT_AVAILABLE_EMAIL
+            nb_errors += 1
+
+        if is_repeated_username:
+            assert form_errors[nb_errors].text == ERROR_NOT_AVAILABLE_USERNAME
+
         # Verifies if there is a user other than the fixture user with the specified credentials
         assert not User.objects.filter(username=username, email=email).filter(~Q(id=user.id)).exists()
         assert not AppUser.objects.filter(user__username=username, user__email=email).filter(~Q(user__id=user.id)).exists()
@@ -192,4 +198,3 @@ class TestSignupSelenium:
 
         assert alert_success.text == SUCCESSFUL_ACTIVATION
         assert User.objects.filter(username=payload["username"], email=payload["email"], is_active=True).exists()
-

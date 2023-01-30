@@ -1,12 +1,12 @@
 import base64
 
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
-from pajelingo.validators.validators import is_valid_user_data
+from pajelingo.validators.validators import validate_email, validate_username
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -86,20 +86,16 @@ class ListScoreSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UserSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    email = serializers.EmailField()
-    password = serializers.CharField()
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    class Meta:
+        model = User
+        fields = ("email", "username", "password")
 
     def create(self, validated_data):
         username = validated_data.get("username")
         email = validated_data.get("email")
         password = validated_data.get("password")
-
-        error_field, error_message = is_valid_user_data(email, username, password, password)
-
-        if error_field is not None:
-            raise ValidationError({error_field: [error_message]})
 
         user = User.objects.create_user(email=email, username=username, password=password)
         user.is_active = False
@@ -112,17 +108,24 @@ class UserSerializer(serializers.Serializer):
         email = validated_data.get("email")
         password = validated_data.get("password")
 
-        error_field, error_message = is_valid_user_data(email, username, password, password, existing_user=instance)
-
-        if error_field is not None:
-            raise ValidationError({error_field: [error_message]})
-
         instance.username = username
         instance.email = email
         instance.set_password(password)
         instance.save()
 
         return instance
+
+    def validate_email(self, value):
+        validate_email(value, self.instance)
+        return value
+
+    def validate_username(self, value):
+        validate_username(value)
+        return value
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
 
 
 class ScoreSerializer(serializers.Serializer):

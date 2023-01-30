@@ -21,7 +21,7 @@
 {% endif %}
 <form action="{% url 'conjugation-game' %}" method="GET">
     <div class="mb-4">
-        <select id="selectLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="language">
+        <select id="selectLanguage" class="form-select" aria-label=".form-select-sm example" name="language">
             <option id="defaultItem" value="" selected>Choose a language</option>
             {% for language in languages %}
                 <option id="{{ language.language_name }}Item" value="{{ language.language_name }}">{{ language.language_name }}</option>

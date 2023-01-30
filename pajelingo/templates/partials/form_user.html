@@ -1,24 +1,42 @@
 {% csrf_token %}
-<div class="form-floating mb-4">
-    <input id="inputEmail" type="email" class="form-control" name="email" value="{{user.email}}" placeholder="Email address" required>
-    <label for="inputEmail">Email address</label>
-</div>
-<div class="form-floating mb-4">
-    <input id="inputUsername" type="text" class="form-control" name="username" value="{{user.username}}" placeholder="Username" required>
-    <label for="inputUsername">Username</label>
+{% if user_form.non_field_errors %}
+    <div class="text-danger mb-4">
+        {{ user_form.non_field_errors }}
     </div>
+{% endif %}
 <div class="form-floating mb-4">
-    <input id="inputPassword" type="password" class="form-control" name="password" placeholder="Password" required>
-    <label for="inputPassword">Password</label>
+    {{ user_form.email }}
+    <label id="id_email_label" for="{{ user_form.email.id_for_label }}">Email address</label>
+    {% if user_form.email.errors %}
+        <div class="form-error mt-4">
+            {{ user_form.email.errors }}
+        </div>
+    {% endif %}
 </div>
 <div class="form-floating mb-4">
-    <input id="inputPasswordConf" type="password" class="form-control" name = "password_confirmation" placeholder="Confirm your password" required>
-    <label for="inputPasswordConf">Confirm your password</label>
+    {{ user_form.username }}
+    <label id="id_username_label" for="{{ form.username.id_for_label }}">Username</label>
+    {% if user_form.username.errors %}
+        <div class="form-error mt-4">
+            {{ user_form.username.errors }}
+        </div>
+    {% endif %}
 </div>
-<div class="text-center">
-    {% if user.is_authenticated %}
-    <button id="formUserSubmitButton" type="submit" class="btn btn-info">Update</button>
-    {% else %}
-    <button id="formUserSubmitButton" type="submit" class="btn btn-success">Sign up</button>
+<div class="form-floating mb-4">
+    {{ user_form.password }}
+    <label id="id_password_label" for="{{ user_form.password.id_for_label }}">Password</label>
+    {% if user_form.password.errors %}
+        <div class="form-error mt-4">
+            {{ user_form.password.errors }}
+        </div>
+    {% endif %}
+</div>
+<div class="form-floating mb-4">
+    {{ user_form.confirm_password }}
+    <label id="id_confirm_password_label" for="{{ user_form.confirm_password.id_for_label }}">Confirm your password</label>
+    {% if user_form.confirm_password.errors %}
+        <div class="form-error mt-4">
+            {{ user_form.confirm_password.errors }}
+        </div>
     {% endif %}
 </div>

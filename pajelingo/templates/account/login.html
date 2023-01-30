@@ -12,15 +12,30 @@
         {% endfor %}
         </section>
     {% endif%}
-    <form action="{% url 'login-done' %}" method="POST">
+    <form action="{% url 'login' %}" method="POST">
         {% csrf_token %}
+        {% if login_form.non_field_errors %}
+            <div id="nonFieldErrorsEmailInput" class="text-danger mb-4">
+                {{ login_form.non_field_errors }}
+            </div>
+        {% endif %}
         <div class="form-floating mb-4">
-            <input id="inputUsername" type="text" class="form-control" name="username" placeholder="Username">
-            <label for="inputUsername">Username</label>
+            {{ login_form.username }}
+            <label id="id_username_label" for="{{ form.username.id_for_label }}">Username</label>
+            {% if login_form.username.errors %}
+                <div id="validationUsername" class="form-error mt-4">
+                    {{ login_form.username.errors }}
+                </div>
+            {% endif %}
         </div>
         <div class="form-floating mb-4">
-            <input id="inputPassword" type="password" class="form-control" name="password" placeholder="Password">
-            <label for="inputPassword">Password</label>
+            {{ login_form.password }}
+            <label id="id_password_label" for="{{ login_form.password.id_for_label }}">Password</label>
+            {% if login_form.password.errors %}
+                <div id="validationPassword" class="form-error mt-4">
+                    {{ login_form.password.errors }}
+                </div>
+            {% endif %}
         </div>
         {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
@@ -28,7 +43,7 @@
         <a id="reset_account_link" href="{% url 'request-reset-account' %}">I forgot my username/password</a>
         <br>
         <div class="text-center">
-            <button id="submitLoginFormButton" type="submit" class="btn btn-success mt-4">Sign in</button>
+            <button type="submit" class="btn btn-success mt-4">Sign in</button>
         </div>
     </form>
 

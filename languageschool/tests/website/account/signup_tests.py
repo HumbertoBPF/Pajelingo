@@ -11,10 +11,11 @@ from languageschool.models import AppUser
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
     get_password_without_special_characters
-from languageschool.tests.website.account.validation_function_tests import TEST_EMAIL, TEST_USERNAME, TEST_PASSWORD
 
-URL = reverse('signup-done')
-
+URL = reverse('signup')
+TEST_EMAIL = get_random_email()
+TEST_USERNAME = get_random_username()
+TEST_PASSWORD = get_valid_password()
 
 @pytest.mark.parametrize(
     "email", [
@@ -52,12 +53,12 @@ def test_signup_validation(client, email, username, password, is_password_confir
         "email": email,
         "username": username,
         "password": password,
-        "password_confirmation": password if is_password_confirmed else get_valid_password()
+        "confirm_password": password if is_password_confirmed else get_valid_password()
     }
 
     response = client.post(URL, data=data)
     is_user_created = (email == TEST_EMAIL) and (username == TEST_USERNAME) and (password == TEST_PASSWORD) and is_password_confirmed
-    assert response.status_code == status.HTTP_302_FOUND if is_user_created else status.HTTP_200_OK
+    assert response.status_code == status.HTTP_200_OK
     assert User.objects.filter(email=email, username=username).exists() == is_user_created
     assert AppUser.objects.filter(user__email=email, user__username=username).exists() == is_user_created
 
@@ -83,7 +84,7 @@ def test_signup_error_repeated_credentials(client, account, is_repeated_email, i
 
     response = client.post(URL, data=data)
 
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == status.HTTP_200_OK
     assert not User.objects.filter(~Q(id=user.id), email=data["email"], username=data["username"]).exists()
     assert not AppUser.objects.filter(~Q(id=user.id), user__email=data["email"], user__username=data["username"])\
         .exists()

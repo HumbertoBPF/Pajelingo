@@ -29,6 +29,6 @@ header, footer {
   color: white;
 }
 
-.btn-info {
+.btn-info, .btn-info:hover {
   color: white;
 }

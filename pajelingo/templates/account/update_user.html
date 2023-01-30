@@ -3,17 +3,11 @@
 
 {% block content %}
 
-    {% if messages %}
-        <section class="text-center">
-        {% for message in messages %}
-            <div class="alert alert-{{message.tags}}" role="alert">
-                {{message}}
-            </div>
-        {% endfor %}
-        </section>
-    {% endif%} 
-    <form action="{% url 'update-user-done' %}" method="POST">
+    <form action="{% url 'update-user' %}" method="POST">
         {% include '../partials/form_user.html' %}
+        <div class="text-center">
+            <button type="submit" class="btn btn-info">Update</button>
+        </div>
     </form>
 
 {% endblock %}

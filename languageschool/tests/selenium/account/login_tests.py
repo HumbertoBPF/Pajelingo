@@ -12,12 +12,14 @@ class TestsLoginSelenium:
     def test_login_form_rendering(self, live_server, selenium_driver):
         selenium_driver.get(live_server.url + reverse("login"))
 
-        inputs_username = selenium_driver.find_elements(By.ID, "inputUsername")
-        inputs_password = selenium_driver.find_elements(By.ID, "inputPassword")
-        submits_button = selenium_driver.find_elements(By.ID, "submitLoginFormButton")
+        inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
+        username_input = inputs[0]
+        password_input = inputs[1]
+        submits_button = selenium_driver.find_elements(By.CSS_SELECTOR, "form div .btn-success")
 
-        assert len(inputs_username) == 1
-        assert len(inputs_password) == 1
+        assert len(inputs) == 2
+        assert username_input.get_attribute("placeholder") == "Username"
+        assert password_input.get_attribute("placeholder") == "Password"
         assert len(submits_button) == 1
         assert_menu(selenium_driver)
 

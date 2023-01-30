@@ -23,7 +23,7 @@
 {% endif %}
 <form action="{% url 'vocabulary-game' %}" method="GET">
     <div class="mb-4">
-        <select id="selectBaseLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="base_language">
+        <select id="selectBaseLanguage" class="form-select" aria-label=".form-select-sm example" name="base_language">
             <option id="defaultBaseLanguageItem" value="" selected>Choose a base language</option>
             {% for language in languages %}
                 <option id="{{ language.language_name }}BaseLanguageItem" value="{{ language.language_name }}">{{ language.language_name }}</option>
