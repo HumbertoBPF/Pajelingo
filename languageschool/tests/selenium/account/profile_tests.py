@@ -11,19 +11,37 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from languageschool.models import AppUser, Language
-from languageschool.tests.selenium.utils import assert_menu, authenticate, WARNING_REQUIRED_FIELD_HTML, \
-    WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML, get_form_error_message, submit_form_user, \
-    input_login_credentials
+from languageschool.tests.selenium.utils import assert_menu, authenticate, submit_user_form, submit_login_form, \
+    fill_user_form, get_form_error
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_password_without_letters, get_password_without_digits, get_password_without_special_characters, \
     get_too_long_password, get_too_short_password
 from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD, ERROR_LETTER_PASSWORD, \
-    ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD
-from pajelingo.validators.validators import ERROR_SPACE_IN_USERNAME, ERROR_NOT_CONFIRMED_PASSWORD, \
-    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_IMAGE_FILE_FORMAT
+    ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD, ALL_PASSWORD_ERRORS
+from pajelingo.validators.validators import ERROR_NOT_CONFIRMED_PASSWORD, \
+    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_IMAGE_FILE_FORMAT, ERROR_USERNAME_FORMAT, \
+    ERROR_EMAIL_FORMAT, ERROR_REQUIRED_FIELD
 
 
 class TestsProfileSelenium:
+    def update_account_validation(self, live_server, selenium_driver, account, email, username, password,
+                                  is_password_confirmed, field_index, error_message, is_server_side):
+        user, user_password = account()[0]
+        authenticate(live_server, selenium_driver, user.username, user_password)
+        selenium_driver.get(live_server.url + reverse("update-user"))
+
+        confirmation_password = password if is_password_confirmed else get_valid_password()
+
+        if is_server_side:
+            submit_user_form(selenium_driver, email, username, password, confirmation_password)
+        else:
+            fill_user_form(selenium_driver, email, username, password, confirmation_password)
+
+        assert get_form_error(selenium_driver, field_index) == error_message
+        assert not User.objects.filter(id=user.id, username=username, email=email).exists()
+        assert not AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
+        assert_menu(selenium_driver, user=user)
+
     @pytest.mark.django_db
     def test_profile_access_requires_authentication(self, live_server, selenium_driver, account):
         """
@@ -36,13 +54,14 @@ class TestsProfileSelenium:
         assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("login"), url)
         assert_menu(selenium_driver)
         # Logs in and check if user is redirected
-        input_login_credentials(selenium_driver, user.username, password)
+        submit_login_form(selenium_driver, user.username, password)
 
         assert selenium_driver.current_url == live_server.url + url
         assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
-    def test_profile_access_with_authenticated_user_without_scores(self, live_server, selenium_driver, account, languages):
+    def test_profile_access_with_authenticated_user_without_scores(self, live_server, selenium_driver, account,
+                                                                   languages):
         """
         Checks that the credentials of users (username and email) are correctly rendered on their profile page
         """
@@ -114,7 +133,7 @@ class TestsProfileSelenium:
         assert selenium_driver.current_url == "{}{}?next={}".format(live_server.url, reverse("login"), url)
         assert_menu(selenium_driver)
         # Logs in and check if user is redirected
-        input_login_credentials(selenium_driver, user.username, password)
+        submit_login_form(selenium_driver, user.username, password)
 
         assert selenium_driver.current_url == live_server.url + url
         assert_menu(selenium_driver, user=user)
@@ -142,43 +161,60 @@ class TestsProfileSelenium:
         assert inputs_password_confirmation.get_attribute("placeholder") == "Confirm your password"
         assert len(submits_button) == 1
         assert_menu(selenium_driver, user=user)
+
     @pytest.mark.parametrize(
-        "email, username, password, is_password_confirmed, field, accepted_messages", [
-            (get_random_email(), get_random_username(), "", True, "form .form-floating:nth-child(4) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_email(), "", get_valid_password(), True, "form .form-floating:nth-child(3) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
-            ("", get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
-            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(), get_valid_password(), True, "form-error", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_email(), get_random_username(), get_too_short_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_too_long_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_letters(), True, "form-error", [ERROR_LETTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_digits(), True, "form-error", [ERROR_DIGIT_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "form-error", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_valid_password(), False, "form-error", [ERROR_NOT_CONFIRMED_PASSWORD])
+        "email, username, password, is_password_confirmed, field_index, error_message", [
+            (get_random_email(), get_random_username(), "", True, 3, ALL_PASSWORD_ERRORS),
+            (get_random_email(), "", get_valid_password(), True, 2, ERROR_REQUIRED_FIELD),
+            ("", get_random_username(), get_valid_password(), True, 1, ERROR_REQUIRED_FIELD),
+            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(),
+             get_valid_password(), True, 1, ERROR_EMAIL_FORMAT),
+            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(),
+             get_valid_password(), True, 2, ERROR_USERNAME_FORMAT),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, 3, ERROR_LETTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, 3, ERROR_DIGIT_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True,
+             3, ERROR_SPECIAL_CHARACTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_valid_password(), False, 4, ERROR_NOT_CONFIRMED_PASSWORD)
         ]
     )
     @pytest.mark.django_db
-    def test_update_account_validation_error(self, live_server, selenium_driver, account, email, username, password, is_password_confirmed, field, accepted_messages):
+    def test_update_account_client_side_validation(self, live_server, selenium_driver, account, email, username,
+                                                   password, is_password_confirmed, field_index, error_message):
         """
-        Checks possible validation errors when submitting the update account form
+        Checks client-side validation errors when submitting the update account form
         """
-        user, user_password = account()[0]
-        authenticate(live_server, selenium_driver, user.username, user_password)
-        selenium_driver.get(live_server.url + reverse("update-user"))
+        self.update_account_validation(live_server, selenium_driver, account, email, username, password,
+                                       is_password_confirmed, field_index, error_message, False)
 
-        confirmation_password = password if is_password_confirmed else get_valid_password()
-
-        submit_form_user(selenium_driver, email, username, password, confirmation_password)
-
-        is_valid_message = False
-
-        for message in accepted_messages:
-            is_valid_message = is_valid_message or (get_form_error_message(selenium_driver, field) == message)
-
-        assert is_valid_message
-        assert not User.objects.filter(id=user.id, username=username, email=email).exists()
-        assert not AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
-        assert_menu(selenium_driver, user=user)
+    @pytest.mark.parametrize(
+        "email, username, password, is_password_confirmed, field_index, error_message", [
+            (get_random_email(), get_random_username(), "", True, 3, ERROR_REQUIRED_FIELD),
+            (get_random_email(), "", get_valid_password(), True, 2, ERROR_REQUIRED_FIELD),
+            ("", get_random_username(), get_valid_password(), True, 1, ERROR_REQUIRED_FIELD),
+            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(),
+             get_valid_password(), True, 1, ERROR_EMAIL_FORMAT),
+            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(),
+             get_valid_password(), True, 2, ERROR_USERNAME_FORMAT),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, 3, ERROR_LETTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, 3, ERROR_DIGIT_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True,
+             3, ERROR_SPECIAL_CHARACTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_valid_password(), False, 4, ERROR_NOT_CONFIRMED_PASSWORD)
+        ]
+    )
+    @pytest.mark.django_db
+    def test_update_account_server_side_validation(self, live_server, selenium_driver, account, email, username,
+                                                   password, is_password_confirmed, field_index, error_message):
+        """
+        Checks server-side validation errors when submitting the update account form
+        """
+        self.update_account_validation(live_server, selenium_driver, account, email, username, password,
+                                       is_password_confirmed, field_index, error_message, True)
 
     @pytest.mark.parametrize(
         "is_repeated_email, is_repeated_username", [
@@ -204,17 +240,13 @@ class TestsProfileSelenium:
         username = repeated_username if is_repeated_username else get_random_username()
         password = get_valid_password()
 
-        submit_form_user(selenium_driver, email, username, password, password)
+        submit_user_form(selenium_driver, email, username, password, password)
 
-        form_errors = selenium_driver.find_elements(By.CLASS_NAME, "form-error")
-        nb_errors = 0
+        expected_email_error = ERROR_NOT_AVAILABLE_EMAIL if is_repeated_email else ""
+        expected_username_error = ERROR_NOT_AVAILABLE_USERNAME if is_repeated_username else ""
 
-        if is_repeated_email:
-            assert form_errors[nb_errors].text == ERROR_NOT_AVAILABLE_EMAIL
-            nb_errors += 1
-
-        if is_repeated_username:
-            assert form_errors[nb_errors].text  == ERROR_NOT_AVAILABLE_USERNAME
+        assert get_form_error(selenium_driver, 1) == expected_email_error
+        assert get_form_error(selenium_driver, 2) == expected_username_error
 
         # Checks that the authenticated user did not have its credentials changed
         assert not User.objects.filter(id=user.id, username=username, email=email).exists()
@@ -243,7 +275,7 @@ class TestsProfileSelenium:
         username = user.username if is_same_username else get_random_username()
         password = get_valid_password()
 
-        submit_form_user(selenium_driver, email, username, password, password)
+        submit_user_form(selenium_driver, email, username, password, password)
         # Checks if the users are redirected to their profile
         assert selenium_driver.current_url == live_server.url + reverse("profile")
         # Checks that the update was successful
@@ -332,6 +364,9 @@ class TestsProfileSelenium:
     )
     @pytest.mark.django_db
     def test_change_profile_pic_invalid_file(self, live_server, selenium_driver, account, filename):
+        """
+        Checks that an error is raised when trying to upload a file with a wrong format as profile picture.
+        """
         user, password = account()[0]
         authenticate(live_server, selenium_driver, user.username, password)
         selenium_driver.get(live_server.url + reverse("profile"))
@@ -345,9 +380,8 @@ class TestsProfileSelenium:
 
         # Waits the change profile picture modal to display the error
         time.sleep(3)
-        form_error = selenium_driver.find_element(By.CSS_SELECTOR,
-                                                  "#updateProfilePictureModal .modal-dialog .modal-content .modal-body .form-error")
-        assert form_error.text == ERROR_IMAGE_FILE_FORMAT
+        invalid_feedback = selenium_driver.find_element(By.CSS_SELECTOR, "#updateProfilePictureModal .modal-dialog .modal-content .modal-body .invalid-feedback")
+        assert invalid_feedback.text == ERROR_IMAGE_FILE_FORMAT
 
         assert not AppUser.objects.filter(user__id=user.id).first().picture
         assert_menu(selenium_driver, user=user)

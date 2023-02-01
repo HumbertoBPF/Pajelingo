@@ -10,8 +10,7 @@ from rest_framework import status
 from selenium.webdriver.common.by import By
 
 from languageschool.models import AppUser
-from languageschool.tests.selenium.utils import assert_menu, WARNING_REQUIRED_FIELD_HTML, WARNING_EMAIL_WITH_SPACE_HTML, \
-    WARNING_REQUIRED_EMAIL_FIREFOX_HTML, submit_form_user, get_form_error_message
+from languageschool.tests.selenium.utils import assert_menu, submit_user_form, fill_user_form, get_form_error
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
     get_password_without_special_characters
@@ -20,12 +19,30 @@ from languageschool.views.account import SUCCESSFUL_SIGN_UP, SUCCESSFUL_ACTIVATI
     ACTIVATION_LINK_ERROR
 from pajelingo import settings
 from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD, ERROR_LETTER_PASSWORD, \
-    ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD
-from pajelingo.validators.validators import ERROR_SPACE_IN_USERNAME, ERROR_NOT_CONFIRMED_PASSWORD, \
-    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME
+    ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD, ALL_PASSWORD_ERRORS
+from pajelingo.validators.validators import ERROR_NOT_CONFIRMED_PASSWORD, \
+    ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_USERNAME_FORMAT, ERROR_EMAIL_FORMAT, \
+    ERROR_REQUIRED_FIELD
 
 
 class TestSignupSelenium:
+    def signup_validation(self, live_server, selenium_driver, email, username, password, is_password_confirmed,
+                          field_index, expected_error, is_server_side):
+        selenium_driver.get(live_server.url + reverse("signup"))
+
+        confirmation_password = password if is_password_confirmed else get_valid_password()
+
+        fill_user_form(selenium_driver, email, username, password, confirmation_password)
+
+        if is_server_side:
+            selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn").click()
+
+        assert get_form_error(selenium_driver, field_index) == expected_error
+        assert not User.objects.filter(username=username, email=email).exists()
+        assert not AppUser.objects.filter(user__username=username, user__email=email).exists()
+        assert_menu(selenium_driver)
+
+
     def successful_signup(self, live_server, selenium_driver):
         """
         Performs a successful signup with random credentials.
@@ -41,7 +58,7 @@ class TestSignupSelenium:
         username = get_random_username()
         password = get_valid_password()
 
-        submit_form_user(selenium_driver, email, username, password, password)
+        submit_user_form(selenium_driver, email, username, password, password)
 
         return email, username
 
@@ -108,37 +125,58 @@ class TestSignupSelenium:
         assert User.objects.filter(username=username, email=email, is_active=False).exists()
 
     @pytest.mark.parametrize(
-        "email, username, password, is_password_confirmed, field, accepted_messages", [
-            (get_random_email(), get_random_username(), "", True, "form .form-floating:nth-child(4) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_email(), "", get_valid_password(), True, "form .form-floating:nth-child(3) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
-            ("", get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_REQUIRED_FIELD_HTML]),
-            (get_random_string(random.randint(1, 10))+" "+get_random_email(), get_random_username(), get_valid_password(), True, "form .form-floating:nth-child(2) .form-control", [WARNING_EMAIL_WITH_SPACE_HTML, WARNING_REQUIRED_EMAIL_FIREFOX_HTML]),
-            (get_random_email(), get_random_string(random.randint(1, 10))+" "+get_random_username(), get_valid_password(), True, "form-error", [ERROR_SPACE_IN_USERNAME]),
-            (get_random_email(), get_random_username(), get_too_short_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_too_long_password(), True, "form-error", [ERROR_LENGTH_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_letters(), True, "form-error", [ERROR_LETTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_digits(), True, "form-error", [ERROR_DIGIT_PASSWORD]),
-            (get_random_email(), get_random_username(), get_password_without_special_characters(), True, "form-error", [ERROR_SPECIAL_CHARACTER_PASSWORD]),
-            (get_random_email(), get_random_username(), get_valid_password(), False, "form-error", [ERROR_NOT_CONFIRMED_PASSWORD])
+        "email, username, password, is_password_confirmed, field_index, expected_error", [
+            (get_random_email(), get_random_username(), "", True, 3, ALL_PASSWORD_ERRORS),
+            (get_random_email(), "", get_valid_password(), True, 2, ERROR_REQUIRED_FIELD),
+            ("", get_random_username(), get_valid_password(), True, 1, ERROR_REQUIRED_FIELD),
+            (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(),
+             get_valid_password(), True, 1, ERROR_EMAIL_FORMAT),
+            (get_random_email(), get_random_string(random.randint(1, 10)) + " " + get_random_username(),
+             get_valid_password(), True, 2, ERROR_USERNAME_FORMAT),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, 3, ERROR_LETTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, 3, ERROR_DIGIT_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True,
+             3, ERROR_SPECIAL_CHARACTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_valid_password(), False, 4, ERROR_NOT_CONFIRMED_PASSWORD)
         ]
     )
     @pytest.mark.django_db
-    def test_signup_form_error(self, live_server, selenium_driver, email, username, password, is_password_confirmed, field, accepted_messages):
-        selenium_driver.get(live_server.url + reverse("signup"))
+    def test_signup_client_side_validation(self, live_server, selenium_driver, email, username, password,
+                                           is_password_confirmed, field_index, expected_error):
+        """
+        Checks client-side validation when submitting a signup form.
+        """
+        self.signup_validation(live_server, selenium_driver, email, username, password, is_password_confirmed,
+                               field_index, expected_error, False)
 
-        confirmation_password = password if is_password_confirmed else get_valid_password()
-
-        submit_form_user(selenium_driver, email, username, password, confirmation_password)
-
-        is_valid_message = False
-
-        for message in accepted_messages:
-            is_valid_message = is_valid_message or (get_form_error_message(selenium_driver, field) == message)
-
-        assert is_valid_message
-        assert not User.objects.filter(username=username, email=email).exists()
-        assert not AppUser.objects.filter(user__username=username, user__email=email).exists()
-        assert_menu(selenium_driver)
+    @pytest.mark.parametrize(
+        "email, username, password, is_password_confirmed, field_index, expected_error", [
+            (get_random_email(), get_random_username(), "", True, 3, ERROR_REQUIRED_FIELD),
+            (get_random_email(), "", get_valid_password(), True, 2, ERROR_REQUIRED_FIELD),
+            ("", get_random_username(), get_valid_password(), True, 1, ERROR_REQUIRED_FIELD),
+            (get_random_string(random.randint(1, 10))+" "+get_random_email(), get_random_username(),
+             get_valid_password(), True, 1, ERROR_EMAIL_FORMAT),
+            (get_random_email(), get_random_string(random.randint(1, 10))+" "+get_random_username(),
+             get_valid_password(), True, 2, ERROR_USERNAME_FORMAT),
+            (get_random_email(), get_random_username(), get_too_short_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_too_long_password(), True, 3, ERROR_LENGTH_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_letters(), True, 3, ERROR_LETTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_digits(), True, 3, ERROR_DIGIT_PASSWORD),
+            (get_random_email(), get_random_username(), get_password_without_special_characters(), True,
+             3, ERROR_SPECIAL_CHARACTER_PASSWORD),
+            (get_random_email(), get_random_username(), get_valid_password(), False, 4, ERROR_NOT_CONFIRMED_PASSWORD)
+        ]
+    )
+    @pytest.mark.django_db
+    def test_signup_server_side_validation(self, live_server, selenium_driver, email, username, password,
+                                           is_password_confirmed, field_index, expected_error):
+        """
+        Checks server-side validation when submitting a signup form.
+        """
+        self.signup_validation(live_server, selenium_driver, email, username, password, is_password_confirmed,
+                               field_index, expected_error, True)
 
     @pytest.mark.parametrize(
         "is_repeated_email, is_repeated_username", [
@@ -148,7 +186,8 @@ class TestSignupSelenium:
         ]
     )
     @pytest.mark.django_db
-    def test_signup_form_error_not_available_credentials(self, live_server, selenium_driver, account, is_repeated_email, is_repeated_username):
+    def test_signup_form_error_not_available_credentials(self, live_server, selenium_driver, account,
+                                                         is_repeated_email, is_repeated_username):
         user, _ = account()[0]
         selenium_driver.get(live_server.url + reverse("signup"))
 
@@ -157,21 +196,18 @@ class TestSignupSelenium:
         email = user.email if is_repeated_email else get_random_email()
         username = user.username if is_repeated_username else get_random_username()
 
-        submit_form_user(selenium_driver, email, username, password, password)
+        submit_user_form(selenium_driver, email, username, password, password)
 
-        form_errors = selenium_driver.find_elements(By.CLASS_NAME, "form-error")
-        nb_errors = 0
+        expected_email_error = ERROR_NOT_AVAILABLE_EMAIL if is_repeated_email else ""
+        expected_username_error = ERROR_NOT_AVAILABLE_USERNAME if is_repeated_username else ""
 
-        if is_repeated_email:
-            assert form_errors[nb_errors].text == ERROR_NOT_AVAILABLE_EMAIL
-            nb_errors += 1
-
-        if is_repeated_username:
-            assert form_errors[nb_errors].text == ERROR_NOT_AVAILABLE_USERNAME
+        assert get_form_error(selenium_driver, 1) == expected_email_error
+        assert get_form_error(selenium_driver, 2) == expected_username_error
 
         # Verifies if there is a user other than the fixture user with the specified credentials
         assert not User.objects.filter(username=username, email=email).filter(~Q(id=user.id)).exists()
-        assert not AppUser.objects.filter(user__username=username, user__email=email).filter(~Q(user__id=user.id)).exists()
+        assert not AppUser.objects.filter(user__username=username, user__email=email)\
+            .filter(~Q(user__id=user.id)).exists()
         assert_menu(selenium_driver)
 
     @pytest.mark.django_db

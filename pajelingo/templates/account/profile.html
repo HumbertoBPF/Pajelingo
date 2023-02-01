@@ -26,15 +26,15 @@
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">Update profile picture</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form action="{% url 'profile' %}" method="POST" enctype="multipart/form-data">
+                            <form action="{% url 'profile' %}" method="POST" enctype="multipart/form-data" novalidate>
                                 <div class="modal-body">
-                                {% csrf_token %}
-                                {{ form_picture.picture }}
-                                {% if form_picture.picture.errors %}
-                                    <div class="form-error mt-4">
-                                        {{ form_picture.picture.errors }}
+                                    {% csrf_token %}
+                                    {{ form_picture.picture }}
+                                    <div class="invalid-feedback mt-4">
+                                        {% if form_picture.picture.errors %}
+                                            {{ form_picture.picture.errors }}
+                                        {% endif %}
                                     </div>
-                                {% endif %}
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

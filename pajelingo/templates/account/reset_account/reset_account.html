@@ -5,30 +5,30 @@
     <section>
         {% if form %}
             <p>Fill the form below to reset your password:</p>
-            <form method="POST">
+            <form method="POST" novalidate>
                 {% csrf_token %}
                 {% if form.non_field_errors %}
-                    <div id="nonFieldErrorsEmailInput" class="text-danger mb-4">
+                    <div class="text-danger mb-4">
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
                 <div class="form-floating mb-4">
                     {{ form.new_password1 }}
                     <label id="id_new_password1_label" for="{{ form.new_password1.id_for_label }}">New password</label>
-                    {% if form.new_password1.errors %}
-                        <div class="form-error mt-4">
+                    <div class="invalid-feedback mt-4">
+                        {% if form.new_password1.errors %}
                             {{ form.new_password1.errors }}
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="form-floating mb-4">
                     {{form.new_password2}}
                     <label id="id_new_password2_label" for="{{ form.new_password2.id_for_label }}">Confirm password</label>
-                    {% if form.new_password2.errors %}
-                        <div class="form-error mt-4">
+                    <div class="invalid-feedback mt-4">
+                        {% if form.new_password2.errors %}
                             {{ form.new_password2.errors }}
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-success mt-3">Submit</button>
@@ -40,4 +40,7 @@
             </div>
         {% endif %}
     </section>
+{% endblock %}
+{% block js-files %}
+    <script src="{% static 'js/validateResetPasswordForm.js' %}" type="module"></script>
 {% endblock %}

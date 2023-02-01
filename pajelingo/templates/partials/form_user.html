@@ -6,37 +6,37 @@
 {% endif %}
 <div class="form-floating mb-4">
     {{ user_form.email }}
-    <label id="id_email_label" for="{{ user_form.email.id_for_label }}">Email address</label>
-    {% if user_form.email.errors %}
-        <div class="form-error mt-4">
+    <label id="id_email_label" for="{{ user_form.email.id_for_label }}">Email address</label>    
+    <div class="invalid-feedback mt-4">
+        {% if user_form.email.errors %}
             {{ user_form.email.errors }}
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 <div class="form-floating mb-4">
     {{ user_form.username }}
     <label id="id_username_label" for="{{ form.username.id_for_label }}">Username</label>
-    {% if user_form.username.errors %}
-        <div class="form-error mt-4">
+    <div class="invalid-feedback mt-4">
+        {% if user_form.username.errors %}
             {{ user_form.username.errors }}
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 <div class="form-floating mb-4">
     {{ user_form.password }}
-    <label id="id_password_label" for="{{ user_form.password.id_for_label }}">Password</label>
-    {% if user_form.password.errors %}
-        <div class="form-error mt-4">
+    <label id="id_password_label" for="{{ user_form.password.id_for_label }}">Password</label>    
+    <div class="invalid-feedback mt-4">
+        {% if user_form.password.errors %}
             {{ user_form.password.errors }}
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 <div class="form-floating mb-4">
     {{ user_form.confirm_password }}
     <label id="id_confirm_password_label" for="{{ user_form.confirm_password.id_for_label }}">Confirm your password</label>
-    {% if user_form.confirm_password.errors %}
-        <div class="form-error mt-4">
+    <div class="invalid-feedback mt-4">
+        {% if user_form.confirm_password.errors %}
             {{ user_form.confirm_password.errors }}
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>

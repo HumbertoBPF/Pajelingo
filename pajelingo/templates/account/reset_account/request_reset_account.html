@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-    <form method="POST">
+    <form method="POST" novalidate>
         {% csrf_token %}
         {% if form.non_field_errors %}
             <div class="text-danger mb-4">
@@ -11,15 +11,18 @@
         {% endif %}
         <div class="form-floating">
             {{ form.email }}
-            <label for="{{ form.email.id_for_label }}">Your email address</label>
-            {% if form.email.errors %}
-                <div class="form-error mt-4">
-                    {{ form.email.errors }}
+            <label for="{{ form.email.id_for_label }}">Your email address</label>            
+                <div class="invalid-feedback mt-4">
+                    {% if form.email.errors %}
+                        {{ form.email.errors }}
+                    {% endif %}
                 </div>
-            {% endif %}
         </div>
         <div class="text-center">
             <button type="submit" class="btn btn-success mt-4">Reset password</button>
         </div>
     </form>
+{% endblock %}
+{% block js-files %}
+    <script src="{% static 'js/validateRequestResetPasswordForm.js' %}" type="module"></script>
 {% endblock %}

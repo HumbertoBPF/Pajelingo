@@ -72,7 +72,7 @@ def login(request):
                 context["next"] = next_url
         else:
             login_form = LoginForm(request.POST)
-            context = {"login_form": LoginForm()}
+            context = {"login_form": login_form}
 
             if login_form.is_valid():
                 username = login_form.cleaned_data.get("username")

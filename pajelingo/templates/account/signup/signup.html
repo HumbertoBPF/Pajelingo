@@ -12,11 +12,14 @@
         {% endfor %}
         </section>
     {% endif%} 
-    <form action="{% url 'signup' %}" method="POST">
+    <form action="{% url 'signup' %}" method="POST" novalidate>
         {% include '../../partials/form_user.html' %}
         <div class="text-center">
             <button id="formUserSubmitButton" type="submit" class="btn btn-success">Sign up</button>
         </div>
     </form>
 
+{% endblock %}
+{% block js-files %}
+    <script src="{% static 'js/validateUserForm.js' %}" type="module"></script>
 {% endblock %}

@@ -31,7 +31,7 @@
         </select>
     </div>
     <div class="mb-4">
-        <select id="selectTargetLanguage" class="form-select form-select-sm" aria-label=".form-select-sm example" name="target_language">
+        <select id="selectTargetLanguage" class="form-select" aria-label=".form-select-sm example" name="target_language">
             <option id="defaultTargetLanguageItem" value="" selected>Choose a target language</option>
             {% for language in languages %}
                 <option id="{{ language.language_name }}TargetLanguageItem" value="{{ language.language_name }}">{{ language.language_name }}</option>

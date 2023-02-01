@@ -1,10 +1,7 @@
+from django.contrib.auth.models import User
+from django.core import mail
 from django.urls import reverse
 from selenium.webdriver.common.by import By
-from django.contrib.auth.models import User
-
-WARNING_REQUIRED_EMAIL_FIREFOX_HTML = "Please enter an email address."
-WARNING_REQUIRED_FIELD_HTML = "Please fill out this field."
-WARNING_EMAIL_WITH_SPACE_HTML = "A part followed by '@' should not contain the symbol ' '."
 
 
 def authenticate(live_server, selenium_driver, username, password):
@@ -19,17 +16,39 @@ def authenticate(live_server, selenium_driver, username, password):
     :type password: str
     """
     selenium_driver.get(live_server.url + reverse("login"))
-    input_login_credentials(selenium_driver, username, password)
+    submit_login_form(selenium_driver, username, password)
 
 
-def input_login_credentials(selenium_driver, username, password):
+def submit_login_form(selenium_driver, username, password):
+    """
+    Fills and submits the login form.
+
+    :param selenium_driver: Selenium web driver
+    :param username: username to be input
+    :type username: str
+    :param password: password to be input
+    :type password: str
+    """
+    fill_login_form(selenium_driver, username, password)
+    selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn-success").click()
+
+
+def fill_login_form(selenium_driver, username, password):
+    """
+    Fills the login form.
+
+    :param selenium_driver: Selenium web driver
+    :param username: username to be input
+    :type username: str
+    :param password: password to be input
+    :type password: str
+    """
     inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
     username_input = inputs[0]
     password_input = inputs[1]
 
     username_input.send_keys(username)
     password_input.send_keys(password)
-    selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn-success").click()
 
 def assert_menu(selenium_driver, user=None):
     """
@@ -80,24 +99,7 @@ def assert_menu(selenium_driver, user=None):
         assert len(greetings) == 0
 
 
-def get_form_error_message(selenium_driver, selector):
-    """
-    Gets the error message referring to an HTML field. This message can be a Django message displayed in a tag with the
-    alert-danger class or as a popup in the HTML input field.
-
-    :param selenium_driver selenium_driver: Selenium web driver
-    :param selector: CSS selector for the concerned field
-
-    :return: error message.
-    """
-    if selector == "form-error":
-        return selenium_driver.find_element(By.CSS_SELECTOR, "form .form-error").text
-
-    selector = selenium_driver.find_element(By.CSS_SELECTOR, selector)
-    return selenium_driver.execute_script("return arguments[0].validationMessage;", selector)
-
-
-def submit_form_user(selenium_driver, email, username, password, confirmation_password):
+def submit_user_form(selenium_driver, email, username, password, confirmation_password):
     """
     Fills and submits the user form (displayed on the signup page and on the update account page).
 
@@ -111,19 +113,73 @@ def submit_form_user(selenium_driver, email, username, password, confirmation_pa
     :param confirmation_password: password confirmation to be input
     :type confirmation_password: str
     """
-    inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
-    inputs_email = inputs[0]
-    inputs_username = inputs[1]
-    inputs_password = inputs[2]
-    inputs_password_confirmation = inputs[3]
-
-    inputs_email.clear()
-    inputs_email.send_keys(email)
-    inputs_username.clear()
-    inputs_username.send_keys(username)
-    inputs_password.clear()
-    inputs_password.send_keys(password)
-    inputs_password_confirmation.clear()
-    inputs_password_confirmation.send_keys(confirmation_password)
-
+    fill_user_form(selenium_driver, email, username, password, confirmation_password)
     selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn").click()
+
+
+def fill_user_form(selenium_driver, email, username, password, confirmation_password):
+    """
+    Fills the user form (displayed on the signup page and on the update account page).
+
+    :param selenium_driver: Selenium web driver
+    :param email: email to be input
+    :type email: str
+    :param username: username to be input
+    :type username: str
+    :param password: password to be input
+    :type password: str
+    :param confirmation_password: password confirmation to be input
+    :type confirmation_password: str
+    """
+    inputs = selenium_driver.find_elements(By.CSS_SELECTOR, "form .form-control")
+    email_input = inputs[0]
+    username_input = inputs[1]
+    password_input = inputs[2]
+    confirm_password_input = inputs[3]
+
+    email_input.clear()
+    email_input.send_keys(email)
+    username_input.clear()
+    username_input.send_keys(username)
+    password_input.clear()
+    password_input.send_keys(password)
+    confirm_password_input.clear()
+    confirm_password_input.send_keys(confirmation_password)
+
+def request_reset_account_via_website(live_server, selenium_driver, email):
+    """
+    Requests the reset of an account with the specified email on Pajelingo's webpage.
+
+    :param live_server: live server fixture
+    :param selenium_driver: Selenium web driver
+    :param email: email address to be input
+    """
+    selenium_driver.get(live_server.url + reverse("login"))
+
+    selenium_driver.find_element(By.ID, "reset_account_link").click()
+
+    selenium_driver.find_element(By.ID, "id_email").send_keys(email)
+    selenium_driver.find_element(By.CSS_SELECTOR, "form div .btn-success").click()
+
+def get_reset_account_link():
+    """
+    Gets the reset account link of the specified user.
+
+    :return: link for resetting account.
+    """
+    assert len(mail.outbox) == 1
+    return "http" + mail.outbox[0].body.split("http")[1].split("\n\nIf you did not ask")[0]
+
+
+def get_form_error(selenium_driver, field_index):
+    """
+    Gets the error text of the input at the specified position.
+
+    :param selenium_driver: Selenium Web Driver
+    :param field_index: position of the input that we are referring to
+    :type field_index: int
+
+    :return: the error text of the matched input.
+    """
+    css_selector = "form .form-floating:nth-child({}) .invalid-feedback".format(field_index+1)
+    return selenium_driver.find_element(By.CSS_SELECTOR, css_selector).text

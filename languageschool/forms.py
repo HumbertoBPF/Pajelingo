@@ -3,9 +3,10 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from pajelingo.validators.validators import validate_email, validate_username, ERROR_NOT_CONFIRMED_PASSWORD
+from pajelingo.validators.validators import validate_email, ERROR_NOT_CONFIRMED_PASSWORD
 
 
 class LoginForm(forms.Form):
@@ -80,11 +81,6 @@ class UserForm(forms.ModelForm):
         validate_email(email, self.instance)
         return email
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        validate_username(username)
-        return username
-
     def clean_password(self):
         password = self.cleaned_data.get("password")
         validate_password(password)
@@ -149,7 +145,7 @@ class PasswordResetForm(PasswordResetForm):
 
 class SetPasswordForm(SetPasswordForm):
     error_messages = {
-        "password_mismatch": _("The two password fields didn’t match."),
+        "password_mismatch": _(ERROR_NOT_CONFIRMED_PASSWORD),
     }
     new_password1 = forms.CharField(
         label=_("New password"),
@@ -179,3 +175,19 @@ class SetPasswordForm(SetPasswordForm):
         for field in self.errors:
             self[field].field.widget.attrs['class'] += ' is-invalid'
         return super().is_valid()
+
+    def clean_new_password1(self):
+        password1 = self.cleaned_data.get("new_password1")
+        password_validation.validate_password(password1, self.user)
+        return password1
+
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get("new_password1")
+        password2 = self.cleaned_data.get("new_password2")
+        if password1 and password2:
+            if password1 != password2:
+                raise ValidationError(
+                    self.error_messages["password_mismatch"],
+                    code="password_mismatch",
+                )
+        return password2

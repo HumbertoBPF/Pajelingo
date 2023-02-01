@@ -12,30 +12,30 @@
         {% endfor %}
         </section>
     {% endif%}
-    <form action="{% url 'login' %}" method="POST">
+    <form action="{% url 'login' %}" method="POST" novalidate>
         {% csrf_token %}
         {% if login_form.non_field_errors %}
-            <div id="nonFieldErrorsEmailInput" class="text-danger mb-4">
+            <div class="text-danger mb-4">
                 {{ login_form.non_field_errors }}
             </div>
         {% endif %}
         <div class="form-floating mb-4">
             {{ login_form.username }}
             <label id="id_username_label" for="{{ form.username.id_for_label }}">Username</label>
-            {% if login_form.username.errors %}
-                <div id="validationUsername" class="form-error mt-4">
+            <div id="validationUsername" class="invalid-feedback mt-4">
+                {% if login_form.username.errors %}
                     {{ login_form.username.errors }}
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
         <div class="form-floating mb-4">
             {{ login_form.password }}
             <label id="id_password_label" for="{{ login_form.password.id_for_label }}">Password</label>
-            {% if login_form.password.errors %}
-                <div id="validationPassword" class="form-error mt-4">
+            <div id="validationPassword" class="invalid-feedback mt-4">
+                {% if login_form.password.errors %}
                     {{ login_form.password.errors }}
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
         {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
@@ -47,4 +47,7 @@
         </div>
     </form>
 
+{% endblock %}
+{% block js-files %}
+    <script src="{% static 'js/validateLoginForm.js' %}" type="module"></script>
 {% endblock %}

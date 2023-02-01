@@ -24,7 +24,7 @@ class TestRequestResetAccountSelenium:
         if is_server_side:
             selenium_driver.find_element(By.CSS_SELECTOR, "form .btn-success").click()
 
-        assert get_form_error(selenium_driver, 2) == expected_error
+        assert get_form_error(selenium_driver, 1) == expected_error
         assert_menu(selenium_driver)
 
     @pytest.mark.django_db
