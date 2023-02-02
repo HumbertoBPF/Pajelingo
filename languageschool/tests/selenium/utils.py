@@ -59,44 +59,56 @@ def assert_menu(selenium_driver, user=None):
     :param user: user that is authenticated
     :type user: User
     """
-    search_tool_items = selenium_driver.find_elements(By.ID, "searchToolLink")
-    game_dropdown_items = selenium_driver.find_elements(By.ID, "gameDropdownItem")
-    account_dropdown_items = selenium_driver.find_elements(By.ID, "accountDropdownItem")
-    about_us_items = selenium_driver.find_elements(By.ID, "aboutUsLink")
+    account_options_button = \
+        selenium_driver.find_elements(By.CSS_SELECTOR, "header .account-options .btn-account-options")
+    account_picture_img=  \
+        selenium_driver.find_elements(By.CSS_SELECTOR, "header .account-options .btn-account-options img")
+    account_option_links = \
+        selenium_driver.find_elements(By.CSS_SELECTOR, "header .account-options .dropdown-menu .dropdown-item span")
+    sign_up_button = selenium_driver.find_elements(By.CSS_SELECTOR, "header .account-options .btn-success")
+    sign_in_button = selenium_driver.find_elements(By.CSS_SELECTOR, "header .account-options .btn-primary")
 
-    assert len(search_tool_items) == 1
-    assert len(game_dropdown_items) == 1
-    assert len(account_dropdown_items) == 1
-    assert len(about_us_items) == 1
+    if user is None:
+        assert len(account_options_button) == 0
+        assert len(account_picture_img) == 0
+        assert len(account_option_links) == 0
+        assert len(sign_up_button) == 1
+        assert len(sign_in_button) == 1
 
-    article_game_link_items = selenium_driver.find_elements(By.ID, "articleGameLink")
-    conjugation_game_link_items = selenium_driver.find_elements(By.ID, "conjugationGameLink")
-    vocabulary_game_link_items = selenium_driver.find_elements(By.ID, "vocabularyGameLink")
-
-    assert len(article_game_link_items) == 1
-    assert len(conjugation_game_link_items) == 1
-    assert len(vocabulary_game_link_items) == 1
-
-    greetings = selenium_driver.find_elements(By.ID, "greeting")
-
-    profile_link_items = selenium_driver.find_elements(By.ID, "profileLink")
-    logout_link_items = selenium_driver.find_elements(By.ID, "logoutLink")
-    sign_in_link_items = selenium_driver.find_elements(By.ID, "signInLink")
-    login_link_items = selenium_driver.find_elements(By.ID, "loginLink")
-
-    if user is not None:
-        assert len(profile_link_items) == 1
-        assert len(logout_link_items) == 1
-        assert len(sign_in_link_items) == 0
-        assert len(login_link_items) == 0
-        assert len(greetings) == 1
-        assert greetings[0].text == "Hello, {}".format(user.username)
+        assert sign_up_button[0].text == "Sign up"
+        assert sign_in_button[0].text == "Sign in"
     else:
-        assert len(profile_link_items) == 0
-        assert len(logout_link_items) == 0
-        assert len(sign_in_link_items) == 1
-        assert len(login_link_items) == 1
-        assert len(greetings) == 0
+        assert len(account_options_button) == 1
+        assert len(account_picture_img) == 1
+        assert len(account_option_links) == 2
+        assert len(sign_up_button) == 0
+        assert len(sign_in_button) == 0
+
+        assert account_options_button[0].text == user.username
+        assert account_option_links[0].get_attribute("innerHTML") == "Profile"
+        assert account_option_links[1].get_attribute("innerHTML") == "Logout"
+
+    check_menu_items(selenium_driver)
+    check_menu_games(selenium_driver)
+
+
+def check_menu_items(selenium_driver):
+    navbar_items = selenium_driver.find_elements(By.CSS_SELECTOR, ".navbar .navbar-nav .nav-item .nav-link")
+
+    assert len(navbar_items) == 3
+    assert navbar_items[0].text == "Search tool"
+    assert navbar_items[1].text == "Games"
+    assert navbar_items[2].text == "About us"
+
+
+def check_menu_games(selenium_driver):
+    game_items = \
+        selenium_driver.find_elements(By.CSS_SELECTOR, ".navbar .navbar-nav .nav-item .dropdown-menu .dropdown-item")
+    assert len(game_items) == 4
+    assert game_items[0].get_attribute("innerHTML") == "Vocabulary training"
+    assert game_items[1].get_attribute("innerHTML") == "Guess the article"
+    assert game_items[2].get_attribute("innerHTML") == "Conjugation game"
+    assert game_items[3].get_attribute("innerHTML") == "Rankings"
 
 
 def submit_user_form(selenium_driver, email, username, password, confirmation_password):
