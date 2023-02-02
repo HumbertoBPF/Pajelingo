@@ -1,5 +1,5 @@
 import { errorRequiredField, errorEmailFormat, errorNotConfirmedPassword ,errorLengthPassword, errorDigitPassword, 
-    errorLetterPassword, errorSpecialCharacterPassword, errorInvalidUsername, getInput, isValidUsername, 
+    errorLetterPassword, errorSpecialCharacterPassword, errorInvalidUsername, errorTooShortUsername, getInput, isValidUsername, 
     hasLetter, hasDigit, hasSpecialCharacter } from "./validation.js";
 
 export function getEmailValidators(emailField) {
@@ -33,6 +33,13 @@ export function getUsernameValidators(usernameField) {
                 return isValidUsername(username);
             },
             errorMessage: errorInvalidUsername
+        },
+        {
+            validate: function() {
+                const username = getInput(usernameField).value;
+                return username.length >= 8;
+            },
+            errorMessage: errorTooShortUsername
         }
     ];
 }

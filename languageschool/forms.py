@@ -6,7 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from pajelingo.validators.validators import validate_email, ERROR_NOT_CONFIRMED_PASSWORD
+from pajelingo.validators.validators import validate_email, ERROR_NOT_CONFIRMED_PASSWORD, validate_username
 
 
 class LoginForm(forms.Form):
@@ -80,6 +80,11 @@ class UserForm(forms.ModelForm):
         email = self.cleaned_data.get("email")
         validate_email(email, self.instance)
         return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        validate_username(username)
+        return username
 
     def clean_password(self):
         password = self.cleaned_data.get("password")

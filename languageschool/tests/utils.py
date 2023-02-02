@@ -98,7 +98,11 @@ def get_random_email():
 
     :return: a random email address
     """
-    return get_random_string(random.randint(10, 20)) + "@test.com"
+    return get_random_string(random.randint(8, 32)) + "@test.com"
+
+
+def get_too_short_username():
+    return get_random_string(random.randint(1, 7))
 
 
 def get_random_username():
@@ -107,7 +111,7 @@ def get_random_username():
 
     :return: a random username
     """
-    return get_random_string(random.randint(10, 20))
+    return get_random_string(random.randint(8, 32))
 
 
 def get_too_short_password():

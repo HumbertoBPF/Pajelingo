@@ -13,7 +13,7 @@ from languageschool.models import AppUser
 from languageschool.tests.selenium.utils import assert_menu, submit_user_form, fill_user_form, get_form_error
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_short_password, get_too_long_password, get_password_without_letters, get_password_without_digits, \
-    get_password_without_special_characters
+    get_password_without_special_characters, get_too_short_username
 from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE
 from languageschool.views.account import SUCCESSFUL_SIGN_UP, SUCCESSFUL_ACTIVATION, \
     ACTIVATION_LINK_ERROR
@@ -22,7 +22,7 @@ from pajelingo.validators.auth_password_validators import ERROR_LENGTH_PASSWORD,
     ERROR_DIGIT_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD, ALL_PASSWORD_ERRORS
 from pajelingo.validators.validators import ERROR_NOT_CONFIRMED_PASSWORD, \
     ERROR_NOT_AVAILABLE_EMAIL, ERROR_NOT_AVAILABLE_USERNAME, ERROR_USERNAME_FORMAT, ERROR_EMAIL_FORMAT, \
-    ERROR_REQUIRED_FIELD
+    ERROR_REQUIRED_FIELD, ERROR_USERNAME_LENGTH
 
 
 class TestSignupSelenium:
@@ -126,8 +126,10 @@ class TestSignupSelenium:
 
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field_index, expected_error", [
+            (get_random_email(), get_too_short_username(), get_valid_password(), True, 2, ERROR_USERNAME_LENGTH),
             (get_random_email(), get_random_username(), "", True, 3, ALL_PASSWORD_ERRORS),
-            (get_random_email(), "", get_valid_password(), True, 2, ERROR_REQUIRED_FIELD),
+            (get_random_email(), "", get_valid_password(), True, 2,
+             "{}\n{}".format(ERROR_REQUIRED_FIELD, ERROR_USERNAME_LENGTH)),
             ("", get_random_username(), get_valid_password(), True, 1, ERROR_REQUIRED_FIELD),
             (get_random_string(random.randint(1, 10)) + " " + get_random_email(), get_random_username(),
              get_valid_password(), True, 1, ERROR_EMAIL_FORMAT),
@@ -153,6 +155,7 @@ class TestSignupSelenium:
 
     @pytest.mark.parametrize(
         "email, username, password, is_password_confirmed, field_index, expected_error", [
+            (get_random_email(), get_too_short_username(), get_valid_password(), True, 2, ERROR_USERNAME_LENGTH),
             (get_random_email(), get_random_username(), "", True, 3, ERROR_REQUIRED_FIELD),
             (get_random_email(), "", get_valid_password(), True, 2, ERROR_REQUIRED_FIELD),
             ("", get_random_username(), get_valid_password(), True, 1, ERROR_REQUIRED_FIELD),

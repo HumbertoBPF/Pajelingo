@@ -12,7 +12,7 @@ from languageschool.forms import FormPicture
 from languageschool.models import AppUser
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, \
     get_too_long_password, get_too_short_password, get_password_without_letters, get_password_without_digits, \
-    get_password_without_special_characters
+    get_password_without_special_characters, get_too_short_username
 
 TEST_EMAIL = get_random_email()
 TEST_USERNAME = get_random_username()
@@ -113,6 +113,7 @@ def test_do_update_user_requires_authentication(client):
     "username", [
         TEST_USERNAME,
         get_random_string(random.randint(1, 10)) + " " + get_random_username(),
+        get_too_short_username(),
         ""
     ]
 )

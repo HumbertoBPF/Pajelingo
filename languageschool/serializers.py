@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
-from pajelingo.validators.validators import validate_email
+from pajelingo.validators.validators import validate_email, validate_username
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -117,6 +117,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         validate_email(value, self.instance)
+        return value
+
+    def validate_username(self, value):
+        validate_username(value)
         return value
 
     def validate_password(self, value):

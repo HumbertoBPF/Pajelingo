@@ -7,6 +7,7 @@ export const errorSpecialCharacterPassword = "The password must have at least on
 export const errorLengthPassword = "The password must have a length between 8 and 30.";
 export const errorInvalidUsername = "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.";
 export const errorImageFileFormat = "Upload a valid image. The file you uploaded was either not an image or a corrupted image."
+export const errorTooShortUsername = "The username must be at least 8 characters-long.";
 
 export function addFieldValidation(field, validators) {
     field.querySelector(".form-control").addEventListener("focus", function() {
