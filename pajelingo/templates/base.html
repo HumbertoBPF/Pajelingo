@@ -30,7 +30,7 @@
                                 <img src="{{user.appuser.picture.url}}" class="account-sm-img" alt="User profile picture" height="48">
                             {% else %}
                                 <img src="{% static 'images/profile.jpg' %}" class="account-sm-img" alt="Default profile picture" height="48">
-                            {% endif %} {{ user.username }}
+                            {% endif %} <span>{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownAccountOptions">
                             <li>

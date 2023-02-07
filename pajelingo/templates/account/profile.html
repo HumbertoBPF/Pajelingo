@@ -5,8 +5,8 @@
 
     <section class="row">
         <div class="col-12 col-md-5 col-lg-3">
-            {% if app_user.picture %}
-                <img id="profilePicture" src="{{app_user.picture.url}}" class="img-fluid rounded" alt="User profile picture">
+            {% if user.appuser.picture %}
+                <img id="profilePicture" src="{{user.appuser.picture.url}}" class="img-fluid rounded" alt="User profile picture">
             {% else %}
                 <img id="defaultPicture" src="{% static 'images/profile.jpg' %}" class="img-fluid rounded" alt="Default profile picture">
             {% endif %}
@@ -104,42 +104,26 @@
     {% if languages %}
         <h5 class="mb-4">Your performance in our games:</h5>
         <div class="dropdown mb-4">
-            <button id="dropdownButtonFilter" class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {{language}}
+            <button class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {{languages.0}}
             </button>
             <ul class="dropdown-menu w-100">
                 {% for language in languages %}
-                    <li><a class="dropdown-item" href="{% url 'profile'%}?language={{language.language_name}}">{{language.language_name}}</a></li>
+                    <li class="dropdown-item">{{language.language_name}}</li>
                 {% endfor %}
             </ul>
         </div>
-        {% if scores %}
-            <!-- Score table -->
-            <table class="table table-stripped">
-                <thead>
-                    <tr>
-                        <th scope="col">Game</th>
-                        <th scope="col">Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for score in scores %}
-                    <tr>
-                        <td>{{score.game.game_name}}</td>
-                        <td>{{score.score}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p id="warningNoScores">It seems that you haven't played games in this language yet...</p>
-        {% endif %}
+
+        <div data-scores>
+
+        </div>
     {% endif %}
     </section>
 
 {% endblock %}
 {% block js-files %}
+    <script src="{% static 'js/api/updateUserScores.js' %}" type="module"></script>
     {% if form_picture.picture.errors %}
-        <script src="{% static 'js/showUpdateProfilePictureModal.js' %}"></script>
+        <script src="{% static 'js/validation/showUpdateProfilePictureModal.js' %}"></script>
     {% endif %}
 {% endblock %}

@@ -77,6 +77,16 @@ class ConjugationViewSet(generics.ListAPIView):
 class ScoreListViewSet(generics.ListAPIView):
     def get_queryset(self):
         queryset = Score.objects.all()
+
+        language = self.request.query_params.get('language')
+        user = self.request.query_params.get('user')
+
+        if language is not None:
+            queryset = queryset.filter(language__language_name=language)
+
+        if user is not None:
+            queryset = queryset.filter(user__username=user)
+
         return queryset
 
     serializer_class = ListScoreSerializer

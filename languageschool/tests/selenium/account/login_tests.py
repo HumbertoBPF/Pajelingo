@@ -24,7 +24,6 @@ class TestsLoginSelenium:
 
         assert_menu(selenium_driver)
 
-
     @pytest.mark.django_db
     def test_login_form_rendering(self, live_server, selenium_driver):
         selenium_driver.get(live_server.url + reverse("login"))
@@ -65,6 +64,7 @@ class TestsLoginSelenium:
     @pytest.mark.django_db
     def test_login_client_side_validation(self, live_server, selenium_driver, username, password):
         self.login_validation(live_server, selenium_driver, username, password, False)
+
     @pytest.mark.parametrize(
         "username, password", [
             (get_random_username(), ""),

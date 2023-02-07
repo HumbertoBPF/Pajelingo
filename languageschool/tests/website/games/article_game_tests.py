@@ -151,7 +151,7 @@ def test_article_game_not_found_word(client, languages, article_game_dependencie
     url = reverse("article-game-verify-answer")
     form_data = {
         "article": get_random_string(random.randint(1, 10)),
-        "word_id": random.randint(100, 30000)
+        "word_id": random.randint(10000, 30000)
     }
 
     response = client.post(url, data=form_data)

@@ -1,6 +1,5 @@
 import random
 import time
-from urllib.parse import urlencode
 
 import pytest
 from django.contrib.auth.models import User
@@ -42,6 +41,26 @@ class TestsProfileSelenium:
         assert not AppUser.objects.filter(user__id=user.id, user__username=username, user__email=email).exists()
         assert_menu(selenium_driver, user=user)
 
+    def wait_scores_render(self, selenium_driver):
+        # Wait the ranking table to be rendered
+        WebDriverWait(selenium_driver, 10) \
+            .until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, "main table thead tr th"), "Game"))
+
+    def select_dropdown_item(self, selenium_driver, selected_item):
+        # Wait the score table to be rendered
+        self.wait_scores_render(selenium_driver)
+        selenium_driver.find_element(By.CSS_SELECTOR, "main .dropdown .dropdown-toggle").click()
+        # Wait the dropdown items to be displayed
+        WebDriverWait(selenium_driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "main .dropdown .dropdown-menu .dropdown-item")))
+        dropdown_items \
+            = selenium_driver.find_elements(By.CSS_SELECTOR, "main .dropdown .dropdown-menu .dropdown-item")
+        # Click on the item corresponding to the selected language
+        for dropdown_item in dropdown_items:
+            if dropdown_item.text == selected_item:
+                dropdown_item.click()
+                break
+
     @pytest.mark.django_db
     def test_profile_access_requires_authentication(self, live_server, selenium_driver, account):
         """
@@ -72,12 +91,13 @@ class TestsProfileSelenium:
         username = selenium_driver.find_element(By.ID, "username")
         email = selenium_driver.find_element(By.ID, "email")
         default_picture_filename = selenium_driver.find_element(By.ID, "defaultPicture").get_attribute("src")
-        warning_no_scores = selenium_driver.find_element(By.ID, "warningNoScores")
 
         assert default_picture_filename == live_server.url + "/static/images/profile.jpg"
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
-        assert warning_no_scores.text == "It seems that you haven't played games in this language yet..."
+        WebDriverWait(selenium_driver, 10) \
+            .until(EC.text_to_be_present_in_element((By.ID, "warningNoScores"),
+                                                    "It seems that you haven't played games in this language yet..."))
         assert_menu(selenium_driver, user=user)
 
     @pytest.mark.django_db
@@ -92,27 +112,29 @@ class TestsProfileSelenium:
         authenticate(live_server, selenium_driver, user.username, password)
 
         selected_language = random.choice(list(languages)) if has_language_filter else Language.objects.first()
-        scores = scores.filter(language=selected_language).order_by('game')
+        scores = scores.filter(language=selected_language).order_by('game__game_name')
 
         url = live_server.url + reverse("profile")
-        if has_language_filter is not None:
-            query_string = urlencode({'language': selected_language.language_name})
-            url = '{}?{}'.format(url, query_string)
-
         selenium_driver.get(url)
+
+        if has_language_filter:
+            self.select_dropdown_item(selenium_driver, selected_language.language_name)
+
+        self.wait_scores_render(selenium_driver)
 
         username = selenium_driver.find_element(By.ID, "username")
         email = selenium_driver.find_element(By.ID, "email")
         default_picture_filename = selenium_driver.find_element(By.ID, "defaultPicture").get_attribute("src")
-        header_score_tables = selenium_driver.find_element(By.TAG_NAME, "thead").find_element(By.TAG_NAME, "tr")
-        dropdown_button = selenium_driver.find_element(By.ID, "dropdownButtonFilter")
-        row_scores = selenium_driver.find_element(By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "tr")
+        headers = selenium_driver.find_elements(By.CSS_SELECTOR, "main table thead tr th")
+        dropdown_button = selenium_driver.find_element(By.CSS_SELECTOR, "main .dropdown .dropdown-toggle")
+        row_scores = selenium_driver.find_elements(By.CSS_SELECTOR, "main table tbody tr")
 
         assert default_picture_filename == live_server.url + "/static/images/profile.jpg"
         assert username.text == "Username: {}".format(user.username)
         assert email.text == "Email: {}".format(user.email)
         assert dropdown_button.text == selected_language.language_name
-        assert header_score_tables.text == "{} {}".format("Game", "Score")
+        assert headers[0].text == "Game"
+        assert headers[1].text == "Score"
 
         for i in range(len(row_scores)):
             score = scores[i]

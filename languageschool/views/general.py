@@ -1,10 +1,9 @@
 from django.core.paginator import Paginator
-from django.db.models import Sum
 from django.db.models.functions import Lower
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
-from languageschool.models import Language, Meaning, Score, Word
+from languageschool.models import Language, Meaning, Word
 from languageschool.utils import request_contains
 
 
@@ -47,30 +46,6 @@ def meaning(request, word_id):
 
 @require_GET
 def rankings(request):
-    language_name = request.GET.get("language")
-    language = Language.objects.filter(language_name=language_name).first()
-    # List of languages for the select field
-    languages = Language.objects.all()
-
-    if language is None:
-        language = languages.first()
-
-    scores = None
-    if language is not None:
-        scores = Score.objects.filter(language=language).values('user__username') \
-            .annotate(score=Sum('score')).order_by('-score')
-    # Only the top 10 of each ranking is shown
-    context = {
-        "languages": languages,
-        "language": language,
-        "scores": scores[:10]
-    }
-    # If the users are logged in, their position in the ranking is shown
-    if request.user.is_authenticated:
-        for i, item in enumerate(scores):
-            if item["user__username"] == request.user.username:
-                context["my_position"] = i + 1
-                context["my_score"] = item
-                break
-
-    return render(request, 'games/rankings.html', context)
+    return render(request, 'games/rankings.html', context = {
+        "languages": Language.objects.all()
+    })
