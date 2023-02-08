@@ -38,8 +38,17 @@ header .account-options .account-sm-img {
   color: white;
 }
 
+.search-card:hover {
+  background-color: var(--primary-color);
+}
+
 .btn-info, .btn-info:hover {
   color: white;
+}
+
+.pagination {
+  justify-content: center;
+  align-items: center;
 }
 
 footer {

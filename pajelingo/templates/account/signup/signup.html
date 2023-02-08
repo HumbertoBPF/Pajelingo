@@ -7,7 +7,8 @@
         <section class="text-center">
         {% for message in messages %}
             <div class="alert alert-{{message.tags}}" role="alert">
-                {{message}}
+                <p>{{message}}<p>
+                <img src="{% static 'images/send_email.png' %}" class="img-fluid rounded col-6 col-sm-4 col-md-4 col-lg-3" alt="Picture of email being sent">
             </div>
         {% endfor %}
         </section>

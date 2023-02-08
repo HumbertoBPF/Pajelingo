@@ -70,17 +70,18 @@ class TestSearchSelenium:
         url = selenium_driver.current_url
 
         page_hrefs = set()
-        page_hrefs.add(url)
         dict_words = {}
 
         words = words.filter(word_name__icontains=search_pattern, language__in=languages)
 
         pages = selenium_driver.find_elements(By.CLASS_NAME, "page-link")
-        n = len(pages)
-        for i in range(n):
-            if i != 0:
-                page = pages[i]
-                page_hrefs.add(page.get_attribute("href"))
+        # If the pagination widget is in the page, the penultimate item contains the number of pages
+        if len(pages) > 0:
+            n = int(pages[-2].text)
+            for i in range(n):
+                page_hrefs.add(url.split("&page=")[0]+"&page={}".format(i+1))
+        else:
+            page_hrefs.add(url)
 
         for page in page_hrefs:
             selenium_driver.get(page)

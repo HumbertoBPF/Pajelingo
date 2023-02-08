@@ -65,8 +65,10 @@ class TestRequestResetAccountSelenium:
         request_reset_account_via_website(live_server, selenium_driver, get_random_email())
 
         alert_successes = selenium_driver.find_elements(By.CLASS_NAME, "alert-success")
+        image_email = alert_successes[0].find_element(By.TAG_NAME, "img")
 
         assert len(alert_successes) == 1
+        assert image_email.get_attribute("src") == live_server.url + "/static/images/send_email.png"
         assert len(mail.outbox) == 0
         assert_menu(selenium_driver)
 
@@ -76,11 +78,14 @@ class TestRequestResetAccountSelenium:
         request_reset_account_via_website(live_server, selenium_driver, user.email)
 
         alert_successes = selenium_driver.find_elements(By.CLASS_NAME, "alert-success")
+        image_email = alert_successes[0].find_element(By.TAG_NAME, "img")
+
         starting_text = "Hi {},\n\nA password reset was requested to your Pajelingo account. If it was " \
                         "you who request it, please access the following link:".format(user.username)
         ending_text = "If you did not ask for a password reset, please ignore this email."
 
         assert len(alert_successes) == 1
+        assert image_email.get_attribute("src") == live_server.url + "/static/images/send_email.png"
         assert len(mail.outbox) == 1
         assert mail.outbox[0].from_email == settings.EMAIL_FROM
         assert mail.outbox[0].to == [user.email]

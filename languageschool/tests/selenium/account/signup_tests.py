@@ -86,10 +86,12 @@ class TestSignupSelenium:
         email, username = self.successful_signup(live_server, selenium_driver)
 
         alert_success = selenium_driver.find_element(By.CLASS_NAME, "alert-success")
+        image_email = alert_success.find_element(By.TAG_NAME, "img")
 
         assert alert_success.text == SUCCESSFUL_SIGN_UP
         assert User.objects.filter(username=username, email=email, is_active=False).exists()
         assert AppUser.objects.filter(user__username=username, user__email=email, user__is_active=False).exists()
+        assert image_email.get_attribute("src") == live_server.url + "/static/images/send_email.png"
         # Checking that the activation email was received
         assert len(mail.outbox) == 1
         assert mail.outbox[0].subject == SIGN_UP_SUBJECT
