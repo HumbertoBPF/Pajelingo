@@ -1,6 +1,7 @@
 import base64
 
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, views, status
 from rest_framework.authentication import BasicAuthentication
@@ -8,9 +9,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word, AppUser
+from languageschool.paginators import RankingsPaginator
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
-    LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer
+    LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer, \
+    RankingsSerializer
 from languageschool.utils import send_activation_account_email, send_reset_account_email
 from pajelingo import settings
 
@@ -20,58 +23,64 @@ CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an
 
 class GameViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Game.objects.all()
-        return queryset
+        return Game.objects.all()
 
     serializer_class = GameSerializer
 
 
 class LanguageViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Language.objects.all()
-        return queryset
+        return Language.objects.all()
 
     serializer_class = LanguageSerializer
 
 
 class CategoryViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Category.objects.all()
-        return queryset
+        return Category.objects.all()
 
     serializer_class = CategorySerializer
 
 
 class ArticleViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Article.objects.all()
-        return queryset
+        return Article.objects.all()
 
     serializer_class = ArticleSerializer
 
 
 class WordViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Word.objects.all()
-        return queryset
+        return Word.objects.all()
 
     serializer_class = WordSerializer
 
 
 class MeaningViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Meaning.objects.all()
-        return queryset
+        return Meaning.objects.all()
 
     serializer_class = MeaningSerializer
 
 
 class ConjugationViewSet(generics.ListAPIView):
     def get_queryset(self):
-        queryset = Conjugation.objects.all()
-        return queryset
+        return Conjugation.objects.all()
 
     serializer_class = ConjugationSerializer
+
+
+class RankingsViewSet(generics.ListAPIView):
+    pagination_class = RankingsPaginator
+
+    def get_queryset(self):
+        language_name = self.request.query_params.get('language')
+        language = get_object_or_404(Language, language_name=language_name)
+
+        return Score.objects.filter(language=language).values('user__username')\
+            .annotate(score=Sum('score')).order_by('-score')
+
+    serializer_class = RankingsSerializer
 
 
 class ScoreListViewSet(generics.ListAPIView):

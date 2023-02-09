@@ -1,40 +1,42 @@
-import { getScores, loadingElement } from "./apiUtils.js";
+import { getRankings, loadingElement } from "./apiUtils.js";
 
 const selected_language_filter = document.querySelector("main .dropdown .dropdown-toggle");
 const language_filter_items = document.querySelectorAll("main .dropdown-menu .dropdown-item");
 let rankingContent = document.querySelector("[data-ranking]");
+let pagination = document.querySelector("[data-pagination]");
 const authenticatedUser = document.querySelector("header .account-options .btn-account-options span");
 const authenticatedUserName = authenticatedUser?authenticatedUser.innerHTML:null;
+let currentPage = 1;
 
 if (selected_language_filter != null){
-    let defaultLanguage = selected_language_filter.innerHTML.trim();
-    setRankingData(defaultLanguage);
+    setRankingData();
 }
 
 language_filter_items.forEach(item => {
     item.addEventListener("click", (event) => {
+        currentPage = 1;
         const language = event.target.innerHTML;
         selected_language_filter.innerHTML = language;
-        setRankingData(language);
+        setRankingData();
     });
 });
 
-async function setRankingData(language) {
+async function setRankingData(page=null) {
     rankingContent.innerHTML = loadingElement;
     rankingContent.classList = ["row justify-content-center"];
+    addPagination(null);
 
-    let scores = await getScores(language);
+    let language = selected_language_filter.innerHTML.trim();
+    let ranking = await getRankings(language, page);
 
     let rankingHTML = "";
     let rankingClassList = [];
 
-    if (scores != null){
-        if (scores.length == 0){
+    if (ranking != null){
+        if (ranking.length == 0){
            rankingHTML = "<p>It seems that no one has played this game yet... Be the first to play it and get ahead the other competitors!</p>";
         } else{
-            scores = groupScoresByUser(scores);
-            const rankingData = sortRankingData(scores);
-            rankingHTML = getRankingHTML(rankingData);
+            rankingHTML = getRankingHTML(ranking.results);
         }
     }else{
         rankingHTML = `<div class="text-center col-sm-8 col-md-4">
@@ -47,40 +49,8 @@ async function setRankingData(language) {
     setTimeout(function(){
         rankingContent.innerHTML = rankingHTML;
         rankingContent.classList = rankingClassList;
+        addPagination(ranking);
     }, 3000);
-}
-
-function groupScoresByUser(scores) {
-    let userScores = new Map();
-
-    scores.forEach(item => {
-        const currentValue = userScores.get(item.user);
-
-        if (!currentValue) {
-            userScores.set(item.user, item.score);
-        }else {
-            userScores.set(item.user, currentValue + item.score);
-        }
-    });
-
-    let rankingData = []
-
-    for (const [key, value] of userScores.entries()) {
-        rankingData = [...rankingData, {
-            user: key,
-            score: value
-        }]
-    }
-
-    return rankingData;
-}
-
-function sortRankingData(scores) {
-    scores.sort(function(a, b) {
-        return (b.score - a.score)
-    });
-
-    return scores;
 }
 
 function getRankingHTML(rankingData) {
@@ -89,7 +59,7 @@ function getRankingHTML(rankingData) {
 
     rankingData.forEach((item, index) => {
         rankingDataHTML += `<tr>
-            <td>${index + 1}</td>
+            <td>${10*(currentPage-1) + index + 1}</td>
             <td>${item.user}</td>
             <td>${item.score}</td>
         </tr>`;
@@ -122,4 +92,68 @@ function getRankingHTML(rankingData) {
                     ${rankingDataHTML + myPositionHTML}
                 </tbody>
             </table>`;
+}
+
+
+function addPagination(ranking) {
+    if (ranking != null){
+        const hasPrevious = (ranking.previous != null)
+        const hasNext = (ranking.next != null);
+
+        if (hasPrevious || hasNext){        
+            let previousButton = hasPrevious?`<li class="page-item">
+                                                <a class="page-link" aria-label="Previous" data-previous-button>&laquo;</a>
+                                            </li>`:"";
+            let nextButton = hasNext?`<li class="page-item">
+                                        <a class="page-link" aria-label="Next" data-next-button>&raquo;</a>
+                                    </li>`:"";
+
+            let pageButtons = getPageButtons(ranking);
+
+            pagination.innerHTML = `<nav aria-label="Page navigation example">
+                                        <ul class="pagination">
+                                            ${previousButton}
+                                            ${pageButtons}
+                                            ${nextButton}
+                                        </ul>
+                                    </nav>`;
+
+            setPaginationButton(".pagination .page-item [data-previous-button]", currentPage-1)
+            setPaginationButton(".pagination .page-item [data-next-button]", currentPage+1)
+            setPaginationButton(".pagination .page-item [data-page-button]")
+
+            return;
+        }
+    }
+
+    pagination.innerHTML = "";
+}
+
+function getPageButtons(ranking){
+    const numberPages = Math.ceil(ranking.count/10);
+    let pageButtons = "";
+
+    for (let i=1;i<=numberPages;i++) {
+        if (i === currentPage) {
+            pageButtons += `<li class="page-item active"><a class="page-link" data-page-button>${currentPage}</a></li>`;
+        }else if (i === 1) {
+            pageButtons += `<li class="page-item"><a class="page-link" data-page-button>1</a></li>`;
+        }else if (i === numberPages) {
+            pageButtons += `<li class="page-item"><a class="page-link" data-page-button>${numberPages}</a></li>`;
+        }else if ((i == 2) || (i == numberPages-1)) {
+            pageButtons += `<li class="page-item"><a class="page-link">...</a></li>`;
+        }
+    }
+
+    return pageButtons;
+}
+
+function setPaginationButton(selector, page=null) {
+    let pageButtons = document.querySelectorAll(selector);
+    pageButtons.forEach((pageButton) => {
+        pageButton.addEventListener("click", ()=>{
+            currentPage = (page==null)?(parseInt(pageButton.innerHTML, 10)):page;
+            setRankingData(currentPage);
+        });
+    });
 }

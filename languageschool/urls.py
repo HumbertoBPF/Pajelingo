@@ -6,7 +6,7 @@ from languageschool.views.account import PasswordResetView, PasswordResetDoneVie
 from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
-    ResetPasswordViewSet
+    ResetPasswordViewSet, RankingsViewSet
 
 urlpatterns = [
     path('dashboard', views.general.index, name='index'),
@@ -46,6 +46,7 @@ urlpatterns = [
     path('api/score/', ScoreViewSet.as_view(), name='score-api'),
     path('api/score/<int:score_id>', ScoreViewSet.as_view(), name='update-score-api'),
     path('api/scores/', ScoreListViewSet.as_view(), name='scores-api'),
+    path('api/rankings/', RankingsViewSet.as_view(), name='rankings-api'),
     path('api/public-images/', PublicImageViewSet.as_view(), name='public-images-api'),
     path('api/request-reset-account/', ResetPasswordViewSet.as_view(), name='request-reset-account-api')
 ]

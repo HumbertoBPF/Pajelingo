@@ -76,6 +76,11 @@ class ConjugationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RankingsSerializer(serializers.Serializer):
+    user = serializers.CharField(source="user__username")
+    score = serializers.IntegerField()
+
+
 class ListScoreSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     language = serializers.ReadOnlyField(source='language.language_name')

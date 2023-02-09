@@ -4,6 +4,17 @@ export const loadingElement = `<div class="text-center col-6">
                                     <p id="noResultP">Please, wait...</p>
                                 </div>`;
 
+export async function getRankings(language, page=null) {
+    let url = `${baseUrl}/api/rankings/?language=${language}`;
+
+    if (page){
+        url += `&page=${page}`;
+    }
+
+    const response = await fetch(url);
+    return response.ok?(await response.json()):null;
+}
+
 export async function getScores(language, user=null) {
     let url = `${baseUrl}/api/scores/?language=${language}`;
 
