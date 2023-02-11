@@ -70,5 +70,5 @@ export function hasDigit(text){
 }
 
 export function hasSpecialCharacter(text){
-    return searchPattern(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/, text);
+    return searchPattern(/[!"#$%&'()*+,-./\\:;<=>\[?@\]^_`{|}~]/, text);
 }

@@ -1,4 +1,5 @@
-import { getGames, getScores, loadingElement } from "./apiUtils.js";
+import { getGames, getScores } from "./apiUtils.js";
+import { connectionErrorElements, loadingElements, noUserScoreElements } from "./feedbackElements.js";
 
 const selected_language_filter = document.querySelector("main .dropdown .dropdown-toggle");
 const language_filter_items = document.querySelectorAll("main .dropdown-menu .dropdown-item");
@@ -7,47 +8,44 @@ const authenticatedUser = document.querySelector("header .account-options .btn-a
 const authenticatedUserName = authenticatedUser?authenticatedUser.innerHTML:null;
 
 if (selected_language_filter != null){
-    let defaultLanguage = selected_language_filter.innerHTML.trim();
-    setScoreData(defaultLanguage);    
+    setUserScoresHTML();    
 }
 
 language_filter_items.forEach(item => {
     item.addEventListener("click", (event) => {
         const language = event.target.innerHTML;
         selected_language_filter.innerHTML = language;
-        setScoreData(language);
+        setUserScoresHTML(language);
     });
 });
 
-async function setScoreData(language) {
-    userScores.innerHTML = loadingElement;
-    userScores.classList = ["row justify-content-center"];
+async function setUserScoresHTML() {
+    userScores.innerHTML = loadingElements[0];
+    userScores.classList = loadingElements[1];
 
-    let scores = await getScores(language, authenticatedUserName);
-
-    let scoresHTML = "";
-    let userScoresClassList = [];
-
-    if (scores != null){
-        if (scores.length == 0){
-            scoresHTML = "<p id='warningNoScores'>It seems that you haven't played games in this language yet...</p>";
-        } else{
-            scores = await getScoreByGameName(scores);
-            scoresHTML = getScoreHTML(scores);
-        }
-    }else{
-        scoresHTML = `<div class="text-center col-sm-8 col-md-4">
-                            <img id="noResultImg" src="/static/images/error.jpg" class="img-fluid rounded" alt="No results image">
-                            <p id="noResultP">Connection error</p>
-                        </div>`;
-
-        userScores.classList = ["row justify-content-center"];
-    }
+    let language = selected_language_filter.innerHTML.trim();
+    const [scoresHTML, userScoresClassList] = await getUserScoresHTML(language);
 
     setTimeout(function(){
         userScores.innerHTML = scoresHTML;
         userScores.classList = userScoresClassList;
     }, 3000);
+}
+
+async function getUserScoresHTML(language) {
+    let scores = await getScores(language, authenticatedUserName);
+
+    if (scores != null){
+        if (scores.length > 0){
+            scores = await getScoreByGameName(scores);
+            const scoresHTML = getScoreHTML(scores);
+            return [scoresHTML, []];
+        }
+
+        return noUserScoreElements;
+    }
+    
+    return connectionErrorElements;
 }
 
 async function getScoreByGameName(scores) {

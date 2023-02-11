@@ -77,6 +77,7 @@ class ConjugationSerializer(serializers.ModelSerializer):
 
 
 class RankingsSerializer(serializers.Serializer):
+    position = serializers.IntegerField()
     user = serializers.CharField(source="user__username")
     score = serializers.IntegerField()
 

@@ -6,8 +6,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import status
 
 from languageschool.models import Score
-from languageschool.tests.utils import get_users, get_basic_auth_header, deserialize_data, get_random_username, \
-    get_valid_password
+from languageschool.tests.utils import get_users, get_basic_auth_header, get_random_username, get_valid_password
 from languageschool.views.viewsets import CONFLICT_SCORE_MESSAGE, MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
 
 URL = "/api/score/"
@@ -58,7 +57,7 @@ def test_list_scores_get_score(api_client, account, games, languages, score):
 
     response = api_client.get(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
-    data = deserialize_data(response.data)
+    data = response.data
     json = data[0]
 
     assert response.status_code == status.HTTP_200_OK
@@ -96,7 +95,7 @@ def test_list_scores_get_score_missing_parameters(api_client, account, games, la
 
     response = api_client.get(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
-    json = deserialize_data(response.data)
+    json = response.data
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert json.get("error") == MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
@@ -133,7 +132,7 @@ def test_list_scores_create_score(api_client, account, games, languages):
     }
     response = api_client.post(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
-    json = deserialize_data(response.data)
+    json = response.data
 
     assert response.status_code == status.HTTP_201_CREATED
     assert json.get("user") == user.username
@@ -160,7 +159,7 @@ def test_list_scores_create_score_conflict(api_client, account, games, languages
 
     response = api_client.post(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
-    json = deserialize_data(response.data)
+    json = response.data
 
     assert response.status_code == status.HTTP_409_CONFLICT
     assert json.get("error") == CONFLICT_SCORE_MESSAGE
@@ -257,7 +256,7 @@ def test_put_score(api_client, account, games, languages, score):
     response = api_client.put(URL+str(score.id), HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
 
     updated_score = Score.objects.get(pk=score.id)
-    json = deserialize_data(response.data)
+    json = response.data
 
     assert response.status_code == status.HTTP_200_OK
     assert updated_score.score == score.score + 1

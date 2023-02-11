@@ -1,15 +1,15 @@
-import { getRankings, loadingElement } from "./apiUtils.js";
+import { getRankings } from "./apiUtils.js";
+import { connectionErrorElements, emptyRankingsElements, loadingElements } from "./feedbackElements.js";
 
 const selected_language_filter = document.querySelector("main .dropdown .dropdown-toggle");
 const language_filter_items = document.querySelectorAll("main .dropdown-menu .dropdown-item");
 let rankingContent = document.querySelector("[data-ranking]");
-let pagination = document.querySelector("[data-pagination]");
 const authenticatedUser = document.querySelector("header .account-options .btn-account-options span");
 const authenticatedUserName = authenticatedUser?authenticatedUser.innerHTML:null;
 let currentPage = 1;
 
 if (selected_language_filter != null){
-    setRankingData();
+    setRankingHTML();
 }
 
 language_filter_items.forEach(item => {
@@ -17,45 +17,74 @@ language_filter_items.forEach(item => {
         currentPage = 1;
         const language = event.target.innerHTML;
         selected_language_filter.innerHTML = language;
-        setRankingData();
+        setRankingHTML();
     });
 });
 
-async function setRankingData(page=null) {
-    rankingContent.innerHTML = loadingElement;
-    rankingContent.classList = ["row justify-content-center"];
-    addPagination(null);
+async function setRankingHTML() {
+    rankingContent.innerHTML = loadingElements[0];
+    rankingContent.classList = loadingElements[1];
+    getPagination(null);
 
     let language = selected_language_filter.innerHTML.trim();
-    let ranking = await getRankings(language, page);
+    const [rankingHTML, rankingClassList] = await getRankingHTML(language); 
 
-    let rankingHTML = "";
-    let rankingClassList = [];
-
-    if (ranking != null){
-        if (ranking.length == 0){
-           rankingHTML = "<p>It seems that no one has played this game yet... Be the first to play it and get ahead the other competitors!</p>";
-        } else{
-            rankingHTML = getRankingHTML(ranking.results);
-        }
-    }else{
-        rankingHTML = `<div class="text-center col-sm-8 col-md-4">
-                            <img id="noResultImg" src="/static/images/error.jpg" class="img-fluid rounded" alt="No results image">
-                            <p id="noResultP">Connection error</p>
-                        </div>`;
-        rankingClassList = ["row justify-content-center"];
-    }
-
-    setTimeout(function(){
+    setTimeout(() => {
         rankingContent.innerHTML = rankingHTML;
         rankingContent.classList = rankingClassList;
-        addPagination(ranking);
+        setPaginationButtons();
     }, 3000);
 }
 
-function getRankingHTML(rankingData) {
+async function getRankingHTML(language) {
+    const ranking = await getRankings(language, null, currentPage);
+
+    if (ranking != null){
+        const rankingScores = ranking.results;
+
+        if ((rankingScores != null) && (rankingScores.length > 0)){
+            let myPositionHTML = "";
+            
+            if (authenticatedUserName != null) {
+                const userRanking = await getRankings(language, authenticatedUserName);
+
+                if (userRanking != null) {
+                    const userRankingScore = userRanking.results;
+
+                    if ((userRankingScore != null) && (userRankingScore.length === 1)){
+                        myPositionHTML = parseMyPositionHTML(userRankingScore[0]);
+                    }
+                }else{
+                    return connectionErrorElements;
+                }
+            }
+
+            const generalRankingHTML = parseGeneralRankingHTML(rankingScores);
+            const paginationHTML = getPagination(ranking);
+            const rankingHTML = `<table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Position</th>
+                                            <th scope="col">Username</th>
+                                            <th scope="col">Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${generalRankingHTML + myPositionHTML}
+                                    </tbody>
+                                </table>
+                                ${paginationHTML}`;
+            return [rankingHTML, []];
+        }
+
+        return emptyRankingsElements;
+    }
+    
+    return connectionErrorElements;
+}
+
+function parseGeneralRankingHTML(rankingData) {
     let rankingDataHTML = "";
-    let myPositionHTML = "";
 
     rankingData.forEach((item, index) => {
         rankingDataHTML += `<tr>
@@ -63,39 +92,25 @@ function getRankingHTML(rankingData) {
             <td>${item.user}</td>
             <td>${item.score}</td>
         </tr>`;
-
-        if (authenticatedUserName != null) {
-            if (authenticatedUserName === item.user){
-                myPositionHTML = `<tr>
-                    <td>...</td>
-                    <td>...</td>
-                    <td>...</td>
-                </tr>
-                <tr>
-                    <th scope="row">(You) ${index + 1}</th>
-                    <th scope="row">${item.user}</th>
-                    <th scope="row">${item.score}</th>
-                </tr>`;
-            }
-        }
     });
 
-    return `<table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Position</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rankingDataHTML + myPositionHTML}
-                </tbody>
-            </table>`;
+    return rankingDataHTML;
 }
 
+function parseMyPositionHTML(userScore) {
+    return `<tr>
+        <td>...</td>
+        <td>...</td>
+        <td>...</td>
+    </tr>
+    <tr>
+        <th scope="row">(You) ${userScore.position}</th>
+        <th scope="row">${userScore.user}</th>
+        <th scope="row">${userScore.score}</th>
+    </tr>`;
+}
 
-function addPagination(ranking) {
+function getPagination(ranking) {
     if (ranking != null){
         const hasPrevious = (ranking.previous != null)
         const hasNext = (ranking.next != null);
@@ -110,23 +125,17 @@ function addPagination(ranking) {
 
             let pageButtons = getPageButtons(ranking);
 
-            pagination.innerHTML = `<nav aria-label="Page navigation example">
-                                        <ul class="pagination">
-                                            ${previousButton}
-                                            ${pageButtons}
-                                            ${nextButton}
-                                        </ul>
-                                    </nav>`;
-
-            setPaginationButton(".pagination .page-item [data-previous-button]", currentPage-1)
-            setPaginationButton(".pagination .page-item [data-next-button]", currentPage+1)
-            setPaginationButton(".pagination .page-item [data-page-button]")
-
-            return;
+            return `<nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            ${previousButton}
+                            ${pageButtons}
+                            ${nextButton}
+                        </ul>
+                    </nav>`;
         }
     }
 
-    pagination.innerHTML = "";
+    return "";
 }
 
 function getPageButtons(ranking){
@@ -148,12 +157,18 @@ function getPageButtons(ranking){
     return pageButtons;
 }
 
+function setPaginationButtons() {
+    setPaginationButton(".pagination .page-item [data-previous-button]", currentPage-1);
+    setPaginationButton(".pagination .page-item [data-next-button]", currentPage+1);
+    setPaginationButton(".pagination .page-item [data-page-button]");
+}
+
 function setPaginationButton(selector, page=null) {
     let pageButtons = document.querySelectorAll(selector);
     pageButtons.forEach((pageButton) => {
-        pageButton.addEventListener("click", ()=>{
+        pageButton.addEventListener("click", () => {
             currentPage = (page==null)?(parseInt(pageButton.innerHTML, 10)):page;
-            setRankingData(currentPage);
+            setRankingHTML(currentPage);
         });
     });
 }

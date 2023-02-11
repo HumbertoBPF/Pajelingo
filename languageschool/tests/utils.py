@@ -1,12 +1,13 @@
 import base64
-import io
 import random
 import string
+import time
 
 from django.contrib import auth
+from django.db.models import Sum
 from django.utils.crypto import get_random_string
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
+
+from languageschool.models import Score
 
 
 def is_user_authenticated(client, user):
@@ -25,18 +26,6 @@ def is_user_authenticated(client, user):
 def get_basic_auth_header(username, password):
     credentials = base64.b64encode(f'{username}:{password}'.encode('utf-8'))
     return 'Basic {}'.format(credentials.decode('utf-8'))
-
-
-def deserialize_data(data):
-    """
-    Deserialize the specified data payload into a dictionary.
-    :param data: data to be deserialized
-
-    :return: dictionary corresponding to the deserialized data payload.
-    """
-    json = JSONRenderer().render(data)
-    stream = io.BytesIO(json)
-    return JSONParser().parse(stream)
 
 
 def is_model_objects_equal_to_dict_array(objects, dict_array, comparer):
@@ -179,3 +168,26 @@ def password_factory(length, has_letters, has_digits, has_special_character):
         return get_random_string(length, password)
 
     return password + get_random_string(length - len(password), allowed_chars)
+
+
+def get_ranking(language):
+    scores = Score.objects.filter(language=language).values('user__username')\
+        .annotate(score=Sum('score')).order_by('-score')
+
+    i = 1
+    for score in scores:
+        score["position"] = i
+        i += 1
+
+    return scores
+
+
+def scroll_to_element(selenium_driver, element):
+    """
+    Scrolls the view to the specified element.
+
+    :param selenium_driver: Selenium Web Driver
+    :param element: element that we want to scroll to
+    """
+    selenium_driver.execute_script("arguments[0].scrollIntoView();", element)
+    time.sleep(3)

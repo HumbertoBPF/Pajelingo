@@ -161,7 +161,7 @@ def vocabulary_game_dependencies(vocabulary_game,  words):
 
 @pytest.fixture
 def games(article_game, conjugation_game, vocabulary_game):
-    return [article_game, conjugation_game, vocabulary_game]
+    return Game.objects.all()
 
 
 @pytest.fixture(scope="package", params=["Chrome", "Firefox", "Edge"])
