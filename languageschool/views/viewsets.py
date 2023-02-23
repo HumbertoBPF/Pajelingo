@@ -29,10 +29,10 @@ class GameViewSet(generics.ListAPIView):
 
 
 class LanguageViewSet(generics.ListAPIView):
+    serializer_class = LanguageSerializer
+
     def get_queryset(self):
         return Language.objects.all()
-
-    serializer_class = LanguageSerializer
 
 
 class CategoryViewSet(generics.ListAPIView):
@@ -72,6 +72,7 @@ class ConjugationViewSet(generics.ListAPIView):
 
 class RankingsViewSet(generics.ListAPIView):
     pagination_class = RankingsPaginator
+    serializer_class = RankingsSerializer
 
     def get_queryset(self):
         username = self.request.query_params.get('user')
@@ -94,8 +95,6 @@ class RankingsViewSet(generics.ListAPIView):
             i += 1
 
         return scores
-
-    serializer_class = RankingsSerializer
 
 
 class ScoreListViewSet(generics.ListAPIView):
