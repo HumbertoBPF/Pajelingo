@@ -149,3 +149,16 @@ class ScoreSerializer(serializers.Serializer):
         instance.score += 1
         instance.save()
         return instance
+
+
+class ArticleGameAnswerSerializer(serializers.Serializer):
+    word_id = serializers.IntegerField()
+    answer = serializers.CharField()
+
+    def save(self, **kwargs):
+        word_id = self.validated_data.get("word_id")
+        answer = self.validated_data.get("answer")
+
+        word = get_object_or_404(Word, pk=word_id)
+
+        return word.article.article_name == answer, str(word)

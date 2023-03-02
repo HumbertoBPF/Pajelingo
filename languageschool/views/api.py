@@ -1,4 +1,5 @@
 import base64
+import random
 
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
@@ -7,7 +8,7 @@ from rest_framework.response import Response
 
 from languageschool.models import Language, Word, Meaning
 from languageschool.paginators import SearchPaginator
-from languageschool.serializers import WordSerializer, MeaningSerializer
+from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer
 
 
 class SearchView(generics.ListAPIView):
@@ -44,3 +45,31 @@ class WordView(views.APIView):
             word_image = base64.b64encode(img.read())
 
         return Response(data={**serializer.data, "image": word_image}, status=status.HTTP_200_OK)
+
+
+class ArticleGameView(views.APIView):
+    def get(self, request):
+        language_name = request.GET.get("language")
+
+        if language_name == "English":
+            return Response({"error": "Invalid language"},status=status.HTTP_400_BAD_REQUEST)
+
+        language = get_object_or_404(Language, language_name=language_name)
+
+        word = random.choice(Word.objects.filter(language=language).exclude(article=None))
+
+        return Response(data={
+            "id": word.id,
+            "word": word.word_name
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = ArticleGameAnswerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        is_answer_correct, correct_answer = serializer.save()
+
+        return Response(data={
+            "result": is_answer_correct,
+            "correct_answer": correct_answer
+        }, status=status.HTTP_200_OK)
