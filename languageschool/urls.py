@@ -3,7 +3,7 @@ from django.urls import path
 from languageschool import views
 from languageschool.views.account import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
     PasswordResetCompleteView
-from languageschool.views.api import SearchView, MeaningView, WordView, ArticleGameView
+from languageschool.views.api import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView
 from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
@@ -53,5 +53,6 @@ urlpatterns = [
     path('api/search', SearchView.as_view(), name='search-api'),
     path('api/meanings/<int:pk>', MeaningView.as_view(), name='meaning-api'),
     path('api/words/<int:pk>', WordView.as_view(), name='word-api'),
-    path('api/article-game', ArticleGameView.as_view(), name='article-game-api')
+    path('api/article-game', ArticleGameView.as_view(), name='article-game-api'),
+    path('api/vocabulary-game', VocabularyGameView.as_view(), name='vocabulary-game-api')
 ]

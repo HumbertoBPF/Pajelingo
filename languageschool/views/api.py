@@ -73,3 +73,17 @@ class ArticleGameView(views.APIView):
             "result": is_answer_correct,
             "correct_answer": correct_answer
         }, status=status.HTTP_200_OK)
+
+
+class VocabularyGameView(views.APIView):
+    def get(self, request):
+        language_name = request.GET.get("language")
+
+        target_language = get_object_or_404(Language, language_name=language_name)
+
+        selected_word = random.choice(Word.objects.filter(language=target_language))
+
+        return Response(data={
+            "id": selected_word.id,
+            "word": selected_word.word_name
+        }, status=status.HTTP_200_OK)

@@ -153,7 +153,7 @@ class ScoreSerializer(serializers.Serializer):
 
 class ArticleGameAnswerSerializer(serializers.Serializer):
     word_id = serializers.IntegerField()
-    answer = serializers.CharField()
+    answer = serializers.CharField(allow_blank=True)
 
     def save(self, **kwargs):
         word_id = self.validated_data.get("word_id")
