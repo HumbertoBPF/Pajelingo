@@ -162,3 +162,68 @@ class ArticleGameAnswerSerializer(serializers.Serializer):
         word = get_object_or_404(Word, pk=word_id)
 
         return word.article.article_name == answer, str(word)
+
+
+class VocabularyGameAnswerSerializer(serializers.Serializer):
+    word_id = serializers.IntegerField()
+    base_language = serializers.CharField()
+    answer = serializers.CharField(allow_blank=True)
+
+    def save(self, **kwargs):
+        word_id = self.validated_data.get("word_id")
+        base_language = self.validated_data.get("base_language")
+        answer = self.validated_data.get("answer")
+
+        base_language = get_object_or_404(Language, language_name=base_language)
+        word_to_translate = get_object_or_404(Word, pk=word_id)
+
+        correct_translation = ""
+
+        for synonym in word_to_translate.synonyms.all():
+            if synonym.language == base_language:
+                # Getting the correct answer
+                if len(correct_translation) != 0:
+                    correct_translation += ", "
+                correct_translation += synonym.word_name
+
+        return correct_translation == answer, correct_translation
+
+
+class ConjugationGameAnswerSerializer(serializers.Serializer):
+    word_id = serializers.IntegerField()
+    tense = serializers.CharField()
+    conjugation_1 = serializers.CharField(allow_blank=True)
+    conjugation_2 = serializers.CharField(allow_blank=True)
+    conjugation_3 = serializers.CharField(allow_blank=True)
+    conjugation_4 = serializers.CharField(allow_blank=True)
+    conjugation_5 = serializers.CharField(allow_blank=True)
+    conjugation_6 = serializers.CharField(allow_blank=True)
+
+    def save(self, **kwargs):
+        word_id = self.validated_data.get("word_id")
+        tense = self.validated_data.get("tense")
+        conjugation_1 = self.validated_data.get("conjugation_1")
+        conjugation_2 = self.validated_data.get("conjugation_2")
+        conjugation_3 = self.validated_data.get("conjugation_3")
+        conjugation_4 = self.validated_data.get("conjugation_4")
+        conjugation_5 = self.validated_data.get("conjugation_5")
+        conjugation_6 = self.validated_data.get("conjugation_6")
+
+        verb = get_object_or_404(Word, category__category_name="verbs", pk=word_id)
+        conjugation = get_object_or_404(Conjugation, word=verb, tense=tense)
+        language = verb.language
+
+        correct_answer = language.personal_pronoun_1 + " " + conjugation.conjugation_1 + "\n" + \
+                         language.personal_pronoun_2 + " " + conjugation.conjugation_2 + "\n" + \
+                         language.personal_pronoun_3 + " " + conjugation.conjugation_3 + "\n" + \
+                         language.personal_pronoun_4 + " " + conjugation.conjugation_4 + "\n" + \
+                         language.personal_pronoun_5 + " " + conjugation.conjugation_5 + "\n" + \
+                         language.personal_pronoun_6 + " " + conjugation.conjugation_6 + "\n"
+        is_correct_answer = conjugation_1 == conjugation.conjugation_1 \
+                            and conjugation_2 == conjugation.conjugation_2 \
+                            and conjugation_3 == conjugation.conjugation_3 \
+                            and conjugation_4 == conjugation.conjugation_4 \
+                            and conjugation_5 == conjugation.conjugation_5 \
+                            and conjugation_6 == conjugation.conjugation_6
+
+        return is_correct_answer, correct_answer

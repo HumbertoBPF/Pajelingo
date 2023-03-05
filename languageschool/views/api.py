@@ -6,9 +6,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import views, generics, status
 from rest_framework.response import Response
 
-from languageschool.models import Language, Word, Meaning
+from languageschool.models import Language, Word, Meaning, Conjugation
 from languageschool.paginators import SearchPaginator
-from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer
+from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
+    VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer
 
 
 class SearchView(generics.ListAPIView):
@@ -86,4 +87,42 @@ class VocabularyGameView(views.APIView):
         return Response(data={
             "id": selected_word.id,
             "word": selected_word.word_name
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = VocabularyGameAnswerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        is_answer_correct, correct_answer = serializer.save()
+
+        return Response(data={
+            "result": is_answer_correct,
+            "correct_answer": correct_answer
+        }, status=status.HTTP_200_OK)
+
+
+class ConjugationGameView(views.APIView):
+    def get(self, request):
+        language_name = request.GET.get("language")
+
+        language = get_object_or_404(Language, language_name=language_name)
+
+        verb = random.choice(Word.objects.filter(language=language).filter(category__category_name="verbs"))
+        conjugation = random.choice(Conjugation.objects.filter(word=verb.id))
+
+        return Response(data={
+            "id": verb.id,
+            "word": verb.word_name,
+            "tense": conjugation.tense
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = ConjugationGameAnswerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        is_answer_correct, correct_answer = serializer.save()
+
+        return Response(data={
+            "result": is_answer_correct,
+            "correct_answer": correct_answer
         }, status=status.HTTP_200_OK)
