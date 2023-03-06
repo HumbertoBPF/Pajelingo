@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, views, status
-from rest_framework.authentication import BasicAuthentication
+from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -116,7 +116,7 @@ class ScoreListViewSet(generics.ListAPIView):
 
 
 class UserViewSet(views.APIView):
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [AllowPostOnly]
 
     def get_profile_picture(self, app_user):

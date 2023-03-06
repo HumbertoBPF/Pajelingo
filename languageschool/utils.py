@@ -38,10 +38,10 @@ def request_contains(method, params):
 
 
 def send_activation_account_email(request, user):
-    domain = get_current_site(request).domain
+    domain = "localhost:3000"
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = account_activation_token.make_token(user)
-    url = reverse("activate-account", kwargs={"uidb64": uid, "token": token})
+    url = "/activate/{}/{}".format(uid, token)
 
     send_mail(SIGN_UP_SUBJECT, SIGN_UP_MESSAGE.format(user.username, domain, url), settings.EMAIL_FROM, [user.email])
 

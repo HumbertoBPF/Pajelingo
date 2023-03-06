@@ -4,11 +4,12 @@ from languageschool import views
 from languageschool.views.account import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
     PasswordResetCompleteView
 from languageschool.views.api import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
-    ConjugationGameView
+    ConjugationGameView, ActivationView
 from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
     ResetPasswordViewSet, RankingsViewSet
+from rest_framework.authtoken import views as rest_framework_views
 
 urlpatterns = [
     path('dashboard', views.general.index, name='index'),
@@ -56,5 +57,7 @@ urlpatterns = [
     path('api/words/<int:pk>', WordView.as_view(), name='word-api'),
     path('api/article-game', ArticleGameView.as_view(), name='article-game-api'),
     path('api/vocabulary-game', VocabularyGameView.as_view(), name='vocabulary-game-api'),
-    path('api/conjugation-game', ConjugationGameView.as_view(), name='conjugation-game-api')
+    path('api/conjugation-game', ConjugationGameView.as_view(), name='conjugation-game-api'),
+    path('api/activate/<uidb64>/<token>', ActivationView.as_view(), name='activate-api'),
+    path('api/user-token', rest_framework_views.obtain_auth_token)
 ]

@@ -1,8 +1,11 @@
 import base64
 import random
 
+from django.contrib.auth.models import User
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import views, generics, status
 from rest_framework.response import Response
 
@@ -10,6 +13,7 @@ from languageschool.models import Language, Word, Meaning, Conjugation
 from languageschool.paginators import SearchPaginator
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
     VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer
+from pajelingo.tokens import account_activation_token
 
 
 class SearchView(generics.ListAPIView):
@@ -126,3 +130,20 @@ class ConjugationGameView(views.APIView):
             "result": is_answer_correct,
             "correct_answer": correct_answer
         }, status=status.HTTP_200_OK)
+
+
+class ActivationView(views.APIView):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.filter(pk=uid).first()
+        except(TypeError, ValueError, OverflowError):
+            user = None
+
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
