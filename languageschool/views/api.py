@@ -7,12 +7,15 @@ from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import views, generics, status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.parsers import FileUploadParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from languageschool.models import Language, Word, Meaning, Conjugation
+from languageschool.models import Language, Word, Meaning, Conjugation, AppUser
 from languageschool.paginators import SearchPaginator
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
-    VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer
+    VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer
 from pajelingo.tokens import account_activation_token
 
 
@@ -143,7 +146,19 @@ class ActivationView(views.APIView):
         if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True
             user.save()
-            return Response(status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+
+class ProfilePictureView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        app_user = AppUser.objects.filter(user=request.user).first()
+        serializer = ProfilePictureSerializer(app_user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

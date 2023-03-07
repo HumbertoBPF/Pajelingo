@@ -5,7 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
 from pajelingo.validators.validators import validate_email, validate_username
 
 
@@ -85,7 +85,7 @@ class RankingsSerializer(serializers.Serializer):
 class ListScoreSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     language = serializers.ReadOnlyField(source='language.language_name')
-    game = serializers.ReadOnlyField(source='game.id')
+    game = serializers.ReadOnlyField(source='game.game_name')
 
     class Meta:
         model = Score
@@ -227,3 +227,10 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
                             and conjugation_6 == conjugation.conjugation_6
 
         return is_correct_answer, correct_answer
+
+
+class ProfilePictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppUser
+        fields = ('picture',)
+
