@@ -2,6 +2,7 @@ import base64
 
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -99,6 +100,18 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "username", "password")
 
+    def validate_email(self, value):
+        validate_email(value, self.instance)
+        return value
+
+    def validate_username(self, value):
+        validate_username(value)
+        return value
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
     def create(self, validated_data):
         username = validated_data.get("username")
         email = validated_data.get("email")
@@ -121,18 +134,6 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-
-    def validate_email(self, value):
-        validate_email(value, self.instance)
-        return value
-
-    def validate_username(self, value):
-        validate_username(value)
-        return value
-
-    def validate_password(self, value):
-        validate_password(value)
-        return value
 
 
 class ScoreSerializer(serializers.Serializer):
@@ -243,3 +244,25 @@ class RequestResetAccountSerializer(serializers.Serializer):
         email = self.validated_data.get("email")
         user = get_object_or_404(User, email=email, is_active=True)
         send_reset_account_email(user)
+
+
+class ResetAccountSerializer(serializers.Serializer):
+    password = serializers.CharField()
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
+    def save(self, **kwargs):
+        pk = kwargs.get("pk")
+        token = kwargs.get("token")
+        password = self.validated_data.get("password")
+
+        user = User.objects.filter(pk=pk).first()
+
+        if (user is None) or not (default_token_generator.check_token(user, token)):
+            return False
+
+        user.set_password(password)
+        user.save()
+        return True

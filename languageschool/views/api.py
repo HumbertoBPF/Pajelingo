@@ -2,6 +2,7 @@ import base64
 import random
 
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_str
@@ -14,7 +15,7 @@ from rest_framework.response import Response
 from languageschool.models import Language, Word, Meaning, Conjugation, AppUser
 from languageschool.paginators import SearchPaginator
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
-    VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer
+    VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer, ResetAccountSerializer
 from pajelingo.tokens import account_activation_token
 
 
@@ -138,7 +139,7 @@ class ActivationView(views.APIView):
     def put(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.filter(pk=uid).first()
+            user = User.objects.filter(pk=uid, is_active=False).first()
         except(TypeError, ValueError, OverflowError):
             user = None
 
@@ -161,3 +162,19 @@ class ProfilePictureView(views.APIView):
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ResetAccountView(views.APIView):
+    def put(self, request, uidb64, token):
+        try:
+            pk = force_str(urlsafe_base64_decode(uidb64))
+        except(TypeError, ValueError, OverflowError):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ResetAccountSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if serializer.save(pk=pk, token=token):
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_403_FORBIDDEN)

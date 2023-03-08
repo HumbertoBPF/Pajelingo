@@ -4,7 +4,7 @@ from languageschool import views
 from languageschool.views.account import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
     PasswordResetCompleteView
 from languageschool.views.api import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
-    ConjugationGameView, ActivationView, ProfilePictureView
+    ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView
 from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
@@ -51,7 +51,6 @@ urlpatterns = [
     path('api/scores/', ScoreListViewSet.as_view(), name='scores-api'),
     path('api/rankings/', RankingsViewSet.as_view(), name='rankings-api'),
     path('api/public-images/', PublicImageViewSet.as_view(), name='public-images-api'),
-    path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api'),
     path('api/search', SearchView.as_view(), name='search-api'),
     path('api/meanings/<int:pk>', MeaningView.as_view(), name='meaning-api'),
     path('api/words/<int:pk>', WordView.as_view(), name='word-api'),
@@ -60,5 +59,7 @@ urlpatterns = [
     path('api/conjugation-game', ConjugationGameView.as_view(), name='conjugation-game-api'),
     path('api/activate/<uidb64>/<token>', ActivationView.as_view(), name='activate-api'),
     path('api/user-token', rest_framework_views.obtain_auth_token),
-    path('api/user/picture', ProfilePictureView.as_view(), name='profile-picture-api')
+    path('api/user/picture', ProfilePictureView.as_view(), name='profile-picture-api'),
+    path('api/reset-account/<uidb64>/<token>', ResetAccountView.as_view(), name='reset-account-api'),
+    path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api')
 ]
