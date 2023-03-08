@@ -10,7 +10,7 @@ from pajelingo.tokens import account_activation_token
 
 SIGN_UP_SUBJECT = "Pajelingo account activation"
 SIGN_UP_MESSAGE = "Hi {},\n\nPlease click on the link below to activate your Pajelingo account:\n\nhttp://{}{}"
-RESET_SUBJECT = "Pajelingo - reset account"
+RESET_SUBJECT = "Pajelingo account reset"
 RESET_MESSAGE = "Hi {},\n\nA password reset was requested to your Pajelingo account. " \
                 "If it was you who request it, please access the following link:\n\n" \
                 "http://{}{}\n\nIf you did not ask for a password reset, please ignore this email."
@@ -37,7 +37,7 @@ def request_contains(method, params):
     return True
 
 
-def send_activation_account_email(request, user):
+def send_activation_account_email(user):
     domain = "localhost:3000"
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = account_activation_token.make_token(user)
@@ -46,10 +46,10 @@ def send_activation_account_email(request, user):
     send_mail(SIGN_UP_SUBJECT, SIGN_UP_MESSAGE.format(user.username, domain, url), settings.EMAIL_FROM, [user.email])
 
 
-def send_reset_account_email(request, user):
-    domain = get_current_site(request).domain
+def send_reset_account_email(user):
+    domain = "localhost:3000"
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
-    url = reverse("reset-account", kwargs={"uidb64": uid, "token": token})
+    url = "/reset-account/{}/{}".format(uid, token)
 
     send_mail(RESET_SUBJECT, RESET_MESSAGE.format(user.username, domain, url), settings.EMAIL_FROM, [user.email])

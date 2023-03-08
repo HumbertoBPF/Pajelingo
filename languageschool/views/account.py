@@ -33,7 +33,7 @@ def signup(request):
                 user = user_form.save()
                 user.is_active = False
                 user.save()
-                send_activation_account_email(request, user)
+                send_activation_account_email(user)
                 messages.success(request, SUCCESSFUL_SIGN_UP)
 
         return render(request, 'account/signup/signup.html', {
@@ -153,6 +153,7 @@ class PasswordResetView(auth_views.PasswordResetView):
     success_url = "/account/request-reset-account-done"
     from_email = settings.EMAIL_FROM
     form_class = PasswordResetForm
+
 class PasswordResetDoneView(auth_views.PasswordResetDoneView):
     template_name = "account/reset_account/request_reset_account_done.html"
 

@@ -8,7 +8,6 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import views, generics, status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.parsers import FileUploadParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -136,7 +135,7 @@ class ConjugationGameView(views.APIView):
 
 
 class ActivationView(views.APIView):
-    def get(self, request, uidb64, token):
+    def put(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.filter(pk=uid).first()

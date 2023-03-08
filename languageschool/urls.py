@@ -8,7 +8,7 @@ from languageschool.views.api import SearchView, MeaningView, WordView, ArticleG
 from languageschool.views.games import vocabulary_game, article_game, conjugation_game
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
-    ResetPasswordViewSet, RankingsViewSet
+    RequestResetPasswordView, RankingsViewSet
 from rest_framework.authtoken import views as rest_framework_views
 
 urlpatterns = [
@@ -51,7 +51,7 @@ urlpatterns = [
     path('api/scores/', ScoreListViewSet.as_view(), name='scores-api'),
     path('api/rankings/', RankingsViewSet.as_view(), name='rankings-api'),
     path('api/public-images/', PublicImageViewSet.as_view(), name='public-images-api'),
-    path('api/request-reset-account/', ResetPasswordViewSet.as_view(), name='request-reset-account-api'),
+    path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api'),
     path('api/search', SearchView.as_view(), name='search-api'),
     path('api/meanings/<int:pk>', MeaningView.as_view(), name='meaning-api'),
     path('api/words/<int:pk>', WordView.as_view(), name='word-api'),

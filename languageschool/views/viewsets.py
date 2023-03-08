@@ -13,7 +13,7 @@ from languageschool.paginators import RankingsPaginator
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer, \
-    RankingsSerializer
+    RankingsSerializer, RequestResetAccountSerializer
 from languageschool.utils import send_activation_account_email, send_reset_account_email
 from pajelingo import settings
 
@@ -142,7 +142,7 @@ class UserViewSet(views.APIView):
         if serializer.is_valid(raise_exception=True):
             new_user = serializer.save()
 
-            send_activation_account_email(request, new_user)
+            send_activation_account_email(new_user)
 
             app_user = AppUser.objects.filter(user__id=new_user.id).first()
 
@@ -258,12 +258,10 @@ class PublicImageViewSet(views.APIView):
         }, status.HTTP_200_OK)
 
 
-class ResetPasswordViewSet(views.APIView):
+class RequestResetPasswordView(views.APIView):
     def post(self, request):
-        email = request.data.get("email")
-        user = User.objects.filter(email=email, is_active=True).first()
+        serializer = RequestResetAccountSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        if user is not None:
-            send_reset_account_email(request, user)
-
-        return Response(status.HTTP_200_OK)
+        return Response(status.HTTP_204_NO_CONTENT)

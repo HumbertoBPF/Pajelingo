@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
+from languageschool.utils import send_reset_account_email
 from pajelingo.validators.validators import validate_email, validate_username
 
 
@@ -234,3 +235,11 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         model = AppUser
         fields = ('picture',)
 
+
+class RequestResetAccountSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def save(self, **kwargs):
+        email = self.validated_data.get("email")
+        user = get_object_or_404(User, email=email, is_active=True)
+        send_reset_account_email(user)
