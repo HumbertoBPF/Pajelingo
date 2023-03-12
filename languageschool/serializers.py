@@ -158,12 +158,21 @@ class ArticleGameAnswerSerializer(serializers.Serializer):
     answer = serializers.CharField(allow_blank=True)
 
     def save(self, **kwargs):
+        request = self.context["request"]
         word_id = self.validated_data.get("word_id")
         answer = self.validated_data.get("answer")
 
         word = get_object_or_404(Word, pk=word_id)
 
-        return word.article.article_name == answer, str(word)
+        is_correct_answer = (word.article.article_name == answer)
+
+        score = None
+
+        if (not request.user.is_anonymous) and is_correct_answer:
+            score = Score.increment_score(request, word.language, get_object_or_404(Game, id=1))
+            score = score.score
+
+        return is_correct_answer, str(word), score
 
 
 class VocabularyGameAnswerSerializer(serializers.Serializer):
@@ -172,6 +181,7 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
     answer = serializers.CharField(allow_blank=True)
 
     def save(self, **kwargs):
+        request = self.context["request"]
         word_id = self.validated_data.get("word_id")
         base_language = self.validated_data.get("base_language")
         answer = self.validated_data.get("answer")
@@ -188,7 +198,15 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
                     correct_translation += ", "
                 correct_translation += synonym.word_name
 
-        return correct_translation == answer, correct_translation
+        is_correct_answer = (correct_translation == answer)
+
+        score = None
+
+        if (not request.user.is_anonymous) and is_correct_answer:
+            score = Score.increment_score(request, word_to_translate.language, get_object_or_404(Game, id=1))
+            score = score.score
+
+        return is_correct_answer, correct_translation, score
 
 
 class ConjugationGameAnswerSerializer(serializers.Serializer):
@@ -202,6 +220,7 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
     conjugation_6 = serializers.CharField(allow_blank=True)
 
     def save(self, **kwargs):
+        request = self.context["request"]
         word_id = self.validated_data.get("word_id")
         tense = self.validated_data.get("tense")
         conjugation_1 = self.validated_data.get("conjugation_1")
@@ -228,7 +247,13 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
                             and conjugation_5 == conjugation.conjugation_5 \
                             and conjugation_6 == conjugation.conjugation_6
 
-        return is_correct_answer, correct_answer
+        score = None
+
+        if (not request.user.is_anonymous) and is_correct_answer:
+            score = Score.increment_score(request, language, get_object_or_404(Game, id=1))
+            score = score.score
+
+        return is_correct_answer, correct_answer, score
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):

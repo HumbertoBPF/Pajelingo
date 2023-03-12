@@ -2,7 +2,6 @@ import base64
 import random
 
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_str
@@ -56,6 +55,8 @@ class WordView(views.APIView):
 
 
 class ArticleGameView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+
     def get(self, request):
         language_name = request.GET.get("language")
 
@@ -72,18 +73,21 @@ class ArticleGameView(views.APIView):
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = ArticleGameAnswerSerializer(data=request.data)
+        serializer = ArticleGameAnswerSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        is_answer_correct, correct_answer = serializer.save()
+        is_answer_correct, correct_answer, score = serializer.save()
 
         return Response(data={
             "result": is_answer_correct,
-            "correct_answer": correct_answer
+            "correct_answer": correct_answer,
+            "score": score
         }, status=status.HTTP_200_OK)
 
 
 class VocabularyGameView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+
     def get(self, request):
         language_name = request.GET.get("language")
 
@@ -97,18 +101,21 @@ class VocabularyGameView(views.APIView):
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = VocabularyGameAnswerSerializer(data=request.data)
+        serializer = VocabularyGameAnswerSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        is_answer_correct, correct_answer = serializer.save()
+        is_answer_correct, correct_answer, score = serializer.save()
 
         return Response(data={
             "result": is_answer_correct,
-            "correct_answer": correct_answer
+            "correct_answer": correct_answer,
+            "score": score
         }, status=status.HTTP_200_OK)
 
 
 class ConjugationGameView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+
     def get(self, request):
         language_name = request.GET.get("language")
 
@@ -124,14 +131,15 @@ class ConjugationGameView(views.APIView):
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = ConjugationGameAnswerSerializer(data=request.data)
+        serializer = ConjugationGameAnswerSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        is_answer_correct, correct_answer = serializer.save()
+        is_answer_correct, correct_answer, score = serializer.save()
 
         return Response(data={
             "result": is_answer_correct,
-            "correct_answer": correct_answer
+            "correct_answer": correct_answer,
+            "score": score
         }, status=status.HTTP_200_OK)
 
 
