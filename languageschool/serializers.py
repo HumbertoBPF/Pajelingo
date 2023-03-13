@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
 from languageschool.utils import send_reset_account_email
@@ -179,6 +180,17 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
     word_id = serializers.IntegerField()
     base_language = serializers.CharField()
     answer = serializers.CharField(allow_blank=True)
+
+    def validate(self, data):
+        word_id = data.get("word_id")
+        base_language = data.get("base_language")
+
+        word_to_translate = get_object_or_404(Word, pk=word_id)
+
+        if word_to_translate.language.language_name == base_language:
+            raise ValidationError("Base and target languages must not be equal.")
+
+        return data
 
     def save(self, **kwargs):
         request = self.context["request"]
