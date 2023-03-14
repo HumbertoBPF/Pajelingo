@@ -1,7 +1,0 @@
-Hi {{ user.username }},
-
-A password reset was requested to your Pajelingo account. If it was you who request it, please access the following link:
-
-{{ protocol}}://{{ domain }}{% url 'reset-account' uidb64=uid token=token %}
-
-If you did not ask for a password reset, please ignore this email.

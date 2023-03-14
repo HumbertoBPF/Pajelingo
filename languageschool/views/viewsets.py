@@ -14,7 +14,7 @@ from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
     LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer, \
     RankingsSerializer, RequestResetAccountSerializer
-from languageschool.utils import send_activation_account_email, send_reset_account_email
+from languageschool.utils import send_activation_account_email
 from pajelingo import settings
 
 MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE = "You must specify a language and a game"
