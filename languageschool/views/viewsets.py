@@ -74,10 +74,28 @@ class RankingsViewSet(generics.ListAPIView):
     pagination_class = RankingsPaginator
     serializer_class = RankingsSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
+        response = self.list(request, *args, **kwargs)
+
         username = self.request.query_params.get('user')
         user = get_object_or_404(User, username=username) if (username is not None) else None
 
+        scores = self.get_queryset()
+
+        user_score = None
+
+        for score in scores:
+            if (user is not None) and (score["user__username"] == user.username):
+                user_score = {
+                    "position": score["position"],
+                    "user": score["user__username"],
+                    "score": score["score"]
+                }
+                break
+
+        return Response({**response.data, "user_score": user_score})
+
+    def get_queryset(self):
         language_name = self.request.query_params.get('language')
         language = get_object_or_404(Language, language_name=language_name)
 
@@ -88,10 +106,6 @@ class RankingsViewSet(generics.ListAPIView):
 
         for score in scores:
             score["position"] = i
-
-            if (user is not None) and (score["user__username"] == user.username):
-                return [score]
-
             i += 1
 
         return scores
