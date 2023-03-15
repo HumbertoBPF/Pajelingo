@@ -22,10 +22,10 @@ CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an
 
 
 class GameViewSet(generics.ListAPIView):
+    serializer_class = GameSerializer
+
     def get_queryset(self):
         return Game.objects.all()
-
-    serializer_class = GameSerializer
 
 
 class LanguageViewSet(generics.ListAPIView):
@@ -36,38 +36,38 @@ class LanguageViewSet(generics.ListAPIView):
 
 
 class CategoryViewSet(generics.ListAPIView):
+    serializer_class = CategorySerializer
+
     def get_queryset(self):
         return Category.objects.all()
 
-    serializer_class = CategorySerializer
-
 
 class ArticleViewSet(generics.ListAPIView):
+    serializer_class = ArticleSerializer
+
     def get_queryset(self):
         return Article.objects.all()
 
-    serializer_class = ArticleSerializer
-
 
 class WordViewSet(generics.ListAPIView):
+    serializer_class = WordSerializer
+
     def get_queryset(self):
         return Word.objects.all()
 
-    serializer_class = WordSerializer
-
 
 class MeaningViewSet(generics.ListAPIView):
+    serializer_class = MeaningSerializer
+
     def get_queryset(self):
         return Meaning.objects.all()
 
-    serializer_class = MeaningSerializer
-
 
 class ConjugationViewSet(generics.ListAPIView):
+    serializer_class = ConjugationSerializer
+
     def get_queryset(self):
         return Conjugation.objects.all()
-
-    serializer_class = ConjugationSerializer
 
 
 class RankingsViewSet(generics.ListAPIView):
@@ -112,6 +112,8 @@ class RankingsViewSet(generics.ListAPIView):
 
 
 class ScoreListViewSet(generics.ListAPIView):
+    serializer_class = ListScoreSerializer
+
     def get_queryset(self):
         queryset = Score.objects.all()
 
@@ -125,8 +127,6 @@ class ScoreListViewSet(generics.ListAPIView):
             queryset = queryset.filter(user__username=user)
 
         return queryset
-
-    serializer_class = ListScoreSerializer
 
 
 class UserViewSet(views.APIView):

@@ -279,8 +279,9 @@ class RequestResetAccountSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         email = self.validated_data.get("email")
-        user = get_object_or_404(User, email=email, is_active=True)
-        send_reset_account_email(user)
+        user = User.objects.filter(email=email, is_active=True).first()
+        if user is not None:
+            send_reset_account_email(user)
 
 
 class ResetAccountSerializer(serializers.Serializer):
