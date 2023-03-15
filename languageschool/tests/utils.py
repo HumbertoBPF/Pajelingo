@@ -5,9 +5,12 @@ import time
 
 from django.contrib import auth
 from django.db.models import Sum
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 
 from languageschool.models import Score
+
+TOKEN_URL = reverse("token-api")
 
 
 def is_user_authenticated(client, user):
@@ -26,6 +29,27 @@ def is_user_authenticated(client, user):
 def get_basic_auth_header(username, password):
     credentials = base64.b64encode(f'{username}:{password}'.encode('utf-8'))
     return 'Basic {}'.format(credentials.decode('utf-8'))
+
+
+def get_user_token(api_client, user, password):
+    """
+    Gets the token of the specified user.
+
+    :param api_client: Django pytest API client fixture
+    :param user: user instance
+    :param password: password of the specified user
+    :type password: str
+
+    :return: if the user is valid, the token of the matched user. If no user matches the specified credentials,
+    returns None
+    :rtype: str
+    """
+    response = api_client.post(TOKEN_URL, data={
+        "username": user.username,
+        "password": password
+    })
+
+    return response.data.get("token")
 
 
 def is_model_objects_equal_to_dict_array(objects, dict_array, comparer):

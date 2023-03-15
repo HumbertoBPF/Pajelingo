@@ -8,7 +8,7 @@ from rest_framework import status
 
 
 @pytest.mark.django_db
-def test_game_endpoint(api_client, games):
+def test_get_games(api_client, games):
     url = reverse("games-api")
     response = api_client.get(url)
 
@@ -24,7 +24,7 @@ def test_game_endpoint(api_client, games):
 
 
 @pytest.mark.django_db
-def test_language_endpoint(api_client, languages):
+def test_get_languages(api_client, languages):
     url = reverse("languages-api")
     response = api_client.get(url)
 
@@ -43,16 +43,17 @@ def test_language_endpoint(api_client, languages):
         assert languages[i].personal_pronoun_5 == returned_languages[i].get("personal_pronoun_5")
         assert languages[i].personal_pronoun_6 == returned_languages[i].get("personal_pronoun_6")
         expected_image = None
+        expected_image_url = None
         if languages[i].flag_image:
             img = languages[i].flag_image.open("rb")
             expected_image = base64.b64encode(img.read())
+            expected_image_url = languages[i].flag_image.url
         assert expected_image == returned_languages[i].get("flag_image")
-        expected_image_url = languages[i].flag_image.url if languages[i].flag_image else None
         assert expected_image_url == returned_languages[i].get("flag_image_uri")
 
 
 @pytest.mark.django_db
-def test_categories_endpoint(api_client, categories):
+def test_get_categories(api_client, categories):
     url = reverse("categories-api")
     response = api_client.get(url)
 
@@ -67,7 +68,7 @@ def test_categories_endpoint(api_client, categories):
 
 
 @pytest.mark.django_db
-def test_articles_endpoint(api_client, articles):
+def test_get_articles(api_client, articles):
     url = reverse("articles-api")
     response = api_client.get(url)
 
@@ -83,7 +84,7 @@ def test_articles_endpoint(api_client, articles):
 
 
 @pytest.mark.django_db
-def test_words_endpoint(api_client, words):
+def test_get_words(api_client, words):
     url = reverse("words-api")
     response = api_client.get(url)
 
@@ -105,7 +106,7 @@ def test_words_endpoint(api_client, words):
 
 
 @pytest.mark.django_db
-def test_meanings_endpoint(api_client, meanings):
+def test_get_meanings(api_client, meanings):
     url = reverse("meanings-api")
     response = api_client.get(url)
 
@@ -121,7 +122,7 @@ def test_meanings_endpoint(api_client, meanings):
 
 
 @pytest.mark.django_db
-def test_conjugations_endpoint(api_client, conjugations):
+def test_get_conjugations(api_client, conjugations):
     url = reverse("conjugations-api")
     response = api_client.get(url)
 
@@ -145,7 +146,7 @@ def test_conjugations_endpoint(api_client, conjugations):
 @pytest.mark.parametrize("has_language_filter", [True, False])
 @pytest.mark.parametrize("has_user_filter", [True, False])
 @pytest.mark.django_db
-def test_scores_endpoint(api_client, account, games, languages, score, has_language_filter, has_user_filter):
+def test_get_scores(api_client, account, games, languages, score, has_language_filter, has_user_filter):
     accounts = account(n=random.randint(20, 50))
 
     users = []
@@ -182,4 +183,4 @@ def test_scores_endpoint(api_client, account, games, languages, score, has_langu
         assert scores[i].id == returned_scores[i].get("id")
         assert scores[i].user.username == returned_scores[i].get("user")
         assert scores[i].language.language_name == returned_scores[i].get("language")
-        assert scores[i].game.id == returned_scores[i].get("game")
+        assert scores[i].game.game_name == returned_scores[i].get("game")
