@@ -23,7 +23,7 @@ class SearchView(generics.ListAPIView):
     serializer_class = WordSerializer
 
     def get_queryset(self):
-        search_pattern = self.request.query_params.get("search")
+        search_pattern = self.request.query_params.get("search", "")
         languages = []
         for language in Language.objects.all():
             if self.request.query_params.get(language.language_name) == "true":
