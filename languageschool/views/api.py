@@ -135,6 +135,9 @@ class ConjugationGameView(views.APIView):
         serializer.is_valid(raise_exception=True)
 
         is_answer_correct, correct_answer, score = serializer.save()
+        print(is_answer_correct)
+        print(correct_answer)
+        print(score)
 
         return Response(data={
             "result": is_answer_correct,
