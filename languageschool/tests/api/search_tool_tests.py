@@ -46,7 +46,6 @@ def test_search_without_filters(api_client, words, languages):
     number_pages = 0
 
     while next_page is not None:
-        print(next_page)
         response = api_client.get(next_page)
 
         assert response.status_code == status.HTTP_200_OK
