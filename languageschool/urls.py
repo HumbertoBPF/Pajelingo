@@ -1,11 +1,10 @@
 from django.urls import path
 from rest_framework.authtoken import views as rest_framework_views
 
-from languageschool.views.api import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
-    ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView
-from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
-    LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
-    RequestResetPasswordView, RankingsViewSet
+from languageschool.views.views import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
+    ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView, GameViewSet, LanguageViewSet, \
+    CategoryViewSet, ArticleViewSet, WordViewSet, MeaningViewSet, ConjugationViewSet, UserViewSet, ScoreViewSet, \
+    ScoreListViewSet, RankingsViewSet, PublicImageViewSet, RequestResetPasswordView
 
 urlpatterns = [
     path('api/games', GameViewSet.as_view(), name='games-api'),
