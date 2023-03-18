@@ -12,7 +12,7 @@ from languageschool.models import AppUser
 from languageschool.tests.utils import get_random_email, get_valid_password, \
     get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
     get_password_without_digits, get_password_without_special_characters, get_too_short_username, get_user_token
-from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE, RESET_SUBJECT, RESET_MESSAGE
+from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE
 from pajelingo import settings
 
 URL = reverse("user-api")

@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 
 from languageschool.models import Score
 
-TOKEN_URL = reverse("token-api")
+TOKEN_URL = reverse("user-token-api")
 
 
 def is_user_authenticated(client, user):
