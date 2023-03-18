@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.models import Word, Conjugation, Score
+from languageschool.models import Conjugation, Score
 from languageschool.tests.utils import get_user_token
 
 BASE_URL = reverse("conjugation-game-api")

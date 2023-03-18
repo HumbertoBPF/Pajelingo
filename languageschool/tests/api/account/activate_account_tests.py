@@ -37,6 +37,23 @@ def test_activate_account_not_found_url(api_client, has_uuid, has_token):
 
 
 @pytest.mark.django_db
+def test_activate_account_uuid_does_not_have_correct_format(api_client, account):
+    """
+    Tests that /api/activate/<uidb64>/<token> raises a 403 Forbidden if the uuid specified as path parameter does not
+    have the required format (base 64 encoded UUID).
+    """
+    user, password = account()[0]
+
+    url = reverse("activate-account-api", kwargs={
+        "uidb64": uuid.uuid4(),
+        "token": account_activation_token.make_token(user)
+    })
+
+    response = api_client.put(url)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
 def test_activate_account_uuid_does_not_match_any_user(api_client, account):
     """
     Tests that /api/activate/<uidb64>/<token> raises a 403 Forbidden if the uuid specified as path parameter does not
@@ -44,8 +61,10 @@ def test_activate_account_uuid_does_not_match_any_user(api_client, account):
     """
     user, password = account()[0]
 
+    uid = urlsafe_base64_encode(force_bytes(user.pk + 100))
+
     url = reverse("activate-account-api", kwargs={
-        "uidb64": uuid.uuid4(),
+        "uidb64": uid,
         "token": account_activation_token.make_token(user)
     })
 

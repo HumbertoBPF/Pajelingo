@@ -1,11 +1,11 @@
 from django.urls import path
+from rest_framework.authtoken import views as rest_framework_views
 
 from languageschool.views.api import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
     ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView
 from languageschool.views.viewsets import GameViewSet, ArticleViewSet, CategoryViewSet, ConjugationViewSet, \
     LanguageViewSet, MeaningViewSet, ScoreListViewSet, ScoreViewSet, WordViewSet, UserViewSet, PublicImageViewSet, \
     RequestResetPasswordView, RankingsViewSet
-from rest_framework.authtoken import views as rest_framework_views
 
 urlpatterns = [
     path('api/games', GameViewSet.as_view(), name='games-api'),
@@ -30,6 +30,6 @@ urlpatterns = [
     path('api/activate/<uidb64>/<token>', ActivationView.as_view(), name='activate-account-api'),
     path('api/user-token', rest_framework_views.obtain_auth_token, name='user-token-api'),
     path('api/user/picture', ProfilePictureView.as_view(), name='profile-picture-api'),
-    path('api/reset-account/<uidb64>/<token>', ResetAccountView.as_view(), name='reset-account-api'),
-    path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api')
+    path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api'),
+    path('api/reset-account/<uidb64>/<token>', ResetAccountView.as_view(), name='reset-account-api')
 ]

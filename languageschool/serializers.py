@@ -296,7 +296,7 @@ class ResetAccountSerializer(serializers.Serializer):
         token = kwargs.get("token")
         password = self.validated_data.get("password")
 
-        user = User.objects.filter(pk=pk).first()
+        user = User.objects.filter(pk=pk, is_active=True).first()
 
         if (user is None) or not (default_token_generator.check_token(user, token)):
             return False
