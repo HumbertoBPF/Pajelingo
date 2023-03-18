@@ -12,13 +12,12 @@ from languageschool.models import Article, Category, Conjugation, Game, Language
 from languageschool.paginators import RankingsPaginator
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import ArticleSerializer, CategorySerializer, ConjugationSerializer, GameSerializer, \
-    LanguageSerializer, ListScoreSerializer, MeaningSerializer, ScoreSerializer, WordSerializer, UserSerializer, \
+    LanguageSerializer, ListScoreSerializer, MeaningSerializer, WordSerializer, UserSerializer, \
     RankingsSerializer, RequestResetAccountSerializer
 from languageschool.utils import send_activation_account_email
 from pajelingo import settings
 
 MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE = "You must specify a language and a game"
-CONFLICT_SCORE_MESSAGE = "The specified score already exists. Please, perform an UPDATE(PUT request) if you want to increment it."
 
 
 class GameViewSet(generics.ListAPIView):
@@ -216,30 +215,6 @@ class ScoreViewSet(views.APIView):
         scores = Score.objects.filter(user=request.user, language__language_name=language, game__id=game)
         serializer = ListScoreSerializer(scores, many=True)
         return Response(serializer.data)
-
-    def post(self, request):
-        data = request.data
-        serializer = ScoreSerializer(data=data, context={"user": request.user})
-        scores = Score.objects.filter(user=request.user, language__language_name=data.get("language"),
-                                      game__id=data.get("game"))
-        if serializer.is_valid(raise_exception=True) and len(scores) == 0:
-            score = serializer.save()
-            serializer = ListScoreSerializer(score)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"error": CONFLICT_SCORE_MESSAGE}, status=status.HTTP_409_CONFLICT)
-
-    def put(self, request, score_id=None):
-        # Localize the specified score
-        score = get_object_or_404(Score, id=score_id)
-        # Checks if the logged user can update it
-        if request.user != score.user:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-            # Try to update the score
-        serializer = ScoreSerializer(instance=score, data=request.data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            score = serializer.save()
-            serializer = ListScoreSerializer(score)
-            return Response(serializer.data)
 
 
 class PublicImageViewSet(views.APIView):
