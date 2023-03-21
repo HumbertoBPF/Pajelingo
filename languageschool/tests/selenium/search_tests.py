@@ -7,6 +7,10 @@ from pajelingo.settings import FRONT_END_URL
 
 @pytest.mark.django_db
 def test_search_form(live_server, selenium_driver, languages):
+    """
+    Tests that the search form is displayed with a search text input, all the languages as options in the checkbox
+    group, and the submit button.
+    """
     selenium_driver.get(FRONT_END_URL + "/search")
 
     assert_menu(selenium_driver)
