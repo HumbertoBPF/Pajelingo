@@ -35,13 +35,11 @@ def wait_text_to_be_present(selenium_driver, locator, text):
     wait.until(EC.text_to_be_present_in_element(locator, text))
 
 
-def wait_attribute_to_be_non_empty(selenium_driver, locator, attribute, timeout):
+def wait_attribute_to_be_non_empty(element, attribute, timeout):
     """
     Waits until the specified attribute of the matched element is non-empty.
 
-    :param selenium_driver: Selenium web driver
-    :param locator: locator to be matched
-    :type locator: tuple
+    :param element: concerned element
     :param attribute: attribute of interest
     :type attribute: str
     :param timeout: time until timeout
@@ -51,7 +49,6 @@ def wait_attribute_to_be_non_empty(selenium_driver, locator, attribute, timeout)
     :rtype: str
     """
     initial_time = time.time()
-    element = find_element(selenium_driver, locator)
 
     element_attribute = element.get_attribute(attribute)
 

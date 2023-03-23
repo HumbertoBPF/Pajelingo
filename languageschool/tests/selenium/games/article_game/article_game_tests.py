@@ -21,12 +21,12 @@ def test_article_game_play_form_rendering(live_server, selenium_driver, article_
     css_selector_word_input = (By.CSS_SELECTOR, "main form #wordInput")
     css_selector_verify_answer_button = (By.CSS_SELECTOR, "main form .btn-success")
 
+    article_input = find_element(selenium_driver, css_selector_article_input)
+    word_input = find_element(selenium_driver, css_selector_word_input)
     verify_answer_button = find_element(selenium_driver, css_selector_verify_answer_button)
 
-    article_input_placeholder = \
-        wait_attribute_to_be_non_empty(selenium_driver, css_selector_article_input, "placeholder", 10)
-    word_input_placeholder = \
-        wait_attribute_to_be_non_empty(selenium_driver, css_selector_word_input, "placeholder", 10)
+    article_input_placeholder = wait_attribute_to_be_non_empty(article_input, "placeholder", 10)
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
     assert article_input_placeholder == "Article"
     assert Word.objects.filter(
@@ -53,9 +53,10 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver,
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
     article_input = find_element(selenium_driver, css_selector_article_input)
-    word_input_placeholder = \
-        wait_attribute_to_be_non_empty(selenium_driver, css_selector_word_input, "placeholder", 10)
+    word_input = find_element(selenium_driver, css_selector_word_input)
     verify_answer_button = find_element(selenium_driver, css_selector_verify_answer_button)
+
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
     word = Word.objects.filter(
         word_name=word_input_placeholder,
@@ -95,9 +96,10 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver,
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
     article_input = find_element(selenium_driver, css_selector_article_input)
-    word_input_placeholder = \
-        wait_attribute_to_be_non_empty(selenium_driver, css_selector_word_input, "placeholder", 10)
+    word_input = find_element(selenium_driver, css_selector_word_input)
     verify_answer_button = find_element(selenium_driver, css_selector_verify_answer_button)
+
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
     word = Word.objects.filter(
         word_name=word_input_placeholder,
