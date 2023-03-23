@@ -1,6 +1,10 @@
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+from pajelingo.settings import FRONT_END_URL
 
 
 def find_element(selenium_driver, locator):
@@ -30,6 +34,33 @@ def wait_text_to_be_present(selenium_driver, locator, text):
     wait = WebDriverWait(selenium_driver, 10)
     wait.until(EC.text_to_be_present_in_element(locator, text))
 
+
+def wait_attribute_to_be_non_empty(selenium_driver, locator, attribute, timeout):
+    """
+    Waits until the specified attribute of the matched element is non-empty.
+
+    :param selenium_driver: Selenium web driver
+    :param locator: locator to be matched
+    :type locator: tuple
+    :param attribute: attribute of interest
+    :type attribute: str
+    :param timeout: time until timeout
+    :type timeout: float
+
+    :return: the attribute value when it becomes non-empty
+    :rtype: str
+    """
+    initial_time = time.time()
+    element = find_element(selenium_driver, locator)
+
+    element_attribute = element.get_attribute(attribute)
+
+    while element_attribute == "":
+        element_attribute = element.get_attribute(attribute)
+        if (time.time() - initial_time) > timeout:
+            raise TimeoutError("Timeout of {} seconds exceeded.".format(timeout))
+
+    return element_attribute
 
 def assert_menu(selenium_driver, user=None):
     """
@@ -67,3 +98,32 @@ def assert_menu(selenium_driver, user=None):
         sign_in_button = find_element(selenium_driver, css_selector_sign_in_button)
         assert sign_up_button.text == "Sign up"
         assert sign_in_button.text == "Sign in"
+
+
+def authenticate_user(selenium_driver, username, password):
+    """
+    Tries to authenticate a user with the provided credentials by filling the login form available in the page /login.
+
+    :param selenium_driver: Selenium web driver
+    :param username: username credential
+    :type username: str
+    :param password: password credential
+    :type password: str
+    """
+    selenium_driver.get(FRONT_END_URL + "/login")
+
+    css_selector_username_input = (By.CSS_SELECTOR, "main form #floatingUsername")
+    css_selector_password_input = (By.CSS_SELECTOR, "main form #floatingPassword")
+    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
+
+    username_input = find_element(selenium_driver, css_selector_username_input)
+    password_input = find_element(selenium_driver, css_selector_password_input)
+    submit_button = find_element(selenium_driver, css_selector_submit_button)
+
+    username_input.send_keys(username)
+    password_input.send_keys(password)
+    submit_button.click()
+
+    css_selector_carousel = (By.CSS_SELECTOR, "main .carousel")
+
+    find_element(selenium_driver, css_selector_carousel)
