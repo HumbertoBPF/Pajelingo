@@ -366,12 +366,11 @@ class ConjugationGameView(views.APIView):
 
         language = get_object_or_404(Language, language_name=language_name)
 
-        verb = random.choice(Word.objects.filter(language=language).filter(category__category_name="verbs"))
-        conjugation = random.choice(Conjugation.objects.filter(word=verb.id))
+        conjugation = random.choice(Conjugation.objects.filter(word__language=language))
 
         return Response(data={
-            "id": verb.id,
-            "word": verb.word_name,
+            "id": conjugation.word.id,
+            "word": conjugation.word.word_name,
             "tense": conjugation.tense
         }, status=status.HTTP_200_OK)
 
