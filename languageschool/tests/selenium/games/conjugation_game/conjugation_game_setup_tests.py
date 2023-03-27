@@ -7,6 +7,9 @@ from languageschool.models import Conjugation
 from languageschool.tests.selenium.utils import find_element
 from pajelingo.settings import FRONT_END_URL
 
+CONJUGATION_GAME_SETUP_URL = FRONT_END_URL + "/conjugation-game/setup"
+CSS_SELECTOR_FORM_SELECT = (By.CSS_SELECTOR, "main form .form-select")
+CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
 
 @pytest.mark.django_db
 def test_conjugation_game_setup_form_rendering(live_server, selenium_driver, languages):
@@ -19,14 +22,12 @@ def test_conjugation_game_setup_form_rendering(live_server, selenium_driver, lan
     for language in languages:
         expected_options[language.language_name] = True
 
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/setup")
+    selenium_driver.get(CONJUGATION_GAME_SETUP_URL)
 
-    css_selector_form_select = (By.CSS_SELECTOR, "main form .form-select")
     css_selector_select_options = (By.ID, "{}Item".format(languages[0].language_name))
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
-    form_select = find_element(selenium_driver, css_selector_form_select)
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    form_select = find_element(selenium_driver, CSS_SELECTOR_FORM_SELECT)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     assert submit_button.text == "Start"
 
@@ -50,12 +51,11 @@ def test_conjugation_game_setup_form_submission_error(live_server, selenium_driv
     Tests an invalid submission of the conjugation game setup form, that is, that after the submission an alert toast
     with an error message is displayed.
     """
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/setup")
+    selenium_driver.get(CONJUGATION_GAME_SETUP_URL)
 
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert_toast = (By.CSS_SELECTOR, "main .toast-container .toast")
 
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
     submit_button.click()
 
     alert_toast = find_element(selenium_driver, css_selector_alert_toast)
@@ -72,13 +72,11 @@ def test_conjugation_game_setup_form_submission(live_server, selenium_driver, la
     """
     random_language = random.choice(languages)
 
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/setup")
+    selenium_driver.get(CONJUGATION_GAME_SETUP_URL)
 
-    css_selector_form_select = (By.CSS_SELECTOR, "main form .form-select")
     css_selector_select_option = (By.ID, "{}Item".format(random_language.language_name))
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
-    form_select = find_element(selenium_driver, css_selector_form_select)
+    form_select = find_element(selenium_driver, CSS_SELECTOR_FORM_SELECT)
 
     form_select.click()
 
@@ -86,17 +84,16 @@ def test_conjugation_game_setup_form_submission(live_server, selenium_driver, la
 
     select_option.click()
 
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     submit_button.click()
 
     css_selector_form_label = (By.CSS_SELECTOR, "main form .form-label")
     css_selector_form_input = (By.CSS_SELECTOR, "main form .form-control")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
     find_element(selenium_driver, css_selector_form_label)
     find_element(selenium_driver, css_selector_form_input)
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     form_labels = selenium_driver.find_elements(css_selector_form_label[0], css_selector_form_label[1])
     form_inputs = selenium_driver.find_elements(css_selector_form_input[0], css_selector_form_input[1])

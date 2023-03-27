@@ -8,6 +8,10 @@ from languageschool.models import Conjugation
 from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
 from pajelingo.settings import FRONT_END_URL
 
+CSS_SELECTOR_FORM_LABEL = (By.CSS_SELECTOR, "main form .form-label")
+CSS_SELECTOR_FORM_INPUT = (By.CSS_SELECTOR, "main form .form-control")
+CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
+
 def get_conjugation(form_input):
     verb, tense = wait_attribute_to_be_non_empty(form_input, "placeholder", 10).split(" - ")
 
@@ -33,13 +37,9 @@ def test_conjugation_game_play_form_rendering(live_server, selenium_driver, conj
     random_language = random.choice(languages)
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    css_selector_form_label = (By.CSS_SELECTOR, "main form .form-label")
-    css_selector_form_input = (By.CSS_SELECTOR, "main form .form-control")
-    css_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
-
-    submit_button = find_element(selenium_driver, css_submit_button)
-    form_labels = selenium_driver.find_elements(css_selector_form_label[0], css_selector_form_label[1])
-    form_inputs = selenium_driver.find_elements(css_selector_form_input[0], css_selector_form_input[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    form_labels = selenium_driver.find_elements(CSS_SELECTOR_FORM_LABEL[0], CSS_SELECTOR_FORM_LABEL[1])
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])
 
@@ -72,12 +72,10 @@ def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driv
     random_language = random.choice(languages)
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    css_selector_form_inputs = (By.CSS_SELECTOR, "main form .form-control")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
-    form_inputs = selenium_driver.find_elements(css_selector_form_inputs[0], css_selector_form_inputs[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])
 
@@ -129,12 +127,10 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
     random_language = random.choice(languages)
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    css_selector_form_inputs = (By.CSS_SELECTOR, "main form .form-control")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
-    form_inputs = selenium_driver.find_elements(css_selector_form_inputs[0], css_selector_form_inputs[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])
 

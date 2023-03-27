@@ -8,6 +8,10 @@ from languageschool.models import Word
 from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
 from pajelingo.settings import FRONT_END_URL
 
+CSS_SELECTOR_WORD_INPUT = (By.CSS_SELECTOR, "main form #wordInput")
+CSS_SELECTOR_ANSWER_INPUT = (By.CSS_SELECTOR, "main form #answerInput")
+CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
+
 def get_languages(languages):
     base_language = random.choice(languages)
 
@@ -46,13 +50,9 @@ def test_vocabulary_game_play_form_rendering(live_server, selenium_driver, vocab
         .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
              .format(base_language, target_language))
 
-    css_selector_word_input = (By.CSS_SELECTOR, "main form #wordInput")
-    css_selector_answer_input = (By.CSS_SELECTOR, "main form #answerInput")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
-
-    word_input = find_element(selenium_driver, css_selector_word_input)
-    answer_input = find_element(selenium_driver, css_selector_answer_input)
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
     answer_input_placeholder = wait_attribute_to_be_non_empty(answer_input, "placeholder", 10)
@@ -78,14 +78,11 @@ def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_drive
         .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
              .format(base_language, target_language))
 
-    css_selector_word_input = (By.CSS_SELECTOR, "main form #wordInput")
-    css_selector_answer_input = (By.CSS_SELECTOR, "main form #answerInput")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    word_input = find_element(selenium_driver, css_selector_word_input)
-    answer_input = find_element(selenium_driver, css_selector_answer_input)
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -124,14 +121,11 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
         .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
              .format(base_language, target_language))
 
-    css_selector_word_input = (By.CSS_SELECTOR, "main form #wordInput")
-    css_selector_answer_input = (By.CSS_SELECTOR, "main form #answerInput")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    word_input = find_element(selenium_driver, css_selector_word_input)
-    answer_input = find_element(selenium_driver, css_selector_answer_input)
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 

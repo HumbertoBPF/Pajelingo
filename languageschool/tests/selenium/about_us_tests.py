@@ -3,12 +3,14 @@ from selenium.webdriver.common.by import By
 from languageschool.tests.selenium.utils import assert_menu, find_element
 from pajelingo.settings import FRONT_END_URL
 
+ABOUT_US_URL = FRONT_END_URL + "/about-us"
+
 
 def test_about_us_page(live_server, selenium_driver):
     """
     Checks the about us page, verifying the content of all cards displayed.
     """
-    selenium_driver.get(FRONT_END_URL + "/about-us")
+    selenium_driver.get(ABOUT_US_URL)
 
     assert_menu(selenium_driver)
 

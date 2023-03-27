@@ -7,6 +7,10 @@ from languageschool.models import Word
 from languageschool.tests.selenium.utils import find_element
 from pajelingo.settings import FRONT_END_URL
 
+ARTICLE_GAME_SETUP_URL = FRONT_END_URL + "/article-game/setup"
+CSS_SELECTOR_FORM_SELECT = (By.CSS_SELECTOR, "main form .form-select")
+CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
+
 
 @pytest.mark.django_db
 def test_article_game_setup_form_rendering(live_server, selenium_driver, languages):
@@ -19,14 +23,12 @@ def test_article_game_setup_form_rendering(live_server, selenium_driver, languag
     for language in languages:
         expected_options[language.language_name] = True
 
-    selenium_driver.get(FRONT_END_URL + "/article-game/setup")
+    selenium_driver.get(ARTICLE_GAME_SETUP_URL)
 
-    css_selector_form_select = (By.CSS_SELECTOR, "main form .form-select")
     css_selector_select_options = (By.ID, "{}Item".format(languages[0].language_name))
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
-    form_select = find_element(selenium_driver, css_selector_form_select)
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    form_select = find_element(selenium_driver, CSS_SELECTOR_FORM_SELECT)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     assert submit_button.text == "Start"
 
@@ -50,12 +52,11 @@ def test_article_game_setup_form_submission_error(live_server, selenium_driver, 
     Tests an invalid submission of the article game setup form, that is, that after the submission an alert toast with
     an error message is displayed.
     """
-    selenium_driver.get(FRONT_END_URL + "/article-game/setup")
+    selenium_driver.get(ARTICLE_GAME_SETUP_URL)
 
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert_toast = (By.CSS_SELECTOR, "main .toast-container .toast")
 
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
     submit_button.click()
 
     alert_toast = find_element(selenium_driver, css_selector_alert_toast)
@@ -72,13 +73,11 @@ def test_article_game_setup_form_submission(live_server, selenium_driver, langua
     """
     random_language = random.choice(languages).language_name
 
-    selenium_driver.get(FRONT_END_URL + "/article-game/setup")
+    selenium_driver.get(ARTICLE_GAME_SETUP_URL)
 
-    css_selector_form_select = (By.CSS_SELECTOR, "main form .form-select")
     css_selector_select_option = (By.ID, "{}Item".format(random_language))
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
-    form_select = find_element(selenium_driver, css_selector_form_select)
+    form_select = find_element(selenium_driver, CSS_SELECTOR_FORM_SELECT)
 
     form_select.click()
 
@@ -86,17 +85,16 @@ def test_article_game_setup_form_submission(live_server, selenium_driver, langua
 
     select_option.click()
 
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     submit_button.click()
 
     css_selector_form_inputs = (By.CSS_SELECTOR, "main form .form-control")
-    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
     find_element(selenium_driver, css_selector_form_inputs)
 
     form_inputs = selenium_driver.find_elements(css_selector_form_inputs[0], css_selector_form_inputs[1])
-    submit_button = find_element(selenium_driver, css_selector_submit_button)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     word = form_inputs[1].get_attribute("placeholder")
 
