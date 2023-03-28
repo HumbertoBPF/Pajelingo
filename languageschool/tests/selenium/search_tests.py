@@ -5,7 +5,7 @@ import pytest
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word
+from languageschool.models import Word, Meaning
 from languageschool.tests.selenium.utils import assert_menu, find_element, wait_text_to_be_present
 from pajelingo.settings import FRONT_END_URL
 
@@ -16,6 +16,18 @@ CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
 CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 CSS_SELECTOR_PAGINATION = (By.CSS_SELECTOR, "main .pagination")
 CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
+CSS_SELECTOR_NO_RESULTS_IMG = (By.CSS_SELECTOR, "main img")
+CSS_SELECTOR_NO_RESULTS_TEXT = (By.CSS_SELECTOR, "main p")
+
+def get_card_language(card):
+    flag_img = card.find_element(By.CSS_SELECTOR, "img")
+    alt_flag_img = flag_img.get_attribute("alt")
+    return alt_flag_img.split(" language flag")[0]
+
+
+def get_card_word(card):
+    return card.find_element(By.CSS_SELECTOR, ".card-body .card-text").text
+
 
 def assert_search_results(selenium_driver, words, current_page, number_pages, language=None, search__pattern=""):
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
@@ -23,10 +35,8 @@ def assert_search_results(selenium_driver, words, current_page, number_pages, la
     assert len(cards) == len(words) % 12 if (current_page == number_pages) else 12
 
     for card in cards:
-        flag_img = card.find_element(By.CSS_SELECTOR, "img")
-        alt_flag_img = flag_img.get_attribute("alt")
-        language_name = alt_flag_img.split(" language flag")[0]
-        word_name = card.find_element(By.CSS_SELECTOR, ".card-body .card-text").text
+        language_name = get_card_language(card)
+        word_name = get_card_word(card)
         assert Word.objects.filter(
             language__language_name=language_name,
             word_name=word_name
@@ -66,6 +76,48 @@ def go_to_next_page(selenium_driver, current_page, number_pages):
         pagination = find_element(selenium_driver, CSS_SELECTOR_PAGINATION)
         page_buttons = pagination.find_elements(By.CSS_SELECTOR, ".page-link")
         selenium_driver.execute_script("arguments[0].click();", page_buttons[-1])
+
+
+def assert_meaning_page(selenium_driver, word_name, language_name):
+    word_id = selenium_driver.current_url.split(FRONT_END_URL + "/meanings/")[1].split("#")[0]
+
+    word = Word.objects.filter(
+        id=word_id,
+        word_name=word_name,
+        language__language_name=language_name
+    ).first()
+
+    assert word is not None
+
+    wait_text_to_be_present(selenium_driver, (By.CSS_SELECTOR, "main h5"), "Meanings of \"{}\"".format(word.word_name))
+    title = find_element(selenium_driver, (By.CSS_SELECTOR, "main h5"))
+    meanings = Meaning.objects.filter(word=word)
+
+    meanings_dict = {}
+
+    for meaning in meanings:
+        meanings_dict[meaning.id] = True
+
+    cards = selenium_driver.find_elements(By.CSS_SELECTOR, "main .card .card-body .card-text")
+
+    assert title.text == "Meanings of \"{}\"".format(word.word_name)
+
+    nb_cards = len(cards)
+
+    for i in range(len(cards)):
+        card = cards[i]
+
+        separator = "Meaning: " if (nb_cards == 1) else "Meaning number {}: ".format(i + 1)
+        meaning = card.text.split(separator)[1]
+
+        meaning = Meaning.objects.filter(
+            word=word,
+            meaning=meaning
+        ).first()
+
+        del meanings_dict[meaning.id]
+
+    assert len(meanings_dict) == 0
 
 
 @pytest.mark.django_db
@@ -208,3 +260,46 @@ def test_search_with_search_pattern_and_language_filter(live_server, selenium_dr
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
+
+
+@pytest.mark.django_db
+def test_search_no_results(live_server, selenium_driver, words, languages):
+    selenium_driver.get(SEARCH_URL)
+
+    find_element(selenium_driver, CSS_SELECTOR_FORM_CHECK)
+    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    search_form_submit_button.click()
+
+    no_results_img = find_element(selenium_driver, CSS_SELECTOR_NO_RESULTS_IMG)
+    no_results_text = find_element(selenium_driver, CSS_SELECTOR_NO_RESULTS_TEXT)
+
+    assert no_results_img.get_attribute("alt") == "No results"
+    assert no_results_text.text == "No result matching your search was found"
+
+
+@pytest.mark.django_db
+def test_meaning(live_server, selenium_driver, words, meanings):
+    selenium_driver.get(SEARCH_URL)
+
+    find_element(selenium_driver, CSS_SELECTOR_FORM_CHECK)
+    search_form_checkboxes = selenium_driver.find_elements(CSS_SELECTOR_FORM_CHECK[0], CSS_SELECTOR_FORM_CHECK[1])
+    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    for search_form_checkbox in search_form_checkboxes:
+        search_form_checkbox.find_element(By.CSS_SELECTOR, ".form-check-input").click()
+
+    search_form_submit_button.click()
+
+    wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")
+
+    cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
+
+    random_card = random.choice(cards)
+
+    language_name = get_card_language(random_card)
+    word_name = get_card_word(random_card)
+
+    random_card.click()
+
+    assert_meaning_page(selenium_driver, word_name, language_name)

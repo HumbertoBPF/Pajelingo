@@ -154,9 +154,10 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400
 
+FRONT_END_URL = "http://localhost:3000"
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
+    FRONT_END_URL
 ]
 
-FRONT_END_URL = "http://localhost:3000"
 os.environ["DJANGO_LIVE_TEST_SERVER_ADDRESS"] = "localhost:8001"
