@@ -70,6 +70,7 @@ def assert_menu(selenium_driver, user=None):
     css_selector_games_dropdown = (By.CSS_SELECTOR, "header .dropdown .dropdown-item")
     css_selector_sign_up_button = (By.CSS_SELECTOR, "header .btn-success")
     css_selector_sign_in_button = (By.CSS_SELECTOR, "header .btn-primary")
+    css_selector_username = (By.CSS_SELECTOR, "header .btn-account-options span")
 
     find_element(selenium_driver, css_selector_menu_items)
     menu_items = selenium_driver.find_elements(css_selector_menu_items[0], css_selector_menu_items[1])
@@ -95,6 +96,9 @@ def assert_menu(selenium_driver, user=None):
         sign_in_button = find_element(selenium_driver, css_selector_sign_in_button)
         assert sign_up_button.text == "Sign up"
         assert sign_in_button.text == "Sign in"
+    else:
+        username = find_element(selenium_driver, css_selector_username)
+        assert  username.text == user.username
 
 
 def authenticate_user(selenium_driver, username, password):
