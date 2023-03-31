@@ -32,7 +32,7 @@ def get_card_word(card):
 def assert_search_results(selenium_driver, words, current_page, number_pages, language=None, search__pattern=""):
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
 
-    assert len(cards) == len(words) % 12 if (current_page == number_pages) else 12
+    assert len(cards) == len(words) % 12 if ((current_page == number_pages) and (len(words) % 12 != 0)) else 12
 
     for card in cards:
         language_name = get_card_language(card)
