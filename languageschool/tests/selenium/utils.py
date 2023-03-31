@@ -128,3 +128,23 @@ def authenticate_user(selenium_driver, username, password):
     css_selector_carousel = (By.CSS_SELECTOR, "main .carousel")
 
     find_element(selenium_driver, css_selector_carousel)
+
+
+def signup_user(selenium_driver, email, username, password):
+    css_selector_inputs = (By.CSS_SELECTOR, "main form .form-control")
+    css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
+    css_selector_alert_success = (By.CSS_SELECTOR, "main .alert-success")
+
+    selenium_driver.get(FRONT_END_URL + "/signup")
+
+    form_inputs = selenium_driver.find_elements(css_selector_inputs[0], css_selector_inputs[1])
+    submit_button = find_element(selenium_driver, css_selector_submit_button)
+
+    form_inputs[0].send_keys(email)
+    form_inputs[1].send_keys(username)
+    form_inputs[2].send_keys(password)
+    form_inputs[3].send_keys(password)
+
+    submit_button.click()
+
+    find_element(selenium_driver, css_selector_alert_success)
