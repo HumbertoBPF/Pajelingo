@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.authtoken import views as rest_framework_views
 
-from languageschool.views.views import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
+from languageschool.views import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
     ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView, GameViewSet, LanguageViewSet, \
     CategoryViewSet, ArticleViewSet, WordViewSet, MeaningViewSet, ConjugationViewSet, UserViewSet, ScoreViewSet, \
     ScoreListViewSet, RankingsViewSet, PublicImageViewSet, RequestResetPasswordView

@@ -4,7 +4,7 @@ import pytest
 from rest_framework import status
 
 from languageschool.tests.utils import get_users, get_basic_auth_header, get_random_username, get_valid_password
-from languageschool.views.views import MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
+from languageschool.views import MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
 
 URL = "/api/score/"
 
