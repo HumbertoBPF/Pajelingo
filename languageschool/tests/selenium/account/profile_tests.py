@@ -17,6 +17,7 @@ CSS_SELECTOR_DELETE_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main section .col-lg-9 .
 CSS_SELECTOR_CREDENTIALS = (By.CSS_SELECTOR, "main section .col-lg-9 p")
 CSS_SELECTOR_DIALOG_TILE = (By.CSS_SELECTOR, "body .modal .modal-header")
 CSS_SELECTOR_DIALOG_BODY = (By.CSS_SELECTOR, "body .modal .modal-body")
+CSS_SELECTOR_DIALOG_PROFILE_PICTURE = (By.CSS_SELECTOR, "body .modal .modal-body ul")
 CSS_SELECTOR_DIALOG_CANCEL_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-secondary")
 CSS_SELECTOR_DIALOG_DANGER_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-danger")
 CSS_SELECTOR_DIALOG_SUCCESS_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-success")
@@ -193,7 +194,8 @@ def test_profile_update_profile_picture_error_file_format(live_server, selenium_
     file_input = profile_picture_dialog_body.find_element(By.CSS_SELECTOR, "input")
     file_input.send_keys(filename)
 
-    profile_picture_dialog_success_button.click()
+    warning_file_not_image = find_element(selenium_driver, CSS_SELECTOR_DIALOG_PROFILE_PICTURE)
+    assert warning_file_not_image.text == "The selected file is not an image"
 
 
 def test_profile_user_scores(live_server, selenium_driver, account, languages, score, games):

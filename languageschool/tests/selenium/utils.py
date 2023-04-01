@@ -35,6 +35,20 @@ def wait_text_to_be_present(selenium_driver, locator, text):
     wait.until(EC.text_to_be_present_in_element(locator, text))
 
 
+def wait_number_of_elements_to_be(selenium_driver, locator, number):
+    """
+    Waits until the number of elements matching the specified locator to be equal to the number specified.
+
+    :param selenium_driver: Selenium web driver
+    :param locator: locator to be matched
+    :type locator: tuple
+    :param number: expected number of matched elements
+    :type number: int
+    """
+    wait = WebDriverWait(selenium_driver, 10)
+    wait.until(lambda browser: len(browser.find_elements(locator[0], locator[1])) == number)
+
+
 def wait_attribute_to_be_non_empty(element, attribute, timeout):
     """
     Waits until the specified attribute of the matched element is non-empty.
