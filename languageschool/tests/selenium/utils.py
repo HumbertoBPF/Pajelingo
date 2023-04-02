@@ -2,7 +2,7 @@ import time
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 
 from pajelingo.settings import FRONT_END_URL
 
@@ -15,11 +15,11 @@ def find_element(selenium_driver, locator):
     :param locator: locator to be matched
     :type locator: tuple
 
-    :return: the element object matching the specified locator. If no element matching the locator could be found, an
+    :return: the element object matching the specified locator. If no element matching the locator could be found, a
     timeout exception is raised.
     """
     wait = WebDriverWait(selenium_driver, 10)
-    return wait.until(EC.visibility_of_element_located(locator))
+    return wait.until(ec.visibility_of_element_located(locator))
 
 def wait_text_to_be_present(selenium_driver, locator, text):
     """
@@ -32,7 +32,7 @@ def wait_text_to_be_present(selenium_driver, locator, text):
     :type text: str
     """
     wait = WebDriverWait(selenium_driver, 10)
-    wait.until(EC.text_to_be_present_in_element(locator, text))
+    wait.until(ec.text_to_be_present_in_element(locator, text))
 
 
 def wait_number_of_elements_to_be(selenium_driver, locator, number):
@@ -162,3 +162,36 @@ def signup_user(selenium_driver, email, username, password):
     submit_button.click()
 
     find_element(selenium_driver, css_selector_alert_success)
+
+
+def assert_is_login_page(selenium_driver):
+    css_selector_form_inputs = (By.CSS_SELECTOR, "main form .form-control")
+    css_selector_login_form_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
+
+    find_element(selenium_driver, css_selector_form_inputs)
+    submit_button = find_element(selenium_driver, css_selector_login_form_submit_button)
+
+    form_inputs = selenium_driver.find_elements(css_selector_form_inputs[0], css_selector_form_inputs[1])
+
+    assert len(form_inputs) == 2
+    assert submit_button.text == "Sign in"
+
+
+def assert_is_profile_page(selenium_driver, username, email):
+    css_selector_credentials = (By.CSS_SELECTOR, "main section .col-lg-9 p")
+    css_selector_update_picture_button = (By.CSS_SELECTOR, "main .col-lg-3 .btn-info")
+    css_selector_edit_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info")
+    css_selector_delete_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-danger")
+
+    wait_number_of_elements_to_be(selenium_driver, css_selector_credentials, 2)
+    credentials = selenium_driver.find_elements(css_selector_credentials[0], css_selector_credentials[1])
+    update_picture_button = find_element(selenium_driver, css_selector_update_picture_button)
+    edit_account_button = find_element(selenium_driver, css_selector_edit_account_button)
+    delete_account_button = find_element(selenium_driver, css_selector_delete_account_button)
+
+    assert len(credentials) == 2
+    assert credentials[0].text == "Username: {}".format(username)
+    assert credentials[1].text == "Email: {}".format(email)
+    assert update_picture_button.text == "Update picture"
+    assert edit_account_button.text == "Edit account"
+    assert delete_account_button.text == "Delete account"

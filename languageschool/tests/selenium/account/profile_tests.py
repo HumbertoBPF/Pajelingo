@@ -4,12 +4,12 @@ import pytest
 from django.contrib.auth.models import User
 from selenium.webdriver.common.by import By
 
-from languageschool.tests.selenium.utils import find_element, authenticate_user
+from languageschool.tests.selenium.utils import find_element, authenticate_user, assert_is_login_page, \
+    assert_is_profile_page
 from pajelingo.settings import FRONT_END_URL
 
 PROFILE_URL = FRONT_END_URL + "/profile"
 CSS_SELECTOR_FORM_INPUTS = (By.CSS_SELECTOR, "main form .form-control")
-CSS_SELECTOR_LOGIN_FORM_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
 CSS_SELECTOR_UPDATE_ACCOUNT_FORM_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-info")
 CSS_SELECTOR_UPDATE_PICTURE_BUTTON = (By.CSS_SELECTOR, "main .col-lg-3 .btn-info")
 CSS_SELECTOR_EDIT_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info")
@@ -25,16 +25,6 @@ CSS_SELECTOR_SELECT_LANGUAGE = (By.CSS_SELECTOR, "main section .form-select")
 CSS_SELECTOR_SCORES_TABLE = (By.CSS_SELECTOR, "main section .table")
 
 
-def assert_is_login_page(selenium_driver):
-    find_element(selenium_driver, CSS_SELECTOR_FORM_INPUTS)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_LOGIN_FORM_SUBMIT_BUTTON)
-
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-
-    assert len(form_inputs) == 2
-    assert submit_button.text == "Sign in"
-
-
 def assert_is_update_account_page(selenium_driver):
     find_element(selenium_driver, CSS_SELECTOR_FORM_INPUTS)
     submit_button = find_element(selenium_driver, CSS_SELECTOR_UPDATE_ACCOUNT_FORM_SUBMIT_BUTTON)
@@ -43,21 +33,6 @@ def assert_is_update_account_page(selenium_driver):
 
     assert len(form_inputs) == 4
     assert submit_button.text == "Update"
-
-
-def assert_is_profile_page(selenium_driver, user):
-    find_element(selenium_driver, CSS_SELECTOR_CREDENTIALS)
-    credentials = selenium_driver.find_elements(CSS_SELECTOR_CREDENTIALS[0], CSS_SELECTOR_CREDENTIALS[1])
-    update_picture_button = find_element(selenium_driver, CSS_SELECTOR_UPDATE_PICTURE_BUTTON)
-    edit_account_button = find_element(selenium_driver, CSS_SELECTOR_EDIT_ACCOUNT_BUTTON)
-    delete_account_button = find_element(selenium_driver, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON)
-
-    assert len(credentials) == 2
-    assert credentials[0].text == "Username: {}".format(user.username)
-    assert credentials[1].text == "Email: {}".format(user.email)
-    assert update_picture_button.text == "Update picture"
-    assert edit_account_button.text == "Edit account"
-    assert delete_account_button.text == "Delete account"
 
 
 def assert_select_language_options(select_language, languages_expected):
@@ -85,22 +60,36 @@ def select_option_from_select_language(select_language, language):
             break
 
 
+@pytest.mark.django_db
 def test_profile_requires_authentication(live_server, selenium_driver):
+    """
+    Tests that an unauthenticated user is redirected to the login page when accessing the profile page.
+    """
     selenium_driver.get(PROFILE_URL)
     assert_is_login_page(selenium_driver)
 
 
+@pytest.mark.django_db
 def test_profile(live_server, selenium_driver, account):
+    """
+    Tests that the content of the profile page is displayed as expected, that is, that the username and email
+    credentials as well as the "update profile picture", "edit account" and "delete account" button are displayed.
+    """
     user, password = account()[0]
 
     authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(PROFILE_URL)
 
-    assert_is_profile_page(selenium_driver, user)
+    assert_is_profile_page(selenium_driver, user.username, user.email)
 
 
+@pytest.mark.django_db
 def test_profile_delete_account(live_server, selenium_driver, account):
+    """
+    Tests that deleting the profile works as expected, that is, a dialog is opened asking for confirmation and when
+    users confirm, their account is deleted.
+    """
     user, password = account()[0]
 
     authenticate_user(selenium_driver, user.username, password)
@@ -130,7 +119,12 @@ def test_profile_delete_account(live_server, selenium_driver, account):
     ).exists()
 
 
+@pytest.mark.django_db
 def test_profile_update_account_redirect(live_server, selenium_driver, account):
+    """
+    Tests that when users click on the "update account" button, they are redirected to a page with the update account
+    form.
+    """
     user, password = account()[0]
 
     authenticate_user(selenium_driver, user.username, password)
@@ -143,7 +137,13 @@ def test_profile_update_account_redirect(live_server, selenium_driver, account):
     assert_is_update_account_page(selenium_driver)
 
 
+@pytest.mark.django_db
 def test_profile_update_profile_picture(live_server, selenium_driver, account):
+    """
+    Tests the update profile picture flow, that is, users must click on the "update profile picture" button, then
+    a modal is opened asking for an image file. When an image file is provided and the users click on the "update"
+    button, the users are redirected back to the profile page after having their profile picture updated.
+    """
     user, password = account()[0]
 
     authenticate_user(selenium_driver, user.username, password)
@@ -163,7 +163,7 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
 
     profile_picture_dialog_success_button.click()
 
-    assert_is_profile_page(selenium_driver, user)
+    assert_is_profile_page(selenium_driver, user.username, user.email)
 
 
 @pytest.mark.parametrize(
@@ -172,7 +172,12 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
         "C:\\Users\\Humberto\\Desktop\\Humberto\\Study\\WebDev\\Pajelingo\\languageschool\\views.py"
     ]
 )
+@pytest.mark.django_db
 def test_profile_update_profile_picture_error_file_format(live_server, selenium_driver, account, filename):
+    """
+    Checks that the format of the uploaded profile picture file is validated, that is, if it is not an image, an error
+    message is displayed below the modal's input.
+    """
     user, password = account()[0]
 
     authenticate_user(selenium_driver, user.username, password)
@@ -198,7 +203,11 @@ def test_profile_update_profile_picture_error_file_format(live_server, selenium_
     assert warning_file_not_image.text == "The selected file is not an image"
 
 
+@pytest.mark.django_db
 def test_profile_user_scores(live_server, selenium_driver, account, languages, score, games):
+    """
+    Tests that the expected user scores are displayed on the profile page.
+    """
     user, password = account()[0]
     random_language = random.choice(languages)
     scores = score([user], games, languages)
