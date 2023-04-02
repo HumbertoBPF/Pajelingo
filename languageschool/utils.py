@@ -12,7 +12,7 @@ SIGN_UP_MESSAGE = "Hi {},\n\nPlease click on the link below to activate your Paj
 RESET_SUBJECT = "Pajelingo account reset"
 RESET_MESSAGE = "Hi {},\n\nA password reset was requested to your Pajelingo account. " \
                 "If it was you who request it, please access the following link:\n\n" \
-                "http://{}{}\n\nIf you did not ask for a password reset, please ignore this email."
+                "{}{}\n\nIf you did not ask for a password reset, please ignore this email."
 
 def send_activation_account_email(user):
     uid = urlsafe_base64_encode(force_bytes(user.pk))

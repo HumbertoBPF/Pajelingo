@@ -13,6 +13,14 @@ CSS_SELECTOR_WORD_INPUT = (By.CSS_SELECTOR, "main form #wordInput")
 CSS_SELECTOR_VERIFY_ANSWER = (By.CSS_SELECTOR, "main form .btn-success")
 
 
+def submit_answer(selenium_driver, answer):
+    article_input = find_element(selenium_driver, CSS_SELECTOR_ARTICLE_INPUT)
+    verify_answer_button = find_element(selenium_driver, CSS_SELECTOR_VERIFY_ANSWER)
+
+    article_input.send_keys(answer)
+    verify_answer_button.click()
+
+
 @pytest.mark.django_db
 def test_article_game_play_form_rendering(live_server, selenium_driver, article_game, languages, words):
     """
@@ -49,9 +57,7 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver,
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    article_input = find_element(selenium_driver, CSS_SELECTOR_ARTICLE_INPUT)
     word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
-    verify_answer_button = find_element(selenium_driver, CSS_SELECTOR_VERIFY_ANSWER)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -62,9 +68,7 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver,
 
     answer = word.article.article_name if is_correct else get_random_string(5)
 
-    article_input.send_keys(answer)
-
-    verify_answer_button.click()
+    submit_answer(selenium_driver, answer)
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
@@ -89,9 +93,7 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver,
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    article_input = find_element(selenium_driver, CSS_SELECTOR_ARTICLE_INPUT)
     word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
-    verify_answer_button = find_element(selenium_driver, CSS_SELECTOR_VERIFY_ANSWER)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -102,9 +104,7 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver,
 
     answer = word.article.article_name if is_correct else get_random_string(5)
 
-    article_input.send_keys(answer)
-
-    verify_answer_button.click()
+    submit_answer(selenium_driver, answer)
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 

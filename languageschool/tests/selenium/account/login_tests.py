@@ -12,6 +12,16 @@ CSS_SELECTOR_VALIDATION_WARNING = (By.CSS_SELECTOR, "main form .invalid-feedback
 CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
 
 
+def submit_login_form(selenium_driver, username, password):
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_INPUTS[0], CSS_SELECTOR_INPUTS[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    form_inputs[0].send_keys(username)
+    form_inputs[1].send_keys(password)
+
+    submit_button.click()
+
+
 def test_login_form_rendering(live_server, selenium_driver):
     selenium_driver.get(LOGIN_URL)
 
@@ -34,16 +44,10 @@ def test_login_form_rendering(live_server, selenium_driver):
 def test_login_form_validation(live_server, selenium_driver, has_username, has_password):
     selenium_driver.get(LOGIN_URL)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_INPUTS[0], CSS_SELECTOR_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     username = get_random_string(8) if has_username else ""
     password = get_random_string(8) if has_password else ""
 
-    form_inputs[0].send_keys(username)
-    form_inputs[1].send_keys(password)
-
-    submit_button.click()
+    submit_login_form(selenium_driver, username, password)
 
     form_validation_warnings = selenium_driver.find_elements(CSS_SELECTOR_VALIDATION_WARNING[0],
                                                              CSS_SELECTOR_VALIDATION_WARNING[1])
@@ -68,16 +72,10 @@ def test_login(live_server, selenium_driver, account, is_correct_username, is_co
 
     selenium_driver.get(LOGIN_URL)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_INPUTS[0], CSS_SELECTOR_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     username = user.username if is_correct_username else get_random_string(8)
     password = password if is_correct_password else get_random_string(8)
 
-    form_inputs[0].send_keys(username)
-    form_inputs[1].send_keys(password)
-
-    submit_button.click()
+    submit_login_form(selenium_driver, username, password)
 
     is_valid_login = is_correct_username and is_correct_password
 

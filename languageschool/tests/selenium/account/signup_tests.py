@@ -19,6 +19,24 @@ CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
 CSS_SELECTOR_ALERT_SUCCESS = (By.CSS_SELECTOR, "main .alert-success")
 
 
+def submit_signup_form(selenium_driver, email, username, password, confirm_password):
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    form_inputs[0].send_keys(email)
+
+    form_inputs[1].send_keys(username)
+
+    form_inputs[2].send_keys(password)
+
+    if confirm_password is None:
+        form_inputs[3].send_keys("")
+    else:
+        form_inputs[3].send_keys(password if confirm_password else get_random_string(5) + password)
+
+    submit_button.click()
+
+
 def test_signup_form_rendering(live_server, selenium_driver):
     selenium_driver.get(SIGNUP_URL)
 
@@ -57,25 +75,11 @@ def test_signup_form_rendering(live_server, selenium_driver):
 def test_signup_form_validation(live_server, selenium_driver, email, username, password, confirm_password, feedback):
     selenium_driver.get(SIGNUP_URL)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     email = "" if (email is None) else email
     username = "" if (username is None) else username
     password = "" if (password is None) else password
 
-    form_inputs[0].send_keys(email)
-
-    form_inputs[1].send_keys(username)
-
-    form_inputs[2].send_keys(password)
-
-    if confirm_password is None:
-        form_inputs[3].send_keys("")
-    else:
-        form_inputs[3].send_keys(password if confirm_password else get_random_string(5) + password)
-
-    submit_button.click()
+    submit_signup_form(selenium_driver, email, username, password, confirm_password)
 
     form_validation_warnings = find_element(selenium_driver, CSS_SELECTOR_VALIDATION_WARNING)
 
@@ -95,19 +99,11 @@ def test_signup_repeated_credentials(live_server, selenium_driver, account, is_r
 
     selenium_driver.get(SIGNUP_URL)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     email = user.email if is_repeated_email else get_random_email()
     username = user.username if is_repeated_username else get_random_username()
     password = get_valid_password()
 
-    form_inputs[0].send_keys(email)
-    form_inputs[1].send_keys(username)
-    form_inputs[2].send_keys(password)
-    form_inputs[3].send_keys(password)
-
-    submit_button.click()
+    submit_signup_form(selenium_driver, email, username, password, True)
 
     alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
 
@@ -119,19 +115,11 @@ def test_signup_repeated_credentials(live_server, selenium_driver, account, is_r
 def test_signup(live_server, selenium_driver):
     selenium_driver.get(SIGNUP_URL)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     email = get_random_email()
     username = get_random_username()
     password = get_valid_password()
 
-    form_inputs[0].send_keys(email)
-    form_inputs[1].send_keys(username)
-    form_inputs[2].send_keys(password)
-    form_inputs[3].send_keys(password)
-
-    submit_button.click()
+    submit_signup_form(selenium_driver, email, username, password, True)
 
     alert_success = find_element(selenium_driver, CSS_SELECTOR_ALERT_SUCCESS)
     alert_success_text = alert_success.find_element(By.CSS_SELECTOR, "p")

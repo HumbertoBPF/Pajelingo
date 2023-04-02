@@ -39,6 +39,14 @@ def get_correct_answer(word_to_translate, base_language):
     return correct_translation
 
 
+def submit_answer(selenium_driver, answer):
+    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    answer_input.send_keys(answer)
+    submit_button.click()
+
+
 @pytest.mark.django_db
 def test_vocabulary_game_play_form_rendering(live_server, selenium_driver, vocabulary_game, languages, words):
     """
@@ -81,8 +89,6 @@ def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_drive
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
     word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
-    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -91,11 +97,10 @@ def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_drive
         language=target_language
     ).first()
 
-    answer = word.synonyms.all().filter(language=base_language).first()
+    synonym = word.synonyms.all().filter(language=base_language).first()
+    answer = synonym.word_name if is_correct else get_random_string(8)
 
-    answer_input.send_keys(answer.word_name if is_correct else get_random_string(8))
-
-    submit_button.click()
+    submit_answer(selenium_driver, answer)
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
@@ -124,8 +129,6 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
     word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
-    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -134,11 +137,10 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
         language=target_language
     ).first()
 
-    answer = word.synonyms.all().filter(language=base_language).first()
+    synonym = word.synonyms.all().filter(language=base_language).first()
+    answer = synonym.word_name if is_correct else get_random_string(8)
 
-    answer_input.send_keys(answer.word_name if is_correct else get_random_string(8))
-
-    submit_button.click()
+    submit_answer(selenium_driver, answer)
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 

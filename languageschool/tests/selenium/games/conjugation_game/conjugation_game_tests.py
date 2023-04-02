@@ -28,6 +28,24 @@ def get_conjugation(form_input):
     return verb, tense
 
 
+def submit_answer(selenium_driver, conjugation_1, conjugation_2, conjugation_3, conjugation_4, conjugation_5,
+                  conjugation_6):
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_LABEL, 7)
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUT, 7)
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
+
+    form_inputs[1].send_keys(conjugation_1)
+    form_inputs[2].send_keys(conjugation_2)
+    form_inputs[3].send_keys(conjugation_3)
+    form_inputs[4].send_keys(conjugation_4)
+    form_inputs[5].send_keys(conjugation_5)
+    form_inputs[6].send_keys(conjugation_6)
+
+    submit_button.click()
+
+
 @pytest.mark.django_db
 def test_conjugation_game_play_form_rendering(live_server, selenium_driver, conjugation_game, languages, conjugations):
     """
@@ -79,10 +97,6 @@ def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driv
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_LABEL, 7)
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUT, 7)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])
@@ -93,14 +107,15 @@ def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driv
         tense=tense
     ).first()
 
-    form_inputs[1].send_keys(conjugation.conjugation_1 if is_correct else get_random_string(8))
-    form_inputs[2].send_keys(conjugation.conjugation_2 if is_correct else get_random_string(8))
-    form_inputs[3].send_keys(conjugation.conjugation_3 if is_correct else get_random_string(8))
-    form_inputs[4].send_keys(conjugation.conjugation_4 if is_correct else get_random_string(8))
-    form_inputs[5].send_keys(conjugation.conjugation_5 if is_correct else get_random_string(8))
-    form_inputs[6].send_keys(conjugation.conjugation_6 if is_correct else get_random_string(8))
+    conjugation_1 = (conjugation.conjugation_1 if is_correct else get_random_string(8))
+    conjugation_2 = (conjugation.conjugation_2 if is_correct else get_random_string(8))
+    conjugation_3 = (conjugation.conjugation_3 if is_correct else get_random_string(8))
+    conjugation_4 = (conjugation.conjugation_4 if is_correct else get_random_string(8))
+    conjugation_5 = (conjugation.conjugation_5 if is_correct else get_random_string(8))
+    conjugation_6 = (conjugation.conjugation_6 if is_correct else get_random_string(8))
 
-    submit_button.click()
+    submit_answer(selenium_driver, conjugation_1, conjugation_2, conjugation_3, conjugation_4, conjugation_5,
+                  conjugation_6)
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
@@ -137,10 +152,6 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_LABEL, 7)
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUT, 7)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])
@@ -151,14 +162,15 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
         tense=tense
     ).first()
 
-    form_inputs[1].send_keys(conjugation.conjugation_1 if is_correct else get_random_string(8))
-    form_inputs[2].send_keys(conjugation.conjugation_2 if is_correct else get_random_string(8))
-    form_inputs[3].send_keys(conjugation.conjugation_3 if is_correct else get_random_string(8))
-    form_inputs[4].send_keys(conjugation.conjugation_4 if is_correct else get_random_string(8))
-    form_inputs[5].send_keys(conjugation.conjugation_5 if is_correct else get_random_string(8))
-    form_inputs[6].send_keys(conjugation.conjugation_6 if is_correct else get_random_string(8))
+    conjugation_1 = (conjugation.conjugation_1 if is_correct else get_random_string(8))
+    conjugation_2 = (conjugation.conjugation_2 if is_correct else get_random_string(8))
+    conjugation_3 = (conjugation.conjugation_3 if is_correct else get_random_string(8))
+    conjugation_4 = (conjugation.conjugation_4 if is_correct else get_random_string(8))
+    conjugation_5 = (conjugation.conjugation_5 if is_correct else get_random_string(8))
+    conjugation_6 = (conjugation.conjugation_6 if is_correct else get_random_string(8))
 
-    submit_button.click()
+    submit_answer(selenium_driver, conjugation_1, conjugation_2, conjugation_3, conjugation_4, conjugation_5,
+                  conjugation_6)
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 

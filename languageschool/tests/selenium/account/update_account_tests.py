@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
@@ -19,14 +17,41 @@ CSS_SELECTOR_VALIDATION_WARNING = (By.CSS_SELECTOR, "main form .invalid-feedback
 CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
 
 
+def submit_update_account_form(selenium_driver, email, username, password, confirm_password):
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
+    form_inputs[0].clear()
+    form_inputs[0].send_keys(email)
+
+    form_inputs[1].clear()
+    form_inputs[1].send_keys(username)
+
+    form_inputs[2].send_keys(password)
+
+    if confirm_password is None:
+        form_inputs[3].send_keys("")
+    else:
+        form_inputs[3].send_keys(password if confirm_password else get_random_string(5) + password)
+
+    submit_button.click()
+
+
 @pytest.mark.django_db
 def test_update_account_requires_authentication(live_server, selenium_driver):
+    """
+    Tests that when unauthenticated users try to access the update account page, they are redirected to the login page.
+    """
     selenium_driver.get(UPDATE_ACCOUNT_URL)
     assert_is_login_page(selenium_driver)
 
 
 @pytest.mark.django_db
 def test_update_account_form_rendering(live_server, selenium_driver, account):
+    """
+    Tests that the update account form renders correctly, that is, 4 inputs are displayed (email, username, password,
+    and password confirmation) as well as a submit button.
+    """
     user, password = account()[0]
     authenticate_user(selenium_driver, user.username, password)
 
@@ -70,6 +95,9 @@ def test_update_account_form_rendering(live_server, selenium_driver, account):
 )
 def test_update_account_form_validation(live_server, selenium_driver, account, email, username, password,
                                         confirm_password, feedback):
+    """
+    Tests form validation.
+    """
     user, user_password = account()[0]
 
     authenticate_user(selenium_driver, user.username, user_password)
@@ -78,27 +106,11 @@ def test_update_account_form_validation(live_server, selenium_driver, account, e
 
     wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     email = "" if (email is None) else email
     username = "" if (username is None) else username
     password = "" if (password is None) else password
 
-    form_inputs[0].clear()
-    form_inputs[0].send_keys(email)
-
-    form_inputs[1].clear()
-    form_inputs[1].send_keys(username)
-
-    form_inputs[2].send_keys(password)
-
-    if confirm_password is None:
-        form_inputs[3].send_keys("")
-    else:
-        form_inputs[3].send_keys(password if confirm_password else get_random_string(5) + password)
-
-    submit_button.click()
+    submit_update_account_form(selenium_driver, email, username, password, confirm_password)
 
     form_validation_warnings = find_element(selenium_driver, CSS_SELECTOR_VALIDATION_WARNING)
 
@@ -113,7 +125,11 @@ def test_update_account_form_validation(live_server, selenium_driver, account, e
     ]
 )
 @pytest.mark.django_db
-def test_update_account_repeated_credentials(live_server, selenium_driver, account, is_repeated_email, is_repeated_username):
+def test_update_account_repeated_credentials(live_server, selenium_driver, account, is_repeated_email,
+                                             is_repeated_username):
+    """
+    Tests that it is not possible to update the account credentials using other users' username and email.
+    """
     accounts = account(n=2)
 
     user, user_password = accounts[0]
@@ -125,19 +141,11 @@ def test_update_account_repeated_credentials(live_server, selenium_driver, accou
 
     wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     email = another_user.email if is_repeated_email else get_random_email()
     username = another_user.username if is_repeated_username else get_random_username()
     password = get_valid_password()
 
-    form_inputs[0].send_keys(email)
-    form_inputs[1].send_keys(username)
-    form_inputs[2].send_keys(password)
-    form_inputs[3].send_keys(password)
-
-    submit_button.click()
+    submit_update_account_form(selenium_driver, email, username, password, True)
 
     alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
 
@@ -150,6 +158,9 @@ def test_update_account_repeated_credentials(live_server, selenium_driver, accou
 @pytest.mark.parametrize("is_same_email", [True, False])
 @pytest.mark.django_db
 def test_update_account_same_credentials(live_server, selenium_driver, account, is_same_username, is_same_email):
+    """
+    Tests that it is allowed to keep the current username and/or email when updating the account credentials.
+    """
     user, user_password = account()[0]
 
     authenticate_user(selenium_driver, user.username, user_password)
@@ -158,21 +169,11 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
 
     wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
     email = user.email if is_same_email else get_random_email()
     username = user.username if is_same_username else get_random_username()
     password = get_valid_password()
 
-    form_inputs[0].clear()
-    form_inputs[0].send_keys(email)
-    form_inputs[1].clear()
-    form_inputs[1].send_keys(username)
-    form_inputs[2].send_keys(password)
-    form_inputs[3].send_keys(password)
-
-    submit_button.click()
+    submit_update_account_form(selenium_driver, email, username, password, True)
 
     assert_is_profile_page(selenium_driver, username, email)
     assert User.objects.filter(
