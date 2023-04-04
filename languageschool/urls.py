@@ -7,7 +7,7 @@ from languageschool.views import SearchView, MeaningView, WordView, ArticleGameV
     ScoreListViewSet, RankingsViewSet, PublicImageViewSet, RequestResetPasswordView
 
 urlpatterns = [
-    path('api/games', GameViewSet.as_view(), name='games-api'),
+    path('api/games/', GameViewSet.as_view(), name='games-api'),
     path('api/languages/', LanguageViewSet.as_view(), name='languages-api'),
     path('api/categories/', CategoryViewSet.as_view(), name='categories-api'),
     path('api/articles/', ArticleViewSet.as_view(), name='articles-api'),
@@ -16,7 +16,6 @@ urlpatterns = [
     path('api/conjugations/', ConjugationViewSet.as_view(), name='conjugations-api'),
     path('api/user/', UserViewSet.as_view(), name='user-api'),
     path('api/score/', ScoreViewSet.as_view(), name='score-api'),
-    path('api/score/<int:score_id>', ScoreViewSet.as_view(), name='update-score-api'),
     path('api/scores/', ScoreListViewSet.as_view(), name='scores-api'),
     path('api/rankings/', RankingsViewSet.as_view(), name='rankings-api'),
     path('api/public-images/', PublicImageViewSet.as_view(), name='public-images-api'),

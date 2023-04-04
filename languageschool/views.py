@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import views, generics, status
-from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -22,7 +22,6 @@ from languageschool.serializers import WordSerializer, MeaningSerializer, Articl
 from languageschool.utils import send_activation_account_email
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
-
 
 MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE = "You must specify a language and a game"
 
@@ -196,20 +195,8 @@ class ScoreViewSet(views.APIView):
     """
     GET requests: we can optionally specify two URL parameters "language" and "game" in order to search a score of the authenticated
     user for a game in the specified language. If any of these two parameters is not specified, all the scores are returned.
-
-    POST requests: creates a score record with default score of 1. The JSON with the corresponding language and game must be specified
-    as follows:
-
-        {
-            "language": <language_name>,
-            "game": <id>
-        }
-
-    A JSON representation of the created score is returned.
-
-    PUT requests: increments an existing score record with 1. The score record is specified in the request with its game and language.
     """
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):

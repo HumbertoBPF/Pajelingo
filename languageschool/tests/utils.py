@@ -1,4 +1,3 @@
-import base64
 import random
 import string
 import time
@@ -24,11 +23,6 @@ def is_user_authenticated(client, user):
     :return: boolean indicating if the specified user is authenticated
     """
     return auth.get_user(client).username == user.username
-
-
-def get_basic_auth_header(username, password):
-    credentials = base64.b64encode(f'{username}:{password}'.encode('utf-8'))
-    return 'Basic {}'.format(credentials.decode('utf-8'))
 
 
 def get_user_token(api_client, user, password):

@@ -3,7 +3,7 @@ import random
 import pytest
 from rest_framework import status
 
-from languageschool.tests.utils import get_users, get_basic_auth_header, get_random_username, get_valid_password
+from languageschool.tests.utils import get_users, get_user_token
 from languageschool.views import MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
 
 URL = "/api/score/"
@@ -13,26 +13,9 @@ URL = "/api/score/"
 def test_get_score_requires_authentication(api_client, account, games, languages, score):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
-    scores = score(users=users, games=games, languages=languages)
+    score(users=users, games=games, languages=languages)
 
-    score = random.choice(scores)
-
-    response = api_client.get(URL + str(score.id))
-
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-@pytest.mark.django_db
-def test_get_score_wrong_credentials(api_client, account, games, languages, score):
-    accounts = account(n=random.randint(1, 10))
-    users = get_users(accounts)
-    scores = score(users=users, games=games, languages=languages)
-
-    wrong_username = get_random_username()
-    wrong_password = get_valid_password()
-    score = random.choice(scores)
-
-    response = api_client.get(URL+str(score.id), HTTP_AUTHORIZATION=get_basic_auth_header(wrong_username, wrong_password))
+    response = api_client.get(URL)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -52,7 +35,9 @@ def test_list_scores_get_score(api_client, account, games, languages, score):
         "game": game.id
     }
 
-    response = api_client.get(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
+    token = get_user_token(api_client, user, password)
+
+    response = api_client.get(URL, data=data, HTTP_AUTHORIZATION="Token {}".format(token))
 
     data = response.data
     json = data[0]
@@ -90,7 +75,9 @@ def test_list_scores_get_score_missing_parameters(api_client, account, games, la
     if has_game:
         data["game"] = game.id
 
-    response = api_client.get(URL, data=data, HTTP_AUTHORIZATION=get_basic_auth_header(user.username, password))
+    token = get_user_token(api_client, user, password)
+
+    response = api_client.get(URL, data=data, HTTP_AUTHORIZATION="Token {}".format(token))
 
     json = response.data
 
