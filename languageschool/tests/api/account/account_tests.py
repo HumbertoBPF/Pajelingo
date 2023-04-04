@@ -120,6 +120,10 @@ def test_account_post(api_client, email, username, password):
         assert response.data.get("email") == email
         user = User.objects.filter(email=email, username=username, is_active=False).first()
         assert user is not None
+        assert AppUser.objects.filter(
+            user__email=email,
+            user__username=username
+        ).exists()
         assert response.data.get("picture") == get_profile_picture_base64(user)
         # Check that activation email was sent
         assert len(mail.outbox) == 1
