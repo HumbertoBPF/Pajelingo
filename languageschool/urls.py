@@ -4,7 +4,7 @@ from rest_framework.authtoken import views as rest_framework_views
 from languageschool.views import SearchView, MeaningView, WordView, ArticleGameView, VocabularyGameView, \
     ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView, GameViewSet, LanguageViewSet, \
     CategoryViewSet, ArticleViewSet, WordViewSet, MeaningViewSet, ConjugationViewSet, UserViewSet, ScoreViewSet, \
-    ScoreListViewSet, RankingsViewSet, PublicImageViewSet, RequestResetPasswordView
+    ScoreListViewSet, RankingsViewSet, PublicImageViewSet, RequestResetPasswordView, FavoriteWordsView
 
 urlpatterns = [
     path('api/games/', GameViewSet.as_view(), name='games-api'),
@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/categories/', CategoryViewSet.as_view(), name='categories-api'),
     path('api/articles/', ArticleViewSet.as_view(), name='articles-api'),
     path('api/words/', WordViewSet.as_view(), name='words-api'),
+    path('api/words/<pk>/favorite-word', FavoriteWordsView.as_view(), name='favorite-words-api'),
     path('api/meanings/', MeaningViewSet.as_view(), name='meanings-api'),
     path('api/conjugations/', ConjugationViewSet.as_view(), name='conjugations-api'),
     path('api/user/', UserViewSet.as_view(), name='user-api'),

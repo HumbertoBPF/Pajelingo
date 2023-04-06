@@ -152,6 +152,7 @@ class Score(models.Model):
 
 class AppUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    favorite_words = models.ManyToManyField(Word)
     picture = models.ImageField(upload_to=get_upload_to, blank=True)
 
     def __str__(self):

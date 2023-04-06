@@ -18,7 +18,7 @@ from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
     VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer, ResetAccountSerializer, \
     GameSerializer, LanguageSerializer, CategorySerializer, ArticleSerializer, ConjugationSerializer, \
-    RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer
+    RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer, FavoriteWordsSerializer
 from languageschool.utils import send_activation_account_email
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
@@ -251,6 +251,7 @@ class RequestResetPasswordView(views.APIView):
 
 
 class SearchView(generics.ListAPIView):
+    authentication_classes = [TokenAuthentication]
     pagination_class = SearchPaginator
     serializer_class = WordSerializer
 
@@ -274,9 +275,11 @@ class MeaningView(views.APIView):
 
 
 class WordView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+
     def get(self, request, pk):
         word = get_object_or_404(Word, pk=pk)
-        serializer = WordSerializer(word)
+        serializer = WordSerializer(word, context={"request": request})
 
         word_image = None
         if word.image:
@@ -417,3 +420,21 @@ class ResetAccountView(views.APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class FavoriteWordsView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        serializer = FavoriteWordsSerializer(data=request.data, context={
+            "word_id": pk,
+            "user": request.user
+        })
+        serializer.is_valid(raise_exception=True)
+        word = serializer.save()
+
+        serializer = WordSerializer(word, context={
+            "request": request
+        })
+        return Response(data=serializer.data, status=status.HTTP_200_OK)

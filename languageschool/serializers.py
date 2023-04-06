@@ -57,10 +57,24 @@ class WordSerializer(serializers.ModelSerializer):
     language = serializers.ReadOnlyField(source='language.language_name')
     category = serializers.ReadOnlyField(source='category.category_name')
     image = serializers.SerializerMethodField()
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Word
         fields = '__all__'
+
+    def get_is_favorite(self, obj):
+        user = self.context["request"].user
+
+        if user.is_anonymous:
+            return None
+
+        app_user = AppUser.objects.filter(user__id=user.id).first()
+
+        if app_user is None:
+            return None
+
+        return obj in app_user.favorite_words.all()
 
     def get_image(self, obj):
         if obj.image:
@@ -304,3 +318,22 @@ class ResetAccountSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
         return True
+
+
+class FavoriteWordsSerializer(serializers.Serializer):
+    is_favorite = serializers.BooleanField()
+
+    def save(self, **kwargs):
+        word_id = self.context["word_id"]
+        user = self.context["user"]
+        is_favorite = self.validated_data.get("is_favorite")
+
+        word = get_object_or_404(Word, pk=word_id)
+        app_user = get_object_or_404(AppUser, user=user)
+
+        if is_favorite:
+            app_user.favorite_words.add(word)
+        else:
+            app_user.favorite_words.remove(word)
+
+        return get_object_or_404(Word, pk=word_id)

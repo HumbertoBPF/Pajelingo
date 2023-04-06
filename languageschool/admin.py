@@ -63,6 +63,7 @@ class AppUserDisplay(admin.ModelAdmin):
     list_display_links = ('id', 'user')
     search_fields = ('user__username',)
     list_per_page = 10
+    autocomplete_fields = ['favorite_words']
 
 
 class GameDisplay(admin.ModelAdmin):
