@@ -422,6 +422,17 @@ class ResetAccountView(views.APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
 
+class FavoriteWordsListView(generics.ListAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = SearchPaginator
+    serializer_class = WordSerializer
+
+    def get_queryset(self):
+        app_user = get_object_or_404(AppUser, user=self.request.user)
+        return app_user.favorite_words.all()
+
+
 class FavoriteWordsView(views.APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
