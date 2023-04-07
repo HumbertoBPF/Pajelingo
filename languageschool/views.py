@@ -429,8 +429,14 @@ class FavoriteWordsListView(generics.ListAPIView):
     serializer_class = WordSerializer
 
     def get_queryset(self):
+        search_pattern = self.request.query_params.get("search", "")
+        languages = []
+        for language in Language.objects.all():
+            if self.request.query_params.get(language.language_name) == "true":
+                languages.append(language)
         app_user = get_object_or_404(AppUser, user=self.request.user)
-        return app_user.favorite_words.all()
+        return app_user.favorite_words.all()\
+            .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
 
 
 class FavoriteWordsView(views.APIView):
