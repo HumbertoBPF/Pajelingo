@@ -209,3 +209,19 @@ def scroll_to_element(selenium_driver, element):
     """
     selenium_driver.execute_script("arguments[0].scrollIntoView();", element)
     time.sleep(3)
+
+
+def get_alphabetically_ordered_url(base_url, query_params):
+    keys = list(query_params.keys())
+
+    if len(keys) == 0:
+        return base_url
+
+    keys.sort()
+    url = "{}?{}={}".format(base_url, keys[0], query_params.get(keys[0]))
+
+    for i in range(1, len(keys)):
+        key = keys[i]
+        url = "{}&{}={}".format(url, key, query_params.get(key))
+
+    return url

@@ -103,6 +103,7 @@ def test_get_words(api_client, words):
         assert list(words[i].synonyms.all().values_list('id', flat=True)) == returned_words[i].get("synonyms")
         expected_image_url = words[i].image.url if words[i].image else None
         assert expected_image_url == returned_words[i].get("image")
+        assert returned_words[i].get("is_favorite") is None
 
 
 @pytest.mark.django_db
