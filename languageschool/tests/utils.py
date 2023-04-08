@@ -1,6 +1,5 @@
 import random
 import string
-import time
 
 from django.contrib import auth
 from django.db.models import Sum
@@ -198,17 +197,6 @@ def get_ranking(language):
         i += 1
 
     return scores
-
-
-def scroll_to_element(selenium_driver, element):
-    """
-    Scrolls the view to the specified element.
-
-    :param selenium_driver: Selenium Web Driver
-    :param element: element that we want to scroll to
-    """
-    selenium_driver.execute_script("arguments[0].scrollIntoView();", element)
-    time.sleep(3)
 
 
 def get_alphabetically_ordered_url(base_url, query_params):

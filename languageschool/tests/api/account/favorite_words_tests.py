@@ -100,7 +100,7 @@ def test_favorite_words_get_requires_token_authentication(api_client, words):
 @pytest.mark.django_db
 def test_favorite_words_get_without_filters(api_client, account, languages):
     """
-    Checks that the endpoint returns all the words properly paginated when no filter is specified.
+    Checks that the endpoint returns all the favorite words properly paginated when no filter is specified.
     """
     user, password = account()[0]
     app_user = AppUser.objects.filter(user=user).first()
@@ -145,8 +145,8 @@ def test_favorite_words_get_without_filters(api_client, account, languages):
 @pytest.mark.django_db
 def test_favorite_words_get_with_language_filter(api_client, account, languages):
     """
-    Checks that the endpoint returns only the words in the selected language properly paginated when the language
-    filter is specified.
+    Checks that the endpoint returns only the favorite words in the selected language properly paginated when the
+    language filter is specified.
     """
     user, password = account()[0]
     app_user = AppUser.objects.filter(user=user).first()
@@ -192,7 +192,7 @@ def test_favorite_words_get_with_language_filter(api_client, account, languages)
 @pytest.mark.django_db
 def test_favorite_words_get_with_search_filter(api_client, account, languages):
     """
-    Checks that the endpoint returns only the words that contain the specified search pattern when the search
+    Checks that the endpoint returns only the favorite words that contain the specified search pattern when the search
     filter is specified.
     """
     user, password = account()[0]

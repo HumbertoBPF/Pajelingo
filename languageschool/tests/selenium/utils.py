@@ -35,6 +35,17 @@ def wait_text_to_be_present(selenium_driver, locator, text):
     wait.until(ec.text_to_be_present_in_element(locator, text))
 
 
+def scroll_to_element(selenium_driver, element):
+    """
+    Scrolls the view to the specified element.
+
+    :param selenium_driver: Selenium Web Driver
+    :param element: element that we want to scroll to
+    """
+    selenium_driver.execute_script("arguments[0].scrollIntoView();", element)
+    time.sleep(3)
+
+
 def wait_number_of_elements_to_be(selenium_driver, locator, number):
     """
     Waits until the number of elements matching the specified locator to be equal to the number specified.
