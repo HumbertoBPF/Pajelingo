@@ -191,18 +191,24 @@ def assert_is_login_page(selenium_driver):
 def assert_is_profile_page(selenium_driver, username, email):
     css_selector_credentials = (By.CSS_SELECTOR, "main section .col-lg-9 p")
     css_selector_update_picture_button = (By.CSS_SELECTOR, "main .col-lg-3 .btn-info")
-    css_selector_edit_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info")
+    css_selector_info_buttons = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info")
+    css_selector_edit_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info .bi-person-lines-fill")
     css_selector_delete_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-danger")
+    css_selector_favorite_words_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info .bi-heart-fill")
 
     wait_number_of_elements_to_be(selenium_driver, css_selector_credentials, 2)
     credentials = selenium_driver.find_elements(css_selector_credentials[0], css_selector_credentials[1])
     update_picture_button = find_element(selenium_driver, css_selector_update_picture_button)
-    edit_account_button = find_element(selenium_driver, css_selector_edit_account_button)
+    find_element(selenium_driver, css_selector_edit_account_button)
     delete_account_button = find_element(selenium_driver, css_selector_delete_account_button)
+    find_element(selenium_driver, css_selector_favorite_words_button)
+    info_buttons = selenium_driver.find_elements(css_selector_info_buttons[0], css_selector_info_buttons[1])
 
     assert len(credentials) == 2
+    assert len(info_buttons) == 2
     assert credentials[0].text == "Username: {}".format(username)
     assert credentials[1].text == "Email: {}".format(email)
     assert update_picture_button.text == "Update picture"
-    assert edit_account_button.text == "Edit account"
+    assert info_buttons[0].text == "Edit account"
     assert delete_account_button.text == "Delete account"
+    assert info_buttons[1].text == "Favorite words"
