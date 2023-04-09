@@ -23,6 +23,7 @@ CSS_SELECTOR_DIALOG_DANGER_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer
 CSS_SELECTOR_DIALOG_SUCCESS_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-success")
 CSS_SELECTOR_SELECT_LANGUAGE = (By.CSS_SELECTOR, "main section .form-select")
 CSS_SELECTOR_SCORES_TABLE = (By.CSS_SELECTOR, "main section .table")
+CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
 
 
 def assert_is_update_account_page(selenium_driver):
@@ -201,6 +202,14 @@ def test_profile_update_profile_picture_error_file_format(live_server, selenium_
 
     warning_file_not_image = find_element(selenium_driver, CSS_SELECTOR_DIALOG_PROFILE_PICTURE)
     assert warning_file_not_image.text == "The selected file is not an image"
+
+    profile_picture_dialog_success_button.click()
+
+    alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
+
+    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
+    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
+           "An error occurred when processing the request. Please try again."
 
 
 @pytest.mark.django_db
