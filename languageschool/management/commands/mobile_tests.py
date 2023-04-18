@@ -4,7 +4,7 @@ import random
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 
-from languageschool.models import Game, Language, Score
+from languageschool.models import Game, Language, Score, AppUser, Word
 
 
 class SetUpAction(argparse.Action):
@@ -23,9 +23,22 @@ class SetUpAction(argparse.Action):
                        self.create_test_user("test-android-delete@test.com", "test-android-delete", "str0ng-p4ssw0rd")]
 
         test_user = User.objects.get(pk=list_of_ids[0])
+        test_app_user = AppUser.objects.get(user=test_user)
 
-        for game in Game.objects.all():
-            for language in Language.objects.all():
+        games = Game.objects.all()
+        languages = Language.objects.all()
+        words = Word.objects.all()
+
+        for i in range(10):
+            for language in languages:
+                words_in_language = words.filter(language=language)
+                random_word = random.choice(words_in_language)
+
+                test_app_user.favorite_words.add(random_word)
+                test_app_user.save()
+
+        for game in games:
+            for language in languages:
                 Score.objects.create(user=test_user, language=language, game=game, score=random.randint(1, 1000))
 
         print("Users created for mobile tests:")

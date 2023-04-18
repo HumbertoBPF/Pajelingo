@@ -56,6 +56,7 @@ class ArticleViewSet(generics.ListAPIView):
 
 class WordViewSet(generics.ListAPIView):
     serializer_class = WordSerializer
+    authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         return Word.objects.all()
