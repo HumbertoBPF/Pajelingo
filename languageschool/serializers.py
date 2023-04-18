@@ -1,5 +1,3 @@
-import base64
-
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
@@ -8,14 +6,19 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
-from languageschool.utils import send_reset_account_email
+from languageschool.utils import send_reset_account_email, get_base_64_encoded_image
 from pajelingo.validators.validators import validate_email, validate_username
 
 
 class GameSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Game
         fields = '__all__'
+
+    def get_image(self, obj):
+        return get_base_64_encoded_image(obj.image)
 
 
 class LanguageSerializer(serializers.ModelSerializer):
@@ -27,12 +30,7 @@ class LanguageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_flag_image(self, obj):
-        if obj.flag_image:
-            try:
-                img = obj.flag_image.open("rb")
-                return base64.b64encode(img.read())
-            except FileNotFoundError as e:
-                print(e)
+        return get_base_64_encoded_image(obj.flag_image)
 
     def get_flag_image_uri(self, obj):
         if obj.flag_image:

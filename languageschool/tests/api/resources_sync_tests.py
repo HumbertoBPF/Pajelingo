@@ -18,9 +18,16 @@ def test_get_games(api_client, games):
     assert len(returned_games) == len(games)
 
     for i in range(len(games)):
+        assert returned_games[i].get("id") is not None
+        assert returned_games[i].get("game_name") is not None
+        assert returned_games[i].get("android_game_activity") is not None
+        assert returned_games[i].get("instructions") is not None
+        assert returned_games[i].get("link") is not None
         assert games[i].id == returned_games[i].get("id")
         assert games[i].game_name == returned_games[i].get("game_name")
         assert games[i].android_game_activity == returned_games[i].get("android_game_activity")
+        assert games[i].instructions == returned_games[i].get("instructions")
+        assert games[i].link == returned_games[i].get("link")
 
 
 @pytest.mark.django_db

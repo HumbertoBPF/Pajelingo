@@ -92,19 +92,27 @@ def conjugations(verbs):
     return Conjugation.objects.all()
 
 
+def game_factory(pk, game_name, link):
+    return Game.objects.create(id=pk,
+                               game_name=game_name,
+                               android_game_activity=get_random_string(16),
+                               instructions=get_random_string(64),
+                               link=link)
+
+
 @pytest.fixture
 def vocabulary_game():
-    return Game.objects.create(id=1, game_name="Vocabulary Game")
+    return game_factory(1, "Vocabulary Game", "/vocabulary-game/")
 
 
 @pytest.fixture
 def article_game():
-    return Game.objects.create(id=2, game_name="Article Game")
+    return game_factory(2, "Article Game", "/article-game/")
 
 
 @pytest.fixture
 def conjugation_game():
-    return Game.objects.create(id=3, game_name="Conjugation Game")
+    return game_factory(3, "Conjugation Game", "/conjugation-game/")
 
 
 @pytest.fixture

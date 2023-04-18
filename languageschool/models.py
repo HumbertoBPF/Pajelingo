@@ -9,8 +9,11 @@ def get_upload_to(instance, filename):
 
 
 class Game(models.Model):
-    game_name = models.CharField(max_length=30, unique=True, null=True, blank=True)
-    android_game_activity = models.CharField(max_length=100, null=True, blank=True)
+    game_name = models.CharField(max_length=30, unique=True)
+    android_game_activity = models.CharField(max_length=100)
+    image = models.ImageField(upload_to=get_upload_to, blank=True)
+    link = models.CharField(max_length=100)
+    instructions = models.TextField(blank=True)
 
     def __str__(self):
         return str(self.game_name)

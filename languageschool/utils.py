@@ -1,3 +1,5 @@
+import base64
+
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
@@ -28,3 +30,12 @@ def send_reset_account_email(user):
     url = "/reset-account/{}/{}".format(uid, token)
 
     send_mail(RESET_SUBJECT, RESET_MESSAGE.format(user.username, FRONT_END_URL, url), EMAIL_FROM, [user.email])
+
+
+def get_base_64_encoded_image(image_file):
+    if image_file:
+        try:
+            img = image_file.open("rb")
+            return base64.b64encode(img.read())
+        except FileNotFoundError as e:
+            print(e)
