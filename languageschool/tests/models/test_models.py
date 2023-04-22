@@ -4,7 +4,7 @@ import pytest
 from django.db import IntegrityError
 from django.utils.crypto import get_random_string
 
-from languageschool.models import Article, Word, Conjugation, Score
+from languageschool.models import Article, Word, Conjugation, Score, Game
 
 
 @pytest.mark.django_db
@@ -39,10 +39,10 @@ def test_unique_fields_conjugation(words):
 
 
 @pytest.mark.django_db
-def test_unique_fields_score(account, languages, games):
+def test_unique_fields_score(account, languages):
     user, _ = account()[0]
     language = random.choice(languages)
-    game = random.choice(games)
+    game = random.choice(Game.objects.all())
     Score.objects.create(user=user, language=language, game=game, score=random.randint(10, 100))
     with pytest.raises(IntegrityError) as e:
         Score.objects.create(user=user, language=language, game=game, score=random.randint(10, 100))

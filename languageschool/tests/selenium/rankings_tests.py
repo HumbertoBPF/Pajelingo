@@ -149,7 +149,7 @@ def go_to_next_page(selenium_driver, current_page, number_pages):
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
 @pytest.mark.django_db
-def test_rankings_two_pages(live_server, selenium_driver, account, score, games, languages, is_authenticated):
+def test_rankings_two_pages(live_server, selenium_driver, account, score, languages, is_authenticated):
     accounts = account(n=random.randint(11, 20))
     auth_user = None
 
@@ -158,7 +158,7 @@ def test_rankings_two_pages(live_server, selenium_driver, account, score, games,
         authenticate_user(selenium_driver, auth_user.username, password)
 
     users = create_users(accounts)
-    score(users, games, languages)
+    score(users, languages)
 
     number_pages = math.ceil(len(users)/10)
     random_language = random.choice(languages)
@@ -199,7 +199,7 @@ def test_rankings_two_pages(live_server, selenium_driver, account, score, games,
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
 @pytest.mark.django_db
-def test_rankings_three_pages(live_server, selenium_driver, account, score, games, languages, is_authenticated):
+def test_rankings_three_pages(live_server, selenium_driver, account, score, languages, is_authenticated):
     accounts = account(n=random.randint(21, 30))
     auth_user = None
 
@@ -208,7 +208,7 @@ def test_rankings_three_pages(live_server, selenium_driver, account, score, game
         authenticate_user(selenium_driver, auth_user.username, password)
 
     users = create_users(accounts)
-    score(users, games, languages)
+    score(users, languages)
 
     number_pages = math.ceil(len(users) / 10)
     random_language = random.choice(languages)
@@ -258,8 +258,7 @@ def test_rankings_three_pages(live_server, selenium_driver, account, score, game
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
 @pytest.mark.django_db
-def test_rankings_more_than_three_pages(live_server, selenium_driver, account, score, games, languages,
-                                        is_authenticated):
+def test_rankings_more_than_three_pages(live_server, selenium_driver, account, score, languages, is_authenticated):
     accounts = account(n=random.randint(31, 50))
     auth_user = None
 
@@ -268,7 +267,7 @@ def test_rankings_more_than_three_pages(live_server, selenium_driver, account, s
         authenticate_user(selenium_driver, auth_user.username, password)
 
     users = create_users(accounts)
-    score(users, games, languages)
+    score(users, languages)
 
     number_pages = math.ceil(len(users) / 10)
     random_language = random.choice(languages)

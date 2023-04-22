@@ -20,7 +20,7 @@ def get_correct_answer(word, base_language):
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup_no_language(api_client, vocabulary_game):
+def test_vocabulary_game_setup_no_language(api_client):
     """
     Tests that a 404 Not Found is raised when no language is specified.
     """
@@ -29,7 +29,7 @@ def test_vocabulary_game_setup_no_language(api_client, vocabulary_game):
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup_invalid_language(api_client, vocabulary_game):
+def test_vocabulary_game_setup_invalid_language(api_client):
     """
     Tests that a 404 Not Found is raised when an invalid language is specified.
     """
@@ -43,7 +43,7 @@ def test_vocabulary_game_setup_invalid_language(api_client, vocabulary_game):
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup(api_client, vocabulary_game, words, languages):
+def test_vocabulary_game_setup(api_client, words, languages):
     """
     Tests that 200 Ok along with a random word id and name are returned when a valid language is specified.
     """
@@ -68,7 +68,7 @@ def test_vocabulary_game_setup(api_client, vocabulary_game, words, languages):
 @pytest.mark.parametrize("has_base_language", [True, False])
 @pytest.mark.parametrize("has_answer", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_play_required_parameters(api_client, vocabulary_game, has_id, has_base_language, has_answer):
+def test_vocabulary_play_required_parameters(api_client, has_id, has_base_language, has_answer):
     """
     Checks that POST request to /api/vocabulary-game raise a 400 Bad Request when no word id, base language and answer
     parameters in the request body.
@@ -93,7 +93,7 @@ def test_vocabulary_play_required_parameters(api_client, vocabulary_game, has_id
 
 
 @pytest.mark.django_db
-def test_vocabulary_play_invalid_word_id(api_client, vocabulary_game):
+def test_vocabulary_play_invalid_word_id(api_client):
     """
     Checks that /api/vocabulary-game raises a 404 Not Found when an invalid word id is specified.
     """
@@ -107,7 +107,7 @@ def test_vocabulary_play_invalid_word_id(api_client, vocabulary_game):
 
 
 @pytest.mark.django_db
-def test_vocabulary_play_base_and_target_language_are_the_same(api_client, vocabulary_game, words):
+def test_vocabulary_play_base_and_target_language_are_the_same(api_client, words):
     """
     Checks that /api/vocabulary-game raises a 400 Bad Request when the base language (language of the word whose id
     was specified) and the target languages are the same.
@@ -125,7 +125,7 @@ def test_vocabulary_play_base_and_target_language_are_the_same(api_client, vocab
 
 
 @pytest.mark.django_db
-def test_vocabulary_play_invalid_base_language(api_client, vocabulary_game, words):
+def test_vocabulary_play_invalid_base_language(api_client, words):
     """
     Checks that /api/vocabulary-game raises a 404 Not Found when the base language parameter does not match any
     language.
@@ -143,7 +143,7 @@ def test_vocabulary_play_invalid_base_language(api_client, vocabulary_game, word
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_play_not_authenticated_user(api_client, vocabulary_game, words, languages, is_correct):
+def test_vocabulary_play_not_authenticated_user(api_client, words, languages, is_correct):
     """
     Checks that POST requests to /api/vocabulary-play return 200 Ok along with the result, the correct answer, and the
     None as current score for non-authenticated users.
@@ -174,7 +174,7 @@ def test_vocabulary_play_not_authenticated_user(api_client, vocabulary_game, wor
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_play_authenticated_user(api_client, account, vocabulary_game, words, languages, is_correct):
+def test_vocabulary_play_authenticated_user(api_client, account, words, languages, is_correct):
     """
     Checks that POST requests to /api/vocabulary-play return 200 Ok along with the result, the correct answer, and the
     current score for authenticated users.
@@ -207,7 +207,7 @@ def test_vocabulary_play_authenticated_user(api_client, account, vocabulary_game
         assert Score.objects.filter(
             user__username=user.username,
             language=random_word.language,
-            game=vocabulary_game,
+            game__id=1,
             score=1
         ).exists()
         assert response.data.get("score") == 1

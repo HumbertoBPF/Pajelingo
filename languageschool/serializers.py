@@ -12,6 +12,7 @@ from pajelingo.validators.validators import validate_email, validate_username
 
 class GameSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    image_uri = serializers.SerializerMethodField()
 
     class Meta:
         model = Game
@@ -19,6 +20,10 @@ class GameSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         return get_base_64_encoded_image(obj.image)
+
+    def get_image_uri(self, obj):
+        if obj.image:
+            return obj.image.url
 
 
 class LanguageSerializer(serializers.ModelSerializer):

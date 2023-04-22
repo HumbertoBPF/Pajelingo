@@ -13,7 +13,7 @@ BASE_URL = reverse("article-game-api")
 
 
 @pytest.mark.django_db
-def test_article_game_setup_with_no_language(api_client, games, languages, words):
+def test_article_game_setup_with_no_language(api_client, languages, words):
     """
     Tests that a 404 Not Found is raised when no language name is provided.
     """
@@ -22,7 +22,7 @@ def test_article_game_setup_with_no_language(api_client, games, languages, words
 
 
 @pytest.mark.django_db
-def test_article_game_setup_with_invalid_language(api_client, games, languages, words):
+def test_article_game_setup_with_invalid_language(api_client, languages, words):
     """
     Tests that a 404 Not Found is raised when an invalid language name is provided.
     """
@@ -36,7 +36,7 @@ def test_article_game_setup_with_invalid_language(api_client, games, languages, 
 
 
 @pytest.mark.django_db
-def test_article_game_setup_with_language_set_to_english(api_client, games, languages, words):
+def test_article_game_setup_with_language_set_to_english(api_client, languages, words):
     """
     Tests that a 400 Bad Request is raised when the language specified in the URL is English.
     """
@@ -50,7 +50,7 @@ def test_article_game_setup_with_language_set_to_english(api_client, games, lang
 
 
 @pytest.mark.django_db
-def test_article_game_setup(api_client, games, languages, words):
+def test_article_game_setup(api_client, languages, words):
     """
     Tests that 200 Ok along with a random word is returned when a valid language is specified.
     """
@@ -77,7 +77,7 @@ def test_article_game_setup(api_client, games, languages, words):
     (False, False)
 ])
 @pytest.mark.django_db
-def test_article_game_play_required_parameters(api_client, games, has_word_id, has_answer):
+def test_article_game_play_required_parameters(api_client, has_word_id, has_answer):
     """
     Tests that POST requests to /api/article-game require word_id and answer as parameters.
     """
@@ -95,7 +95,7 @@ def test_article_game_play_required_parameters(api_client, games, has_word_id, h
 
 
 @pytest.mark.django_db
-def test_article_game_play_not_found_word(api_client, games):
+def test_article_game_play_not_found_word(api_client):
     """
     Tests that a 404 Not Found is raised when the word id specified in the request body does not exist for POST
     requests to the endpoint /api/article-game.
@@ -110,7 +110,7 @@ def test_article_game_play_not_found_word(api_client, games):
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_article_game_play_not_authenticated_user(api_client, games, words, is_correct):
+def test_article_game_play_not_authenticated_user(api_client, words, is_correct):
     """
     Tests that a 200 Ok is returned along with the result, the correct answer, and None as the current score by
     /api/article-game for unauthenticated requests.
@@ -130,7 +130,7 @@ def test_article_game_play_not_authenticated_user(api_client, games, words, is_c
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_article_game_play_authenticated_user(api_client, article_game, account, words, is_correct):
+def test_article_game_play_authenticated_user(api_client, account, words, is_correct):
     """
     Tests that a 200 Ok along with the result, the correct answer, and the current score is returned by
     /api/article-game for authenticated requests.
@@ -153,7 +153,7 @@ def test_article_game_play_authenticated_user(api_client, article_game, account,
         assert Score.objects.filter(
             user__username=user.username,
             language=random_word.language,
-            game=article_game,
+            game__id=2,
             score=1
         ).exists()
         assert response.data.get("score") == 1

@@ -47,7 +47,7 @@ def submit_answer(selenium_driver, conjugation_1, conjugation_2, conjugation_3, 
 
 
 @pytest.mark.django_db
-def test_conjugation_game_play_form_rendering(live_server, selenium_driver, conjugation_game, languages, conjugations):
+def test_conjugation_game_play_form_rendering(live_server, selenium_driver, languages, conjugations):
     """
     Tests the rendering of the form that the player sees during the gameplay. The form must contain an input with the
     verb and the verbal tense. Besides, there must be 6 inputs where the user is going to type the conjugations and a
@@ -86,8 +86,7 @@ def test_conjugation_game_play_form_rendering(live_server, selenium_driver, conj
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driver, conjugation_game, languages,
-                                                      conjugations, is_correct):
+def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driver, languages, conjugations, is_correct):
     """
     Tests the feedback provided for unauthenticated users when they play the conjugation game in case of a correct and
     of an incorrect answer.
@@ -97,6 +96,7 @@ def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driv
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUT, 7)
     form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])
@@ -138,7 +138,7 @@ def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driv
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, account, conjugation_game, languages,
+def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, account, languages,
                                                   conjugations, is_correct):
     """
     Tests the feedback provided for authenticated users when they play the conjugation game in case of a correct and
@@ -152,6 +152,7 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
 
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUT, 7)
     form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
 
     verb, tense = get_conjugation(form_inputs[0])

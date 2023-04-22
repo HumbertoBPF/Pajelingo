@@ -48,7 +48,7 @@ def submit_answer(selenium_driver, answer):
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_play_form_rendering(live_server, selenium_driver, vocabulary_game, languages, words):
+def test_vocabulary_game_play_form_rendering(live_server, selenium_driver, languages, words):
     """
     Tests the rendering of the form that the player sees during the gameplay. The form must contain a disabled input
     with the word to be translated, an input to receive the user's answer, and a submit button.
@@ -75,8 +75,7 @@ def test_vocabulary_game_play_form_rendering(live_server, selenium_driver, vocab
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_driver, vocabulary_game, languages, words,
-                                                     is_correct):
+def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_driver, languages, words, is_correct):
     """
     Tests the feedback provided for unauthenticated users when they play the vocabulary game in case of a correct and
     of an incorrect answer.
@@ -112,8 +111,7 @@ def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_drive
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, account, vocabulary_game, languages,
-                                                 words, is_correct):
+def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, account, languages, words, is_correct):
     """
     Tests the feedback provided for authenticated users when they play the vocabulary game in case of a correct and of
     an incorrect answer.

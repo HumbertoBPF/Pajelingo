@@ -50,7 +50,7 @@ def test_get_rankings_invalid_user_param(api_client, languages):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("is_authenticated", [True, False])
-def test_get_rankings_check_response_params(api_client, account, score, games, languages, is_authenticated):
+def test_get_rankings_check_response_params(api_client, account, score, languages, is_authenticated):
     """
     Checks the response of the ranking API.
     """
@@ -62,7 +62,7 @@ def test_get_rankings_check_response_params(api_client, account, score, games, l
         user, password = account
         users.append(user)
 
-    score(users=users, games=games, languages=languages)
+    score(users=users, languages=languages)
 
     random_language = random.choice(languages)
 
@@ -86,7 +86,7 @@ def test_get_rankings_check_response_params(api_client, account, score, games, l
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("is_authenticated", [True, False])
-def test_get_rankings_scores(api_client, account, score, games, languages, is_authenticated):
+def test_get_rankings_scores(api_client, account, score, languages, is_authenticated):
     """
     Checks that all the scores are returned in the correct order and with the expected content.
     """
@@ -99,7 +99,7 @@ def test_get_rankings_scores(api_client, account, score, games, languages, is_au
         user, password = account
         users.append(user)
 
-    score(users=users, games=games, languages=languages)
+    score(users=users, languages=languages)
 
     random_language = random.choice(languages)
 
@@ -158,7 +158,7 @@ def test_get_rankings_scores(api_client, account, score, games, languages, is_au
 
 
 @pytest.mark.django_db
-def test_get_rankings_pagination(api_client, account, score, games, languages):
+def test_get_rankings_pagination(api_client, account, score, languages):
     """
     Checks the response of all pages requested (previous and next links, and the count)
     """
@@ -170,7 +170,7 @@ def test_get_rankings_pagination(api_client, account, score, games, languages):
         user, password = account
         users.append(user)
 
-    score(users=users, games=games, languages=languages)
+    score(users=users, languages=languages)
 
     random_language = random.choice(languages)
     expected_scores = get_ranking(random_language)

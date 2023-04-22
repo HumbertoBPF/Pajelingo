@@ -4,7 +4,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word
-from languageschool.tests.selenium.utils import find_element
+from languageschool.tests.selenium.utils import find_element, wait_number_of_elements_to_be
 from pajelingo.settings import FRONT_END_URL
 
 VOCABULARY_GAME_SETUP_URL = FRONT_END_URL + "/vocabulary-game/setup"
@@ -46,6 +46,7 @@ def test_vocabulary_game_setup_form_rendering(live_server, selenium_driver, lang
 
     css_selector_select_options = (By.ID, "{}Item".format(languages[0].language_name))
 
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_SELECTS, 2)
     form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
     submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
@@ -84,6 +85,7 @@ def test_vocabulary_game_setup_base_and_target_languages_are_required(live_serve
     css_selector_target_language_option = (By.ID, "{}Item".format(random_target_language.language_name))
 
     find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+
     form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
     # Selecting the target language
     if choose_target_language:

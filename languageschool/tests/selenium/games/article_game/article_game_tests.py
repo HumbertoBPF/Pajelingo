@@ -22,7 +22,7 @@ def submit_answer(selenium_driver, answer):
 
 
 @pytest.mark.django_db
-def test_article_game_play_form_rendering(live_server, selenium_driver, article_game, languages, words):
+def test_article_game_play_form_rendering(live_server, selenium_driver, languages, words):
     """
     Tests the presence of the HTML elements concerning the page when users can play the article game.
     """
@@ -46,8 +46,7 @@ def test_article_game_play_form_rendering(live_server, selenium_driver, article_
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_article_game_play_non_authenticated_user(live_server, selenium_driver,
-                                                  article_game, languages, words, is_correct):
+def test_article_game_play_non_authenticated_user(live_server, selenium_driver, languages, words, is_correct):
     """
     Tests the feedback provided for unauthenticated users when they play the article game in case of a correct and of a
     wrong answer.
@@ -79,8 +78,7 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver,
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_article_game_play_authenticated_user(live_server, selenium_driver,
-                                              article_game, account, languages, words, is_correct):
+def test_article_game_play_authenticated_user(live_server, selenium_driver, account, languages, words, is_correct):
     """
     Tests the feedback provided for authenticated users when they play the article game in case of a correct and of a
     wrong answer.

@@ -18,6 +18,7 @@ from pajelingo.tokens import account_activation_token
         (False, False)
     ]
 )
+@pytest.mark.django_db
 def test_activate_account_not_found_url(api_client, has_uuid, has_token):
     """
     Tests that /api/activate/<uidb64>/<token> raises a 404 Not Found if the URL is not built properly.

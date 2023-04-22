@@ -97,17 +97,16 @@ def assert_menu(selenium_driver, user=None):
     css_selector_sign_in_button = (By.CSS_SELECTOR, "header .btn-primary")
     css_selector_username = (By.CSS_SELECTOR, "header .btn-account-options span")
 
-    find_element(selenium_driver, css_selector_menu_items)
+    wait_number_of_elements_to_be(selenium_driver, css_selector_menu_items, 3)
     menu_items = selenium_driver.find_elements(css_selector_menu_items[0], css_selector_menu_items[1])
 
-    assert len(menu_items) == 3
     assert menu_items[0].text == "Search tool"
     assert menu_items[1].text == "Games"
     assert menu_items[2].text == "About us"
 
     menu_items[1].click()
 
-    find_element(selenium_driver, css_selector_games_dropdown)
+    wait_number_of_elements_to_be(selenium_driver, css_selector_games_dropdown, 4)
     dropdown_items = selenium_driver.find_elements(css_selector_games_dropdown[0], css_selector_games_dropdown[1])
 
     assert len(dropdown_items) == 4

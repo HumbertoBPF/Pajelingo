@@ -3,6 +3,7 @@ import random
 import pytest
 from rest_framework import status
 
+from languageschool.models import Game
 from languageschool.tests.utils import get_users, get_user_token
 from languageschool.views import MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
 
@@ -10,10 +11,10 @@ URL = "/api/score/"
 
 
 @pytest.mark.django_db
-def test_get_score_requires_authentication(api_client, account, games, languages, score):
+def test_get_score_requires_authentication(api_client, account, languages, score):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
-    score(users=users, games=games, languages=languages)
+    score(users=users, languages=languages)
 
     response = api_client.get(URL)
 
@@ -21,14 +22,15 @@ def test_get_score_requires_authentication(api_client, account, games, languages
 
 
 @pytest.mark.django_db
-def test_list_scores_get_score(api_client, account, games, languages, score):
+def test_list_scores_get_score(api_client, account, languages, score):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
-    score(users=users, games=games, languages=languages)
+    score(users=users, languages=languages)
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
-    game = random.choice(games)
+    print(Game.objects.all())
+    game = random.choice(Game.objects.all())
 
     data = {
         "language": language.language_name,
@@ -58,14 +60,14 @@ def test_list_scores_get_score(api_client, account, games, languages, score):
         (False, True)
     ]
 )
-def test_list_scores_get_score_missing_parameters(api_client, account, games, languages, score, has_language, has_game):
+def test_list_scores_get_score_missing_parameters(api_client, account, languages, score, has_language, has_game):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
-    score(users=users, games=games, languages=languages)
+    score(users=users, languages=languages)
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
-    game = random.choice(games)
+    game = random.choice(Game.objects.all())
 
     data = {}
 

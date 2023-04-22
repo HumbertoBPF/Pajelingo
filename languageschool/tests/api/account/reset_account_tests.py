@@ -96,6 +96,7 @@ def test_request_reset_account(api_client, account):
         (False, False)
     ]
 )
+@pytest.mark.django_db
 def test_reset_account_not_found_url(api_client, has_uuid, has_token):
     """
     Tests that /api/reset-account returns 404 Not Found when some path parameter is missing.

@@ -25,7 +25,7 @@ def get_correct_answer(conjugation):
 
 
 @pytest.mark.django_db
-def test_conjugation_game_setup_no_language(api_client, conjugation_game):
+def test_conjugation_game_setup_no_language(api_client):
     """
     Checks that /api/conjugation-game raises a 404 Not Found when no language is specified.
     """
@@ -34,7 +34,7 @@ def test_conjugation_game_setup_no_language(api_client, conjugation_game):
 
 
 @pytest.mark.django_db
-def test_conjugation_game_setup_invalid_language(api_client, conjugation_game):
+def test_conjugation_game_setup_invalid_language(api_client):
     """
     Checks that /api/conjugation-game raises a 404 Not Found when a invalid language is specified.
     """
@@ -49,7 +49,7 @@ def test_conjugation_game_setup_invalid_language(api_client, conjugation_game):
 
 
 @pytest.mark.django_db
-def test_conjugation_game_setup(api_client, conjugation_game, verbs, languages, conjugations):
+def test_conjugation_game_setup(api_client, verbs, languages, conjugations):
     """
     Checks that a 200 Ok is returned by /api/conjugation-game along with a random verb and one of its conjugations
     when a valid language is specified
@@ -82,7 +82,7 @@ def test_conjugation_game_setup(api_client, conjugation_game, verbs, languages, 
 @pytest.mark.parametrize("has_conjugation_5", [True, False])
 @pytest.mark.parametrize("has_conjugation_6", [True, False])
 @pytest.mark.django_db
-def test_conjugation_game_play_required_parameters(api_client, conjugation_game, has_id, has_tense, has_conjugation_1,
+def test_conjugation_game_play_required_parameters(api_client, has_id, has_tense, has_conjugation_1,
                                                    has_conjugation_2, has_conjugation_3, has_conjugation_4,
                                                    has_conjugation_5, has_conjugation_6):
     """
@@ -124,7 +124,7 @@ def test_conjugation_game_play_required_parameters(api_client, conjugation_game,
 
 
 @pytest.mark.django_db
-def test_conjugation_game_play_invalid_verb(api_client, conjugation_game):
+def test_conjugation_game_play_invalid_verb(api_client):
     """
     Checks that /api/conjugation-game raises a 404 Not Found when the specified word id does not match any verb.
     """
@@ -142,7 +142,7 @@ def test_conjugation_game_play_invalid_verb(api_client, conjugation_game):
 
 
 @pytest.mark.django_db
-def test_conjugation_game_play_invalid_conjugation(api_client, conjugation_game, conjugations):
+def test_conjugation_game_play_invalid_conjugation(api_client, conjugations):
     """
     Checks that /api/conjugation-game raises a 404 Not Found when the specified verb and tense do not match any
     conjugation.
@@ -169,7 +169,7 @@ def test_conjugation_game_play_invalid_conjugation(api_client, conjugation_game,
 @pytest.mark.parametrize("has_correct_conjugation_5", [True, False])
 @pytest.mark.parametrize("has_correct_conjugation_6", [True, False])
 @pytest.mark.django_db
-def test_conjugation_game_play_non_authenticated_user(api_client, conjugation_game, verbs, conjugations, has_correct_conjugation_1,
+def test_conjugation_game_play_non_authenticated_user(api_client, verbs, conjugations, has_correct_conjugation_1,
                                                       has_correct_conjugation_2, has_correct_conjugation_3,
                                                       has_correct_conjugation_4, has_correct_conjugation_5,
                                                       has_correct_conjugation_6):
@@ -207,7 +207,7 @@ def test_conjugation_game_play_non_authenticated_user(api_client, conjugation_ga
 @pytest.mark.parametrize("has_correct_conjugation_5", [True, False])
 @pytest.mark.parametrize("has_correct_conjugation_6", [True, False])
 @pytest.mark.django_db
-def test_conjugation_game_play_authenticated_user(api_client, account, conjugation_game, verbs, conjugations,
+def test_conjugation_game_play_authenticated_user(api_client, account, verbs, conjugations,
                                                   has_correct_conjugation_1, has_correct_conjugation_2,
                                                   has_correct_conjugation_3, has_correct_conjugation_4,
                                                   has_correct_conjugation_5, has_correct_conjugation_6):
@@ -244,7 +244,7 @@ def test_conjugation_game_play_authenticated_user(api_client, account, conjugati
         assert Score.objects.filter(
             user__username=user.username,
             language=random_conjugation.word.language,
-            game=conjugation_game,
+            game__id=3,
             score=1
         ).exists()
         assert response.data.get("score") == 1

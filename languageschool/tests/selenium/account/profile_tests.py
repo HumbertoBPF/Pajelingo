@@ -213,13 +213,13 @@ def test_profile_update_profile_picture_error_file_format(live_server, selenium_
 
 
 @pytest.mark.django_db
-def test_profile_user_scores(live_server, selenium_driver, account, languages, score, games):
+def test_profile_user_scores(live_server, selenium_driver, account, languages, score):
     """
     Tests that the expected user scores are displayed on the profile page.
     """
     user, password = account()[0]
     random_language = random.choice(languages)
-    scores = score([user], games, languages)
+    scores = score([user], languages)
 
     authenticate_user(selenium_driver, user.username, password)
 

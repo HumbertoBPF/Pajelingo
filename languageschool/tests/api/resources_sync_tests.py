@@ -6,28 +6,32 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
+from languageschool.models import Game
+
 
 @pytest.mark.django_db
-def test_get_games(api_client, games):
+def test_get_games(api_client):
     url = reverse("games-api")
     response = api_client.get(url)
 
     returned_games = response.data
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(returned_games) == len(games)
+    assert len(returned_games) == Game.objects.count()
 
-    for i in range(len(games)):
-        assert returned_games[i].get("id") is not None
-        assert returned_games[i].get("game_name") is not None
-        assert returned_games[i].get("android_game_activity") is not None
-        assert returned_games[i].get("instructions") is not None
-        assert returned_games[i].get("link") is not None
-        assert games[i].id == returned_games[i].get("id")
-        assert games[i].game_name == returned_games[i].get("game_name")
-        assert games[i].android_game_activity == returned_games[i].get("android_game_activity")
-        assert games[i].instructions == returned_games[i].get("instructions")
-        assert games[i].link == returned_games[i].get("link")
+    for i in range(len(returned_games)):
+        pk = returned_games[i].get("id")
+        game_name = returned_games[i].get("game_name")
+        android_game_activity = returned_games[i].get("android_game_activity")
+        instructions = returned_games[i].get("instructions")
+        link = returned_games[i].get("link")
+        assert Game.objects.filter(
+            id=pk,
+            game_name=game_name,
+            android_game_activity=android_game_activity,
+            instructions=instructions,
+            link=link
+        )
 
 
 @pytest.mark.django_db
@@ -154,7 +158,7 @@ def test_get_conjugations(api_client, conjugations):
 @pytest.mark.parametrize("has_language_filter", [True, False])
 @pytest.mark.parametrize("has_user_filter", [True, False])
 @pytest.mark.django_db
-def test_get_scores(api_client, account, games, languages, score, has_language_filter, has_user_filter):
+def test_get_scores(api_client, account, languages, score, has_language_filter, has_user_filter):
     accounts = account(n=random.randint(20, 50))
 
     users = []
@@ -163,7 +167,7 @@ def test_get_scores(api_client, account, games, languages, score, has_language_f
         user, _ = account
         users.append(user)
 
-    scores = score(users=users, games=games, languages=languages)
+    scores = score(users=users, languages=languages)
 
     url_params = {}
 

@@ -101,21 +101,6 @@ def game_factory(pk, game_name, link):
 
 
 @pytest.fixture
-def vocabulary_game():
-    return game_factory(1, "Vocabulary Game", "/vocabulary-game/")
-
-
-@pytest.fixture
-def article_game():
-    return game_factory(2, "Article Game", "/article-game/")
-
-
-@pytest.fixture
-def conjugation_game():
-    return game_factory(3, "Conjugation Game", "/conjugation-game/")
-
-
-@pytest.fixture
 def account(words):
     def account_factory(n=1):
         accounts_list = []
@@ -141,9 +126,9 @@ def account(words):
 
 @pytest.fixture
 def score():
-    def create_score(users, games, languages, initial_score=None):
+    def create_score(users, languages, initial_score=None):
         for user in users:
-            for game in games:
+            for game in Game.objects.all():
                 for language in languages:
                     score = initial_score
                     if initial_score is None:
@@ -161,23 +146,11 @@ def categories():
     return Category.objects.all()
 
 
-@pytest.fixture
-def article_game_dependencies(article_game, words):
-    return article_game, words
-
-
-@pytest.fixture
-def conjugation_game_dependencies(conjugation_game, conjugations):
-    return conjugation_game, conjugations
-
-
-@pytest.fixture
-def vocabulary_game_dependencies(vocabulary_game,  words):
-    return vocabulary_game, words
-
-
-@pytest.fixture
-def games(article_game, conjugation_game, vocabulary_game):
+@pytest.fixture(autouse=True)
+def games():
+    game_factory(1, "Vocabulary training", "/vocabulary-game/")
+    game_factory(2, "Guess the article", "/article-game/")
+    game_factory(3, "Conjugation game", "/conjugation-game/")
     return Game.objects.all()
 
 
