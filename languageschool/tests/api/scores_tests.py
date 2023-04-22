@@ -3,7 +3,6 @@ import random
 import pytest
 from rest_framework import status
 
-from languageschool.models import Game
 from languageschool.tests.utils import get_users, get_user_token
 from languageschool.views import MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
 
@@ -22,15 +21,14 @@ def test_get_score_requires_authentication(api_client, account, languages, score
 
 
 @pytest.mark.django_db
-def test_list_scores_get_score(api_client, account, languages, score):
+def test_list_scores_get_score(api_client, account, languages, score, games):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
     score(users=users, languages=languages)
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
-    print(Game.objects.all())
-    game = random.choice(Game.objects.all())
+    game = random.choice(games)
 
     data = {
         "language": language.language_name,
@@ -60,14 +58,14 @@ def test_list_scores_get_score(api_client, account, languages, score):
         (False, True)
     ]
 )
-def test_list_scores_get_score_missing_parameters(api_client, account, languages, score, has_language, has_game):
+def test_list_scores_get_score_missing_parameters(api_client, account, languages, score, games, has_language, has_game):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
     score(users=users, languages=languages)
 
     user, password = random.choice(accounts)
     language = random.choice(languages)
-    game = random.choice(Game.objects.all())
+    game = random.choice(games)
 
     data = {}
 

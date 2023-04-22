@@ -106,14 +106,12 @@ def assert_menu(selenium_driver, user=None):
 
     menu_items[1].click()
 
-    wait_number_of_elements_to_be(selenium_driver, css_selector_games_dropdown, 4)
+    wait_number_of_elements_to_be(selenium_driver, css_selector_games_dropdown, 2)
     dropdown_items = selenium_driver.find_elements(css_selector_games_dropdown[0], css_selector_games_dropdown[1])
 
-    assert len(dropdown_items) == 4
-    assert dropdown_items[0].text == "Vocabulary training"
-    assert dropdown_items[1].text == "Guess the article"
-    assert dropdown_items[2].text == "Conjugation game"
-    assert dropdown_items[3].text == "Rankings"
+    assert len(dropdown_items) == 2
+    assert dropdown_items[0].text == "Play"
+    assert dropdown_items[1].text == "Rankings"
 
     if user is None:
         sign_up_button = find_element(selenium_driver, css_selector_sign_up_button)
