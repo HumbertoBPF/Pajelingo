@@ -3,11 +3,12 @@ import random
 import pytest
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word
+from languageschool.models import Word, Game
 from languageschool.tests.selenium.utils import find_element
 from pajelingo.settings import FRONT_END_URL
 
 ARTICLE_GAME_SETUP_URL = FRONT_END_URL + "/article-game/setup"
+CSS_SELECTOR_INSTRUCTIONS = (By.CSS_SELECTOR, "main section")
 CSS_SELECTOR_FORM_SELECT = (By.CSS_SELECTOR, "main form .form-select")
 CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
 
@@ -18,6 +19,7 @@ def test_article_game_setup_form_rendering(live_server, selenium_driver, languag
     Tests the rendering of the article game setup form, that is, that the select input holds one option for each
     language and the presence of a submit button.
     """
+    article_game = Game.objects.get(pk=2)
     expected_options = {"Choose a language": True}
 
     for language in languages:
@@ -27,9 +29,11 @@ def test_article_game_setup_form_rendering(live_server, selenium_driver, languag
 
     css_selector_select_options = (By.ID, "{}Item".format(languages[0].language_name))
 
+    instructions = find_element(selenium_driver, CSS_SELECTOR_INSTRUCTIONS)
     form_select = find_element(selenium_driver, CSS_SELECTOR_FORM_SELECT)
     submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
+    assert instructions.text == article_game.instructions
     assert submit_button.text == "Start"
 
     form_select.click()

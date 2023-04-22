@@ -3,11 +3,12 @@ import random
 import pytest
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word
+from languageschool.models import Word, Game
 from languageschool.tests.selenium.utils import find_element, wait_number_of_elements_to_be
 from pajelingo.settings import FRONT_END_URL
 
 VOCABULARY_GAME_SETUP_URL = FRONT_END_URL + "/vocabulary-game/setup"
+CSS_SELECTOR_INSTRUCTIONS = (By.CSS_SELECTOR, "main section")
 CSS_SELECTOR_FORM_SELECTS = (By.CSS_SELECTOR, "main form .form-select")
 CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
 CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
@@ -42,14 +43,17 @@ def test_vocabulary_game_setup_form_rendering(live_server, selenium_driver, lang
     Tests the setup form rendering, that is if a submit button, and select inputs for the base and target language are
     displayed with all the language choices available.
     """
+    vocabulary_game = Game.objects.get(pk=1)
     selenium_driver.get(VOCABULARY_GAME_SETUP_URL)
 
     css_selector_select_options = (By.ID, "{}Item".format(languages[0].language_name))
 
+    instructions = find_element(selenium_driver, CSS_SELECTOR_INSTRUCTIONS)
     wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_SELECTS, 2)
     form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
     submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
+    assert instructions.text == vocabulary_game.instructions
     assert submit_button.text == "Start"
     # Check target language options
     form_selects[1].click()
