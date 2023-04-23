@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.models import Word, Score
+from languageschool.models import Word, Score, GameRound, Game
 from languageschool.tests.utils import get_user_token
 
 BASE_URL = reverse("article-game-api")
@@ -50,7 +50,7 @@ def test_article_game_setup_with_language_set_to_english(api_client, languages, 
 
 
 @pytest.mark.django_db
-def test_article_game_setup(api_client, languages, words):
+def test_article_game_setup_non_authenticated_user(api_client, languages, words):
     """
     Tests that 200 Ok along with a random word is returned when a valid language is specified.
     """
@@ -68,6 +68,37 @@ def test_article_game_setup(api_client, languages, words):
         id=returned_word.get("id"),
         word_name=returned_word.get("word"),
         language=random_language
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_article_game_setup_authenticated_user(api_client, account, languages, words):
+    """
+    Tests that 200 Ok along with a random word is returned when a valid language is specified, and that game round data
+    is persisted.
+    """
+    user, password = account()[0]
+    random_language = random.choice(languages)
+
+    query_string = urlencode({
+        "language": random_language.language_name
+    })
+    url = "{}?{}".format(BASE_URL, query_string)
+    response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
+
+    assert response.status_code == status.HTTP_200_OK
+    returned_word = response.data
+    assert Word.objects.filter(
+        id=returned_word.get("id"),
+        word_name=returned_word.get("word"),
+        language=random_language
+    ).exists()
+    assert GameRound.objects.filter(
+        game__id=2,
+        user=user,
+        round_data={
+            "word_id": returned_word.get("id")
+        }
     ).exists()
 
 
@@ -130,13 +161,43 @@ def test_article_game_play_not_authenticated_user(api_client, words, is_correct)
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
+def test_article_game_play_authenticated_user_without_game_round(api_client, account, words, is_correct):
+    """
+    Tests that a 403 Forbidden is returned by /api/article-game POST when no GET request was performed previously to
+    get a word and consequently persist game round data.
+    """
+    user, password = account()[0]
+    random_word = random.choice(words)
+
+    token = get_user_token(api_client, user, password)
+
+    response = api_client.post(BASE_URL, data={
+        "word_id": random_word.id,
+        "answer": random_word.article.article_name if is_correct else get_random_string(8)
+    }, HTTP_AUTHORIZATION="Token {}".format(token))
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.parametrize("is_correct", [True, False])
+@pytest.mark.django_db
 def test_article_game_play_authenticated_user(api_client, account, words, is_correct):
     """
     Tests that a 200 Ok along with the result, the correct answer, and the current score is returned by
     /api/article-game for authenticated requests.
     """
     user, password = account()[0]
+    article_game = Game.objects.get(id=2)
+
     random_word = random.choice(words)
+
+    GameRound.objects.create(
+        game=article_game,
+        user=user,
+        round_data={
+            "word_id": random_word.id
+        }
+    )
 
     token = get_user_token(api_client, user, password)
 
@@ -151,11 +212,15 @@ def test_article_game_play_authenticated_user(api_client, account, words, is_cor
 
     if is_correct:
         assert Score.objects.filter(
-            user__username=user.username,
+            user=user,
             language=random_word.language,
-            game__id=2,
+            game=article_game,
             score=1
         ).exists()
         assert response.data.get("score") == 1
     else:
         assert response.data.get("score") is None
+    assert not GameRound.objects.filter(
+        user=user,
+        game=article_game
+    ).exists()

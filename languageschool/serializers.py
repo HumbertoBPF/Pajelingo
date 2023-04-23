@@ -186,13 +186,14 @@ class ArticleGameAnswerSerializer(serializers.Serializer):
 
         score = None
 
-        if (not request.user.is_anonymous) and is_correct_answer:
+        if not request.user.is_anonymous:
             check_game_round(request, 2, {
                 "word_id": word_id
             })
 
-            score = Score.increment_score(request, word.language, get_object_or_404(Game, id=2))
-            score = score.score
+            if is_correct_answer:
+                score = Score.increment_score(request, word.language, get_object_or_404(Game, id=2))
+                score = score.score
 
         return is_correct_answer, str(word), score
 
@@ -235,13 +236,14 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
 
         score = None
 
-        if (not request.user.is_anonymous) and is_correct_answer:
+        if not request.user.is_anonymous:
             check_game_round(request, 1, {
                 "word_id": word_id
             })
 
-            score = Score.increment_score(request, word_to_translate.language, get_object_or_404(Game, id=1))
-            score = score.score
+            if is_correct_answer:
+                score = Score.increment_score(request, word_to_translate.language, get_object_or_404(Game, id=1))
+                score = score.score
 
         return is_correct_answer, correct_translation, score
 
@@ -286,14 +288,15 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
 
         score = None
 
-        if (not request.user.is_anonymous) and is_correct_answer:
+        if not request.user.is_anonymous:
             check_game_round(request, 3, {
                 "word_id": conjugation.word.id,
                 "tense": conjugation.tense
             })
 
-            score = Score.increment_score(request, language, get_object_or_404(Game, id=3))
-            score = score.score
+            if is_correct_answer:
+                score = Score.increment_score(request, language, get_object_or_404(Game, id=3))
+                score = score.score
 
         return is_correct_answer, correct_answer, score
 

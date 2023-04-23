@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.models import Word, Score
+from languageschool.models import Word, Score, GameRound, Game
 from languageschool.tests.utils import get_user_token
 
 BASE_URL = reverse("vocabulary-game-api")
@@ -43,7 +43,7 @@ def test_vocabulary_game_setup_invalid_language(api_client):
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup(api_client, words, languages):
+def test_vocabulary_game_setup_non_authenticated_user(api_client, words, languages):
     """
     Tests that 200 Ok along with a random word id and name are returned when a valid language is specified.
     """
@@ -61,6 +61,37 @@ def test_vocabulary_game_setup(api_client, words, languages):
         id=returned_word.get("id"),
         word_name=returned_word.get("word"),
         language=random_language
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_vocabulary_game_setup_authenticated_user(api_client, account, words, languages):
+    """
+    Tests that 200 Ok along with a random word id and name are returned when a valid language is specified, and that
+    data concerning this game round is persisted.
+    """
+    user, password = account()[0]
+    random_language = random.choice(languages)
+
+    query_string = urlencode({
+        "language": random_language.language_name
+    })
+    url = "{}?{}".format(BASE_URL, query_string)
+    response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
+
+    assert response.status_code == status.HTTP_200_OK
+    returned_word = response.data
+    assert Word.objects.filter(
+        id=returned_word.get("id"),
+        word_name=returned_word.get("word"),
+        language=random_language
+    ).exists()
+    assert GameRound.objects.filter(
+        game__id=1,
+        user=user,
+        round_data={
+            "word_id": returned_word.get("id")
+        }
     ).exists()
 
 
@@ -174,10 +205,10 @@ def test_vocabulary_play_not_authenticated_user(api_client, words, languages, is
 
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_play_authenticated_user(api_client, account, words, languages, is_correct):
+def test_vocabulary_play_authenticated_user_without_game_round(api_client, account, words, languages, is_correct):
     """
-    Checks that POST requests to /api/vocabulary-play return 200 Ok along with the result, the correct answer, and the
-    current score for authenticated users.
+    Checks that POST requests to /api/vocabulary-play return 403 Forbidden when no GET request was performed previously
+    to get a word and consequently persist game round data.
     """
     user, password = account()[0]
     random_word = random.choice(words)
@@ -200,16 +231,61 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
         "answer": correct_answer if is_correct else get_random_string(8)
     }, HTTP_AUTHORIZATION="Token {}".format(token))
 
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.parametrize("is_correct", [True, False])
+@pytest.mark.django_db
+def test_vocabulary_play_authenticated_user(api_client, account, words, languages, is_correct):
+    """
+    Checks that POST requests to /api/vocabulary-play return 200 Ok along with the result, the correct answer, and the
+    current score for authenticated users.
+    """
+    user, password = account()[0]
+    vocabulary_game = Game.objects.get(id=1)
+
+    random_word = random.choice(words)
+
+    eligible_languages = []
+
+    for language in languages:
+        if language.language_name != random_word.language.language_name:
+            eligible_languages.append(language)
+
+    random_base_language = random.choice(eligible_languages)
+
+    correct_answer = get_correct_answer(random_word, random_base_language)
+
+    GameRound.objects.create(
+        game=vocabulary_game,
+        user=user,
+        round_data={
+            "word_id": random_word.id
+        }
+    )
+
+    token = get_user_token(api_client, user, password)
+
+    response = api_client.post(BASE_URL, data={
+        "word_id": random_word.id,
+        "base_language": random_base_language.language_name,
+        "answer": correct_answer if is_correct else get_random_string(8)
+    }, HTTP_AUTHORIZATION="Token {}".format(token))
+
     assert response.status_code == status.HTTP_200_OK
     assert response.data.get("result") is is_correct
     assert response.data.get("correct_answer") == correct_answer
     if is_correct:
         assert Score.objects.filter(
-            user__username=user.username,
+            user=user,
             language=random_word.language,
-            game__id=1,
+            game=vocabulary_game,
             score=1
         ).exists()
         assert response.data.get("score") == 1
     else:
         assert response.data.get("score") is None
+    assert not GameRound.objects.filter(
+        user=user,
+        game=vocabulary_game
+    ).exists()

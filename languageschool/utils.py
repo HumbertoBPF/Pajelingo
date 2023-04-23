@@ -70,3 +70,5 @@ def check_game_round(request, game_id, round_data):
 
     if game_round.round_data != round_data:
         raise PermissionDenied()
+
+    game_round.delete()

@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.models import Conjugation, Score
+from languageschool.models import Conjugation, Score, GameRound, Game
 from languageschool.tests.utils import get_user_token
 
 BASE_URL = reverse("conjugation-game-api")
@@ -49,10 +49,10 @@ def test_conjugation_game_setup_invalid_language(api_client):
 
 
 @pytest.mark.django_db
-def test_conjugation_game_setup(api_client, verbs, languages, conjugations):
+def test_conjugation_game_setup_non_authenticated_user(api_client, verbs, languages, conjugations):
     """
     Checks that a 200 Ok is returned by /api/conjugation-game along with a random verb and one of its conjugations
-    when a valid language is specified
+    when a valid language is specified.
     """
     random_language = random.choice(languages)
 
@@ -71,6 +71,40 @@ def test_conjugation_game_setup(api_client, verbs, languages, conjugations):
         word__language=random_language,
         tense=returned_word.get("tense")
     ).exists()
+
+
+@pytest.mark.django_db
+def test_conjugation_game_setup_authenticated_user(api_client, account, verbs, languages, conjugations):
+    """
+    Checks that a 200 Ok is returned by /api/conjugation-game along with a random verb and one of its conjugations
+    when a valid language is specified, and that data concerning this game round is persisted.
+    """
+    user, password = account()[0]
+    random_language = random.choice(languages)
+
+    query_string = urlencode({
+        "language": random_language.language_name
+    })
+    url = "{}?{}".format(BASE_URL, query_string)
+
+    response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
+
+    assert response.status_code == status.HTTP_200_OK
+    returned_word = response.data
+    assert Conjugation.objects.filter(
+        word__id=returned_word.get("id"),
+        word__word_name=returned_word.get("word"),
+        word__language=random_language,
+        tense=returned_word.get("tense")
+    ).exists()
+    assert GameRound.objects.filter(
+        game__id=3,
+        user=user,
+        round_data={
+            "word_id": returned_word.get("id"),
+            "tense": returned_word.get("tense")
+        }
+    )
 
 
 @pytest.mark.parametrize("has_id", [True, False])
@@ -207,6 +241,44 @@ def test_conjugation_game_play_non_authenticated_user(api_client, verbs, conjuga
 @pytest.mark.parametrize("has_correct_conjugation_5", [True, False])
 @pytest.mark.parametrize("has_correct_conjugation_6", [True, False])
 @pytest.mark.django_db
+def test_conjugation_game_play_authenticated_user_without_game_round(api_client, account, verbs, conjugations,
+                                                                     has_correct_conjugation_1,
+                                                                     has_correct_conjugation_2,
+                                                                     has_correct_conjugation_3,
+                                                                     has_correct_conjugation_4,
+                                                                     has_correct_conjugation_5,
+                                                                     has_correct_conjugation_6):
+    """
+    Checks that /api/conjugation-game returns 403 Forbidden when no GET request was performed previously to get a verb
+    and a conjugation, and consequently persist game round data.
+    """
+    user, password = account()[0]
+
+    random_conjugation = random.choice(conjugations)
+
+    token = get_user_token(api_client, user, password)
+
+    response = api_client.post(BASE_URL, data={
+        "word_id": random_conjugation.word.id,
+        "tense": random_conjugation.tense,
+        "conjugation_1": random_conjugation.conjugation_1 if has_correct_conjugation_1 else get_random_string(8),
+        "conjugation_2": random_conjugation.conjugation_2 if has_correct_conjugation_2 else get_random_string(8),
+        "conjugation_3": random_conjugation.conjugation_3 if has_correct_conjugation_3 else get_random_string(8),
+        "conjugation_4": random_conjugation.conjugation_4 if has_correct_conjugation_4 else get_random_string(8),
+        "conjugation_5": random_conjugation.conjugation_5 if has_correct_conjugation_5 else get_random_string(8),
+        "conjugation_6": random_conjugation.conjugation_6 if has_correct_conjugation_6 else get_random_string(8)
+    }, HTTP_AUTHORIZATION="Token {}".format(token))
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.parametrize("has_correct_conjugation_1", [True, False])
+@pytest.mark.parametrize("has_correct_conjugation_2", [True, False])
+@pytest.mark.parametrize("has_correct_conjugation_3", [True, False])
+@pytest.mark.parametrize("has_correct_conjugation_4", [True, False])
+@pytest.mark.parametrize("has_correct_conjugation_5", [True, False])
+@pytest.mark.parametrize("has_correct_conjugation_6", [True, False])
+@pytest.mark.django_db
 def test_conjugation_game_play_authenticated_user(api_client, account, verbs, conjugations,
                                                   has_correct_conjugation_1, has_correct_conjugation_2,
                                                   has_correct_conjugation_3, has_correct_conjugation_4,
@@ -216,10 +288,20 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
     correct answer and the current score are returned in the request body.
     """
     user, password = account()[0]
+    conjugation_game = Game.objects.get(id=3)
 
     random_conjugation = random.choice(conjugations)
     is_correct = has_correct_conjugation_1 and has_correct_conjugation_2 and has_correct_conjugation_3 \
                  and has_correct_conjugation_4 and has_correct_conjugation_5 and has_correct_conjugation_6
+
+    GameRound.objects.create(
+        game=conjugation_game,
+        user=user,
+        round_data={
+            "word_id": random_conjugation.word.id,
+            "tense": random_conjugation.tense
+        }
+    )
 
     token = get_user_token(api_client, user, password)
 
@@ -242,11 +324,15 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
 
     if is_correct:
         assert Score.objects.filter(
-            user__username=user.username,
+            user=user,
             language=random_conjugation.word.language,
-            game__id=3,
+            game=conjugation_game,
             score=1
         ).exists()
         assert response.data.get("score") == 1
     else:
         assert response.data.get("score") is None
+    assert not GameRound.objects.filter(
+        game=conjugation_game,
+        user=user
+    ).exists()
