@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
-from languageschool.utils import send_reset_account_email, get_base_64_encoded_image
+from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round
 from pajelingo.validators.validators import validate_email, validate_username
 
 
@@ -187,6 +187,10 @@ class ArticleGameAnswerSerializer(serializers.Serializer):
         score = None
 
         if (not request.user.is_anonymous) and is_correct_answer:
+            check_game_round(request, 2, {
+                "word_id": word_id
+            })
+
             score = Score.increment_score(request, word.language, get_object_or_404(Game, id=2))
             score = score.score
 
@@ -232,6 +236,10 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
         score = None
 
         if (not request.user.is_anonymous) and is_correct_answer:
+            check_game_round(request, 1, {
+                "word_id": word_id
+            })
+
             score = Score.increment_score(request, word_to_translate.language, get_object_or_404(Game, id=1))
             score = score.score
 
@@ -279,6 +287,11 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
         score = None
 
         if (not request.user.is_anonymous) and is_correct_answer:
+            check_game_round(request, 3, {
+                "word_id": conjugation.word.id,
+                "tense": conjugation.tense
+            })
+
             score = Score.increment_score(request, language, get_object_or_404(Game, id=3))
             score = score.score
 

@@ -1,7 +1,22 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 
-from languageschool.models import AppUser, Article, Category, Conjugation, Game, Language, Meaning, Score, Word
+from languageschool.models import AppUser, Article, Category, Conjugation, Game, Language, Meaning, Score, Word, \
+    GameRound
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login')
+    list_display_links = ('username', 'email')
+    search_fields = ('username', 'email')
+    list_per_page = 10
+
+
+class GameDisplay(admin.ModelAdmin):
+    list_display = ('id', 'android_game_activity', 'game_name')
+    list_display_links = ('id', 'android_game_activity', 'game_name')
+    search_fields = ('game_name', 'android_game_activity')
+    list_per_page = 10
 
 
 class LanguageDisplay(admin.ModelAdmin):
@@ -58,6 +73,14 @@ class ScoreDisplay(admin.ModelAdmin):
     list_per_page = 10
 
 
+class GameRoundDisplay(admin.ModelAdmin):
+    list_display = ('id', 'game', 'user', 'round_data')
+    list_display_links = ('id',)
+    search_fields = ('game__game_name', 'user__username')
+    list_filter = ('game',)
+    list_per_page = 10
+
+
 class AppUserDisplay(admin.ModelAdmin):
     list_display = ('id', 'user')
     list_display_links = ('id', 'user')
@@ -66,21 +89,10 @@ class AppUserDisplay(admin.ModelAdmin):
     autocomplete_fields = ['favorite_words']
 
 
-class GameDisplay(admin.ModelAdmin):
-    list_display = ('id', 'android_game_activity', 'game_name')
-    list_display_links = ('id', 'android_game_activity', 'game_name')
-    search_fields = ('game_name', 'android_game_activity')
-    list_per_page = 10
-
-
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login')
-    list_display_links = ('username', 'email')
-    search_fields = ('username', 'email')
-    list_per_page = 10
-
-
 # Register your models here.
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+admin.site.register(Game, GameDisplay)
 admin.site.register(Language, LanguageDisplay)
 admin.site.register(Category, CategoryDisplay)
 admin.site.register(Article, ArticleDisplay)
@@ -88,7 +100,5 @@ admin.site.register(Word, WordDisplay)
 admin.site.register(Meaning, MeaningDisplay)
 admin.site.register(Conjugation, ConjugationDisplay)
 admin.site.register(Score, ScoreDisplay)
+admin.site.register(GameRound, GameRoundDisplay)
 admin.site.register(AppUser, AppUserDisplay)
-admin.site.register(Game, GameDisplay)
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)

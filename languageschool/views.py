@@ -19,7 +19,7 @@ from languageschool.serializers import WordSerializer, MeaningSerializer, Articl
     VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer, ResetAccountSerializer, \
     GameSerializer, LanguageSerializer, CategorySerializer, ArticleSerializer, ConjugationSerializer, \
     RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer, FavoriteWordsSerializer
-from languageschool.utils import send_activation_account_email
+from languageschool.utils import send_activation_account_email, save_game_round
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
 
@@ -303,6 +303,12 @@ class ArticleGameView(views.APIView):
 
         word = random.choice(Word.objects.filter(language=language).exclude(article=None))
 
+        round_data = {
+            "word_id": word.id
+        }
+
+        save_game_round(request, 2, round_data)
+
         return Response(data={
             "id": word.id,
             "word": word.word_name
@@ -331,6 +337,12 @@ class VocabularyGameView(views.APIView):
 
         selected_word = random.choice(Word.objects.filter(language=target_language))
 
+        round_data = {
+            "word_id": selected_word.id
+        }
+
+        save_game_round(request, 1, round_data)
+
         return Response(data={
             "id": selected_word.id,
             "word": selected_word.word_name
@@ -358,6 +370,13 @@ class ConjugationGameView(views.APIView):
         language = get_object_or_404(Language, language_name=language_name)
 
         conjugation = random.choice(Conjugation.objects.filter(word__language=language))
+
+        round_data = {
+            "word_id": conjugation.word.id,
+            "tense": conjugation.tense
+        }
+
+        save_game_round(request, 3, round_data)
 
         return Response(data={
             "id": conjugation.word.id,

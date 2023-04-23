@@ -4,7 +4,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from rest_framework.exceptions import PermissionDenied
 
+from languageschool.models import GameRound, Game
 from pajelingo.settings import FRONT_END_URL, EMAIL_FROM
 from pajelingo.tokens import account_activation_token
 
@@ -39,3 +41,32 @@ def get_base_64_encoded_image(image_file):
             return base64.b64encode(img.read())
         except FileNotFoundError as e:
             print(e)
+
+
+def save_game_round(request, game_id, round_data):
+    game_round = GameRound.objects.filter(game__id=game_id).first()
+
+    if not request.user.is_anonymous:
+        if game_round is None:
+            GameRound.objects.create(
+                game=Game.objects.get(id=game_id),
+                user=request.user,
+                round_data=round_data
+            )
+        else:
+            game_round.user = request.user
+            game_round.round_data = round_data
+            game_round.save()
+
+
+def check_game_round(request, game_id, round_data):
+    game_round = GameRound.objects.filter(
+        game__id=game_id,
+        user=request.user
+    ).first()
+
+    if game_round is None:
+        raise PermissionDenied()
+
+    if game_round.round_data != round_data:
+        raise PermissionDenied()

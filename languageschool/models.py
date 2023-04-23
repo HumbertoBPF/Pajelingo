@@ -153,6 +153,20 @@ class Score(models.Model):
         ]
 
 
+class GameRound(models.Model):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    round_data = models.JSONField()
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'game'],
+                name='game_round_unique_constraint'
+            )
+        ]
+
+
 class AppUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     favorite_words = models.ManyToManyField(Word)
