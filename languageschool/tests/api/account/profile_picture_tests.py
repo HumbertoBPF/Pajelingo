@@ -33,7 +33,7 @@ def test_profile_picture_invalid_format(api_client, account):
         response = api_client.put(BASE_URL, data={
             "picture": f
         }, HTTP_AUTHORIZATION="Token {}".format(token))
-        print(response.status_code)
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 

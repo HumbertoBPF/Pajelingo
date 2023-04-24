@@ -30,7 +30,7 @@ def test_conjugation_game_setup_no_language(api_client):
     Checks that /api/conjugation-game raises a 404 Not Found when no language is specified.
     """
     response = api_client.get(BASE_URL)
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db

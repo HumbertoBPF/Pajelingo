@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
@@ -6,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
-from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round
+from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round, save_game_round
 from pajelingo.validators.validators import validate_email, validate_username
 
 
@@ -171,6 +173,85 @@ class ScoreSerializer(serializers.Serializer):
         return instance
 
 
+class ArticleGameSetupSerializer(serializers.Serializer):
+    language = serializers.CharField()
+
+    def validate_language(self, data):
+        if data == "English":
+            raise ValidationError("Invalid language")
+        return data
+
+    def save(self, **kwargs):
+        request = self.context.get("request")
+        language = self.validated_data.get("language")
+
+        language = get_object_or_404(Language, language_name=language)
+
+        word = random.choice(Word.objects.filter(language=language).exclude(article=None))
+
+        round_data = {
+            "word_id": word.id
+        }
+
+        save_game_round(request, 2, round_data)
+
+        return word
+
+
+class ConjugationGameSetupSerializer(serializers.Serializer):
+    language = serializers.CharField()
+
+    def save(self, **kwargs):
+        request = self.context.get("request")
+        language = self.validated_data.get("language")
+
+        language = get_object_or_404(Language, language_name=language)
+
+        conjugation = random.choice(Conjugation.objects.filter(word__language=language))
+
+        round_data = {
+            "word_id": conjugation.word.id,
+            "tense": conjugation.tense
+        }
+
+        save_game_round(request, 3, round_data)
+
+        return conjugation
+
+
+class VocabularyGameSetupSerializer(serializers.Serializer):
+    base_language = serializers.CharField()
+    target_language = serializers.CharField()
+
+    def validate(self, data):
+        base_language = data.get("base_language")
+        target_language = data.get("target_language")
+
+        if base_language == target_language:
+            raise ValidationError("Base and target language must not be the same")
+
+        return data
+
+    def save(self, **kwargs):
+        request = self.context.get("request")
+        base_language = self.validated_data.get("base_language")
+        target_language = self.validated_data.get("target_language")
+
+        base_language = get_object_or_404(Language, language_name=base_language)
+        target_language = get_object_or_404(Language, language_name=target_language)
+
+        word = random.choice(Word.objects.filter(language=target_language))
+
+        round_data = {
+            "word_id": word.id,
+            "base_language": base_language.language_name
+        }
+
+        save_game_round(request, 1, round_data)
+
+        return word
+
+
 class ArticleGameAnswerSerializer(serializers.Serializer):
     word_id = serializers.IntegerField()
     answer = serializers.CharField(allow_blank=True)
@@ -238,7 +319,8 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
 
         if not request.user.is_anonymous:
             check_game_round(request, 1, {
-                "word_id": word_id
+                "word_id": word_id,
+                "base_language": base_language.language_name
             })
 
             if is_correct_answer:

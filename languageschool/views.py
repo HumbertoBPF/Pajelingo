@@ -18,7 +18,8 @@ from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
     VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer, ResetAccountSerializer, \
     GameSerializer, LanguageSerializer, CategorySerializer, ArticleSerializer, ConjugationSerializer, \
-    RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer, FavoriteWordsSerializer
+    RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer, FavoriteWordsSerializer, \
+    ArticleGameSetupSerializer, ConjugationGameSetupSerializer, VocabularyGameSetupSerializer
 from languageschool.utils import send_activation_account_email, save_game_round
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
@@ -294,20 +295,10 @@ class ArticleGameView(views.APIView):
     authentication_classes = [TokenAuthentication]
 
     def get(self, request):
-        language_name = request.GET.get("language")
+        serializer = ArticleGameSetupSerializer(data=request.GET, context={"request": request})
+        serializer.is_valid(raise_exception=True)
 
-        if language_name == "English":
-            return Response({"error": "Invalid language"},status=status.HTTP_400_BAD_REQUEST)
-
-        language = get_object_or_404(Language, language_name=language_name)
-
-        word = random.choice(Word.objects.filter(language=language).exclude(article=None))
-
-        round_data = {
-            "word_id": word.id
-        }
-
-        save_game_round(request, 2, round_data)
+        word = serializer.save()
 
         return Response(data={
             "id": word.id,
@@ -331,21 +322,14 @@ class VocabularyGameView(views.APIView):
     authentication_classes = [TokenAuthentication]
 
     def get(self, request):
-        language_name = request.GET.get("language")
+        serializer = VocabularyGameSetupSerializer(data=request.GET, context={"request": request})
+        serializer.is_valid(raise_exception=True)
 
-        target_language = get_object_or_404(Language, language_name=language_name)
-
-        selected_word = random.choice(Word.objects.filter(language=target_language))
-
-        round_data = {
-            "word_id": selected_word.id
-        }
-
-        save_game_round(request, 1, round_data)
+        word = serializer.save()
 
         return Response(data={
-            "id": selected_word.id,
-            "word": selected_word.word_name
+            "id": word.id,
+            "word": word.word_name
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -365,18 +349,10 @@ class ConjugationGameView(views.APIView):
     authentication_classes = [TokenAuthentication]
 
     def get(self, request):
-        language_name = request.GET.get("language")
+        serializer = ConjugationGameSetupSerializer(data=request.GET, context={"request": request})
+        serializer.is_valid(raise_exception=True)
 
-        language = get_object_or_404(Language, language_name=language_name)
-
-        conjugation = random.choice(Conjugation.objects.filter(word__language=language))
-
-        round_data = {
-            "word_id": conjugation.word.id,
-            "tense": conjugation.tense
-        }
-
-        save_game_round(request, 3, round_data)
+        conjugation = serializer.save()
 
         return Response(data={
             "id": conjugation.word.id,

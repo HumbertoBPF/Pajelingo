@@ -18,7 +18,7 @@ def test_article_game_setup_with_no_language(api_client, languages, words):
     Tests that a 404 Not Found is raised when no language name is provided.
     """
     response = api_client.get(BASE_URL)
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db

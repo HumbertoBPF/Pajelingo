@@ -19,22 +19,48 @@ def get_correct_answer(word, base_language):
     return ""
 
 
+@pytest.mark.parametrize("has_base_language, has_target_language", [
+    (False, True),
+    (True, False),
+    (False, False)
+])
 @pytest.mark.django_db
-def test_vocabulary_game_setup_no_language(api_client):
+def test_vocabulary_game_setup_missing_arguments(api_client, has_base_language, has_target_language):
     """
     Tests that a 404 Not Found is raised when no language is specified.
     """
-    response = api_client.get(BASE_URL)
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    query_dict = {}
+
+    if has_base_language:
+        query_dict["base_language"] = get_random_string(8)
+
+    if has_target_language:
+        query_dict["target_language"] = get_random_string(8)
+
+    query_string = urlencode(query_dict)
+    url = "{}?{}".format(BASE_URL, query_string)
+    response = api_client.get(url)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
+@pytest.mark.parametrize("has_valid_base_language, has_valid_target_language", [
+    (False, True),
+    (True, False),
+    (False, False)
+])
 @pytest.mark.django_db
-def test_vocabulary_game_setup_invalid_language(api_client):
+def test_vocabulary_game_setup_invalid_language(api_client, languages, has_valid_base_language,
+                                                has_valid_target_language):
     """
     Tests that a 404 Not Found is raised when an invalid language is specified.
     """
+    random_base_language = random.choice(languages)
+    random_target_language = random.choice(languages.exclude(id=random_base_language.id))
+
     query_string = urlencode({
-        "language": get_random_string(8)
+        "base_language": random_base_language.language_name if has_valid_base_language else get_random_string(8),
+        "target_language": random_target_language.language_name if has_valid_target_language else get_random_string(8)
     })
     url = "{}?{}".format(BASE_URL, query_string)
     response = api_client.get(url)
@@ -47,10 +73,12 @@ def test_vocabulary_game_setup_non_authenticated_user(api_client, words, languag
     """
     Tests that 200 Ok along with a random word id and name are returned when a valid language is specified.
     """
-    random_language = random.choice(languages)
+    random_base_language = random.choice(languages)
+    random_target_language = random.choice(languages.exclude(id=random_base_language.id))
 
     query_string = urlencode({
-        "language": random_language.language_name
+        "base_language": random_base_language.language_name,
+        "target_language": random_target_language.language_name
     })
     url = "{}?{}".format(BASE_URL, query_string)
     response = api_client.get(url)
@@ -60,7 +88,7 @@ def test_vocabulary_game_setup_non_authenticated_user(api_client, words, languag
     assert Word.objects.filter(
         id=returned_word.get("id"),
         word_name=returned_word.get("word"),
-        language=random_language
+        language=random_target_language
     ).exists()
 
 
@@ -71,10 +99,13 @@ def test_vocabulary_game_setup_authenticated_user(api_client, account, words, la
     data concerning this game round is persisted.
     """
     user, password = account()[0]
-    random_language = random.choice(languages)
+
+    random_base_language = random.choice(languages)
+    random_target_language = random.choice(languages.exclude(id=random_base_language.id))
 
     query_string = urlencode({
-        "language": random_language.language_name
+        "base_language": random_base_language.language_name,
+        "target_language": random_target_language.language_name
     })
     url = "{}?{}".format(BASE_URL, query_string)
     response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
@@ -84,13 +115,14 @@ def test_vocabulary_game_setup_authenticated_user(api_client, account, words, la
     assert Word.objects.filter(
         id=returned_word.get("id"),
         word_name=returned_word.get("word"),
-        language=random_language
+        language=random_target_language
     ).exists()
     assert GameRound.objects.filter(
         game__id=1,
         user=user,
         round_data={
-            "word_id": returned_word.get("id")
+            "word_id": returned_word.get("id"),
+            "base_language": random_base_language.language_name
         }
     ).exists()
 
@@ -260,7 +292,8 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
         game=vocabulary_game,
         user=user,
         round_data={
-            "word_id": random_word.id
+            "word_id": random_word.id,
+            "base_language": random_base_language.language_name
         }
     )
 
