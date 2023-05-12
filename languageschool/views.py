@@ -1,5 +1,4 @@
 import base64
-import random
 
 from django.contrib.auth.models import User
 from django.db.models import Sum
@@ -20,7 +19,7 @@ from languageschool.serializers import WordSerializer, MeaningSerializer, Articl
     GameSerializer, LanguageSerializer, CategorySerializer, ArticleSerializer, ConjugationSerializer, \
     RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer, FavoriteWordsSerializer, \
     ArticleGameSetupSerializer, ConjugationGameSetupSerializer, VocabularyGameSetupSerializer
-from languageschool.utils import send_activation_account_email, save_game_round
+from languageschool.utils import send_activation_account_email
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
 
