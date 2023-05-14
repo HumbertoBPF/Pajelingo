@@ -438,3 +438,14 @@ class FavoriteWordsSerializer(serializers.Serializer):
             app_user.favorite_words.remove(word)
 
         return get_object_or_404(Word, pk=word_id)
+
+
+class AccountSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username")
+    picture = serializers.SerializerMethodField()
+    class Meta:
+        model = AppUser
+        fields = ('username', 'picture')
+
+    def get_picture(self, obj):
+        return get_base_64_encoded_image(obj.picture)

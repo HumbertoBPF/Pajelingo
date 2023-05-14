@@ -5,7 +5,7 @@ from languageschool.views import SearchView, MeaningView, WordView, ArticleGameV
     ConjugationGameView, ActivationView, ProfilePictureView, ResetAccountView, GameViewSet, LanguageViewSet, \
     CategoryViewSet, ArticleViewSet, WordViewSet, MeaningViewSet, ConjugationViewSet, UserViewSet, ScoreViewSet, \
     ScoreListViewSet, RankingsViewSet, PublicImageViewSet, RequestResetPasswordView, FavoriteWordsView, \
-    FavoriteWordsListView
+    FavoriteWordsListView, AccountsView, AccountView
 
 urlpatterns = [
     path('api/games/', GameViewSet.as_view(), name='games-api'),
@@ -32,5 +32,7 @@ urlpatterns = [
     path('api/user-token', rest_framework_views.obtain_auth_token, name='user-token-api'),
     path('api/user/picture', ProfilePictureView.as_view(), name='profile-picture-api'),
     path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api'),
-    path('api/reset-account/<uidb64>/<token>', ResetAccountView.as_view(), name='reset-account-api')
+    path('api/reset-account/<uidb64>/<token>', ResetAccountView.as_view(), name='reset-account-api'),
+    path('api/accounts', AccountsView.as_view(), name='accounts-api'),
+    path('api/accounts/<username>', AccountView.as_view(), name='account-api')
 ]

@@ -12,13 +12,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from languageschool.models import Language, Word, Meaning, Conjugation, AppUser, Game, Category, Article, Score
-from languageschool.paginators import SearchPaginator, RankingsPaginator
+from languageschool.paginators import SearchPaginator, RankingsPaginator, SearchAccountPaginator
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
     VocabularyGameAnswerSerializer, ConjugationGameAnswerSerializer, ProfilePictureSerializer, ResetAccountSerializer, \
     GameSerializer, LanguageSerializer, CategorySerializer, ArticleSerializer, ConjugationSerializer, \
     RankingsSerializer, ListScoreSerializer, UserSerializer, RequestResetAccountSerializer, FavoriteWordsSerializer, \
-    ArticleGameSetupSerializer, ConjugationGameSetupSerializer, VocabularyGameSetupSerializer
+    ArticleGameSetupSerializer, ConjugationGameSetupSerializer, VocabularyGameSetupSerializer, AccountSerializer
 from languageschool.utils import send_activation_account_email
 from pajelingo import settings
 from pajelingo.tokens import account_activation_token
@@ -449,4 +449,21 @@ class FavoriteWordsView(views.APIView):
         serializer = WordSerializer(word, context={
             "request": request
         })
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class AccountsView(generics.ListAPIView):
+    pagination_class = SearchAccountPaginator
+    serializer_class = AccountSerializer
+
+    def get_queryset(self):
+        search_pattern = self.request.query_params.get("q", "")
+
+        return AppUser.objects.filter(user__username__icontains=search_pattern.lower())
+
+
+class AccountView(views.APIView):
+    def get(self, request, username):
+        app_user = get_object_or_404(AppUser, user__username=username)
+        serializer = AccountSerializer(app_user)
         return Response(data=serializer.data, status=status.HTTP_200_OK)

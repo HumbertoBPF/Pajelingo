@@ -6,3 +6,6 @@ class RankingsPaginator(PageNumberPagination):
 
 class SearchPaginator(PageNumberPagination):
     page_size = 12
+
+class SearchAccountPaginator(PageNumberPagination):
+    page_size = 10
