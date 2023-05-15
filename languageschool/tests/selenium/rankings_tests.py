@@ -6,16 +6,14 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Score
-from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, wait_text_to_be_present, \
-    authenticate_user
+from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, \
+    authenticate_user, CSS_SELECTOR_PAGINATION, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, go_to_next_page
 from pajelingo.settings import FRONT_END_URL
 
 RANKINGS_URL = FRONT_END_URL + "/rankings"
 CSS_SELECTOR_LANGUAGE_SELECT = (By.CSS_SELECTOR, "main .form-select")
 CSS_SELECTOR_SELECT_OPTIONS = (By.CSS_SELECTOR, "main .form-select option")
 CSS_SELECTOR_RANKING_TABLE = (By.CSS_SELECTOR, "main .table")
-CSS_SELECTOR_PAGINATION = (By.CSS_SELECTOR, "main .pagination")
-CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
 CSS_SELECTOR_IMAGE =  (By.CSS_SELECTOR, "main .justify-content-center img")
 
 
@@ -136,16 +134,6 @@ def assert_ranking_users(checked_users, users, auth_user=None):
         auth_user_row = checked_users.get("auth_user_row")
         assert auth_user_row.get("position") == "(You) {}".format(dynamic_rows.get(auth_user.username).get("position"))
         assert auth_user_row.get("score") == dynamic_rows.get(auth_user.username).get("score")
-
-
-def go_to_next_page(selenium_driver, current_page, number_pages):
-    pagination = find_element(selenium_driver, CSS_SELECTOR_PAGINATION)
-    pagination_buttons = pagination.find_elements(By.CSS_SELECTOR, ".page-link")
-
-    if current_page != number_pages:
-        selenium_driver.execute_script("arguments[0].click();", pagination_buttons[-1])
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page + 1))
-
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
 @pytest.mark.django_db

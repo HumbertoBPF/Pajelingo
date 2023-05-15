@@ -6,7 +6,8 @@ from selenium.webdriver.common.by import By
 
 from languageschool.models import Word, AppUser, Meaning
 from languageschool.tests.selenium.utils import assert_menu, find_element, wait_text_to_be_present, \
-    wait_number_of_elements_to_be, scroll_to_element
+    wait_number_of_elements_to_be, scroll_to_element, assert_pagination, go_to_next_page, \
+    CSS_SELECTOR_ACTIVE_PAGE_BUTTON
 from pajelingo.settings import FRONT_END_URL
 
 SEARCH_URL = FRONT_END_URL + "/search"
@@ -17,8 +18,6 @@ CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-s
 CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 CSS_SELECTOR_HEART_NON_FILL_ICON = (By.CSS_SELECTOR, "main .card .bi-heart")
 CSS_SELECTOR_HEART_FILL_ICON = (By.CSS_SELECTOR, "main .card .bi-heart-fill")
-CSS_SELECTOR_PAGINATION = (By.CSS_SELECTOR, "main .pagination")
-CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
 CSS_SELECTOR_NO_RESULTS_IMG = (By.CSS_SELECTOR, "main img")
 CSS_SELECTOR_NO_RESULTS_TEXT = (By.CSS_SELECTOR, "main p")
 CSS_SELECTOR_MEANING_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text")
@@ -63,35 +62,6 @@ def assert_search_results(selenium_driver, words, current_page, number_pages, ap
             assert language_name == language.language_name
 
         assert search_pattern.lower() in word_name.lower()
-
-def assert_pagination(selenium_driver, current_page, number_pages):
-    pagination = find_element(selenium_driver, CSS_SELECTOR_PAGINATION)
-
-    page_buttons = pagination.find_elements(By.CSS_SELECTOR, ".page-link")
-    active_page_button = find_element(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON)
-    first_page_button = page_buttons[0 if (current_page == 1) else 1]
-    last_page_button = page_buttons[-1 if (current_page == number_pages) else -2]
-
-    expected_text_first_page_button = "1\n(current)" if (current_page == 1) else "1"
-    expected_text_last_page_button = "{}\n(current)".format(number_pages) \
-        if (current_page == number_pages) else str(number_pages)
-
-    if current_page != 1:
-        assert page_buttons[0].text == "‹\nPrevious"
-
-    assert active_page_button.text == "{}\n(current)".format(current_page)
-    assert first_page_button.text == expected_text_first_page_button
-    assert last_page_button.text == expected_text_last_page_button
-
-    if current_page != number_pages:
-        assert page_buttons[-1].text == "›\nNext"
-
-
-def go_to_next_page(selenium_driver, current_page, number_pages):
-    if current_page != number_pages:
-        pagination = find_element(selenium_driver, CSS_SELECTOR_PAGINATION)
-        page_buttons = pagination.find_elements(By.CSS_SELECTOR, ".page-link")
-        selenium_driver.execute_script("arguments[0].click();", page_buttons[-1])
 
 
 def wait_toggle_heart_icon(random_card, expected_locator):

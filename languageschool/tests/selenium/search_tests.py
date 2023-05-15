@@ -10,7 +10,7 @@ from languageschool.tests.selenium.word_list_test_utils import modal_form_render
     toggle_favorite_word, search_with_no_results, access_meaning_page, toggle_favorite_word_in_meaning_page
 from pajelingo.settings import FRONT_END_URL
 
-SEARCH_URL = FRONT_END_URL + "/search"
+SEARCH_URL = FRONT_END_URL + "/dictionary"
 
 
 @pytest.mark.parametrize("is_authenticated", [True, False])

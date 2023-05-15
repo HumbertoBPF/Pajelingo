@@ -1,11 +1,13 @@
 import time
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.wait import WebDriverWait
 
 from pajelingo.settings import FRONT_END_URL
 
+CSS_SELECTOR_PAGINATION = (By.CSS_SELECTOR, "main .pagination")
+CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
 
 def find_element(selenium_driver, locator):
     """
@@ -92,7 +94,7 @@ def assert_menu(selenium_driver, user=None):
     :param user: authenticated user
     """
     css_selector_menu_items = (By.CSS_SELECTOR, "header .navbar-nav .nav-link")
-    css_selector_games_dropdown = (By.CSS_SELECTOR, "header .dropdown .dropdown-item")
+    css_selector_games_dropdown = (By.CSS_SELECTOR, "header .dropdown .show .dropdown-item")
     css_selector_sign_up_button = (By.CSS_SELECTOR, "header .btn-success")
     css_selector_sign_in_button = (By.CSS_SELECTOR, "header .btn-primary")
     css_selector_username = (By.CSS_SELECTOR, "header .btn-account-options span")
@@ -100,9 +102,18 @@ def assert_menu(selenium_driver, user=None):
     wait_number_of_elements_to_be(selenium_driver, css_selector_menu_items, 3)
     menu_items = selenium_driver.find_elements(css_selector_menu_items[0], css_selector_menu_items[1])
 
-    assert menu_items[0].text == "Search tool"
+    assert menu_items[0].text == "Search"
     assert menu_items[1].text == "Games"
     assert menu_items[2].text == "About us"
+
+    menu_items[0].click()
+
+    wait_number_of_elements_to_be(selenium_driver, css_selector_games_dropdown, 2)
+    dropdown_items = selenium_driver.find_elements(css_selector_games_dropdown[0], css_selector_games_dropdown[1])
+
+    assert len(dropdown_items) == 2
+    assert dropdown_items[0].text == "Dictionary"
+    assert dropdown_items[1].text == "Account"
 
     menu_items[1].click()
 
@@ -205,3 +216,33 @@ def assert_is_profile_page(selenium_driver, username, email):
     assert edit_account_button.text == "Edit account"
     assert delete_account_button.text == "Delete account"
     assert favorite_words_button.text == "Favorite words"
+
+
+def assert_pagination(selenium_driver, current_page, number_pages):
+    pagination = find_element(selenium_driver, CSS_SELECTOR_PAGINATION)
+
+    page_buttons = pagination.find_elements(By.CSS_SELECTOR, ".page-link")
+    active_page_button = find_element(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON)
+    first_page_button = page_buttons[0 if (current_page == 1) else 1]
+    last_page_button = page_buttons[-1 if (current_page == number_pages) else -2]
+
+    expected_text_first_page_button = "1\n(current)" if (current_page == 1) else "1"
+    expected_text_last_page_button = "{}\n(current)".format(number_pages) \
+        if (current_page == number_pages) else str(number_pages)
+
+    if current_page != 1:
+        assert page_buttons[0].text == "‹\nPrevious"
+
+    assert active_page_button.text == "{}\n(current)".format(current_page)
+    assert first_page_button.text == expected_text_first_page_button
+    assert last_page_button.text == expected_text_last_page_button
+
+    if current_page != number_pages:
+        assert page_buttons[-1].text == "›\nNext"
+
+
+def go_to_next_page(selenium_driver, current_page, number_pages):
+    if current_page != number_pages:
+        pagination = find_element(selenium_driver, CSS_SELECTOR_PAGINATION)
+        page_buttons = pagination.find_elements(By.CSS_SELECTOR, ".page-link")
+        selenium_driver.execute_script("arguments[0].click();", page_buttons[-1])
