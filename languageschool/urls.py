@@ -33,6 +33,6 @@ urlpatterns = [
     path('api/user/picture', ProfilePictureView.as_view(), name='profile-picture-api'),
     path('api/request-reset-account/', RequestResetPasswordView.as_view(), name='request-reset-account-api'),
     path('api/reset-account/<uidb64>/<token>', ResetAccountView.as_view(), name='reset-account-api'),
-    path('api/accounts', AccountsView.as_view(), name='accounts-api'),
+    path('api/accounts', AccountsView.as_view(), name='search-accounts-api'),
     path('api/accounts/<username>', AccountView.as_view(), name='account-api')
 ]
