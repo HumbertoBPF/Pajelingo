@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from selenium.webdriver.common.by import By
 
 from languageschool.tests.selenium.utils import find_element, authenticate_user, assert_is_login_page, \
-    assert_is_profile_page
+    assert_is_profile_page, assert_profile_language_filter, assert_profile_scores
 from pajelingo.settings import FRONT_END_URL
 
 PROFILE_URL = FRONT_END_URL + "/profile"
@@ -21,8 +21,6 @@ CSS_SELECTOR_DIALOG_PROFILE_PICTURE = (By.CSS_SELECTOR, "body .modal .modal-body
 CSS_SELECTOR_DIALOG_CANCEL_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-secondary")
 CSS_SELECTOR_DIALOG_DANGER_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-danger")
 CSS_SELECTOR_DIALOG_SUCCESS_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-success")
-CSS_SELECTOR_SELECT_LANGUAGE = (By.CSS_SELECTOR, "main section .form-select")
-CSS_SELECTOR_SCORES_TABLE = (By.CSS_SELECTOR, "main section .table")
 CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
 
 
@@ -34,31 +32,6 @@ def assert_is_update_account_page(selenium_driver):
 
     assert len(form_inputs) == 4
     assert submit_button.text == "Update"
-
-
-def assert_select_language_options(select_language, languages_expected):
-    select_language_options = select_language.find_elements(By.CSS_SELECTOR, "option")
-
-    assert len(select_language_options) == len(languages_expected)
-    # Check that for each language expected, there is a corresponding select option
-    language_dict = {}
-
-    for language in languages_expected:
-        language_dict[language.language_name] = True
-
-    for language_option in select_language_options:
-        del language_dict[language_option.text]
-
-    assert len(language_dict) == 0
-
-
-def select_option_from_select_language(select_language, language):
-    select_language_options = select_language.find_elements(By.CSS_SELECTOR, "option")
-
-    for language_option in select_language_options:
-        if language_option.text == language.language_name:
-            language_option.click()
-            break
 
 
 @pytest.mark.django_db
@@ -82,7 +55,7 @@ def test_profile(live_server, selenium_driver, account):
 
     selenium_driver.get(PROFILE_URL)
 
-    assert_is_profile_page(selenium_driver, user.username, user.email)
+    assert_is_profile_page(selenium_driver, user.username, email=user.email)
 
 
 @pytest.mark.django_db
@@ -164,7 +137,7 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
 
     profile_picture_dialog_success_button.click()
 
-    assert_is_profile_page(selenium_driver, user.username, user.email)
+    assert_is_profile_page(selenium_driver, user.username, email=user.email)
 
 
 @pytest.mark.parametrize(
@@ -219,36 +192,11 @@ def test_profile_user_scores(live_server, selenium_driver, account, languages, s
     """
     user, password = account()[0]
     random_language = random.choice(languages)
-    scores = score([user], languages)
+    score([user], languages)
 
     authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(PROFILE_URL)
 
-    select_language = find_element(selenium_driver, CSS_SELECTOR_SELECT_LANGUAGE)
-    scores_table = find_element(selenium_driver, CSS_SELECTOR_SCORES_TABLE)
-
-    assert_select_language_options(select_language, languages)
-
-    select_option_from_select_language(select_language, random_language)
-
-    scores_table_headers = scores_table.find_elements(By.CSS_SELECTOR, "thead tr th")
-    score_table_records = scores_table.find_elements(By.CSS_SELECTOR, "tbody tr")
-
-    assert scores_table_headers[0].text == "Game"
-    assert scores_table_headers[1].text == "Score"
-
-    expected_scores = scores.filter(user=user, language=random_language)
-
-    assert len(score_table_records) == len(expected_scores)
-
-    for score_table_record in score_table_records:
-        columns = score_table_record.find_elements(By.CSS_SELECTOR, "td")
-
-        game_name = columns[0].text
-        score = columns[1].text
-
-        assert expected_scores.filter(
-            game__game_name=game_name,
-            score=score
-        ).exists()
+    assert_profile_language_filter(selenium_driver, languages)
+    assert_profile_scores(selenium_driver, user, random_language)

@@ -2,12 +2,14 @@ import math
 import random
 
 import pytest
+from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import AppUser
 from languageschool.tests.selenium.utils import wait_text_to_be_present, wait_number_of_elements_to_be, \
-    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, assert_pagination, go_to_next_page
+    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, assert_pagination, go_to_next_page, assert_is_profile_page, scroll_to_element, \
+    assert_profile_language_filter, assert_profile_scores
 from pajelingo.settings import FRONT_END_URL
 
 SEARCH_ACCOUNT_URL = FRONT_END_URL + "/accounts"
@@ -93,3 +95,31 @@ def test_search_account(live_server, selenium_driver, account):
         assert_search_results(selenium_driver, q, current_page, accounts)
         assert_pagination(selenium_driver, current_page, number_pages)
         go_to_next_page(selenium_driver, current_page, number_pages)
+
+
+@pytest.mark.django_db
+def test_select_account(live_server, selenium_driver, account, languages):
+    account(n=random.randint(11, 30))
+
+    selenium_driver.get(SEARCH_ACCOUNT_URL)
+
+    submit_button = selenium_driver.find_element(CSS_SELECTOR_SUBMIT_BUTTON[0], CSS_SELECTOR_SUBMIT_BUTTON[1])
+
+    submit_button.click()
+
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_ACCOUNT_CARD, 10)
+    account_cards = selenium_driver.find_elements(CSS_SELECTOR_ACCOUNT_CARD[0], CSS_SELECTOR_ACCOUNT_CARD[1])
+
+    account_card = random.choice(account_cards)
+    username = account_card.text
+
+    scroll_to_element(selenium_driver, account_card)
+    account_card.click()
+
+    assert_is_profile_page(selenium_driver, username)
+
+    user = User.objects.get(username=username)
+    random_language = random.choice(languages)
+
+    assert_profile_language_filter(selenium_driver, languages)
+    assert_profile_scores(selenium_driver, user, random_language)

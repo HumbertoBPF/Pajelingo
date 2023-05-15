@@ -175,7 +175,7 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
 
     submit_update_account_form(selenium_driver, email, username, password, True)
 
-    assert_is_profile_page(selenium_driver, username, email)
+    assert_is_profile_page(selenium_driver, username, email=email)
     assert User.objects.filter(
         id=user.id,
         email=email,

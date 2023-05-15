@@ -6,8 +6,8 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Score
-from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, \
-    authenticate_user, CSS_SELECTOR_PAGINATION, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, go_to_next_page
+from languageschool.tests.selenium.utils import find_element, authenticate_user, CSS_SELECTOR_PAGINATION, \
+    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, go_to_next_page, select_option_from_select_language
 from pajelingo.settings import FRONT_END_URL
 
 RANKINGS_URL = FRONT_END_URL + "/rankings"
@@ -24,16 +24,6 @@ def create_users(accounts):
         users.append(account[0])
 
     return users
-
-
-def select_language(selenium_driver, language):
-    css_selector_language_select_option = (By.ID, "{}Item".format(language.language_name))
-    language_select = find_element(selenium_driver, CSS_SELECTOR_LANGUAGE_SELECT)
-    # Waiting the language items to load
-    wait_attribute_to_be_non_empty(language_select, "innerHTML", 10)
-    language_select.click()
-    language_option = find_element(selenium_driver, css_selector_language_select_option)
-    language_option.click()
 
 
 def assert_language_select(selenium_driver, languages):
@@ -153,7 +143,9 @@ def test_rankings_two_pages(live_server, selenium_driver, account, score, langua
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language(selenium_driver, random_language)
+    language_select = find_element(selenium_driver, CSS_SELECTOR_LANGUAGE_SELECT)
+    select_option_from_select_language(language_select, random_language)
+
     checked_users = {}
 
     for i in range(number_pages):
@@ -203,7 +195,9 @@ def test_rankings_three_pages(live_server, selenium_driver, account, score, lang
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language(selenium_driver, random_language)
+    language_select = find_element(selenium_driver, CSS_SELECTOR_LANGUAGE_SELECT)
+    select_option_from_select_language(language_select, random_language)
+
     checked_users = {}
 
     for i in range(number_pages):
@@ -262,7 +256,9 @@ def test_rankings_more_than_three_pages(live_server, selenium_driver, account, s
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language(selenium_driver, random_language)
+    language_select = find_element(selenium_driver, CSS_SELECTOR_LANGUAGE_SELECT)
+    select_option_from_select_language(language_select, random_language)
+
     checked_users = {}
 
     for i in range(number_pages):
