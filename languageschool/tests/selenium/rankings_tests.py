@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from languageschool.models import Score
 from languageschool.tests.selenium.utils import find_element, authenticate_user, CSS_SELECTOR_PAGINATION, \
     CSS_SELECTOR_ACTIVE_PAGE_BUTTON, go_to_next_page, select_option_from_select_language
+from languageschool.tests.utils import get_users_from_accounts
 from pajelingo.settings import FRONT_END_URL
 
 RANKINGS_URL = FRONT_END_URL + "/rankings"
@@ -15,15 +16,6 @@ CSS_SELECTOR_LANGUAGE_SELECT = (By.CSS_SELECTOR, "main .form-select")
 CSS_SELECTOR_SELECT_OPTIONS = (By.CSS_SELECTOR, "main .form-select option")
 CSS_SELECTOR_RANKING_TABLE = (By.CSS_SELECTOR, "main .table")
 CSS_SELECTOR_IMAGE =  (By.CSS_SELECTOR, "main .justify-content-center img")
-
-
-def create_users(accounts):
-    users = []
-
-    for account in accounts:
-        users.append(account[0])
-
-    return users
 
 
 def assert_language_select(selenium_driver, languages):
@@ -135,7 +127,7 @@ def test_rankings_two_pages(live_server, selenium_driver, account, score, langua
         auth_user, password = accounts[0]
         authenticate_user(selenium_driver, auth_user.username, password)
 
-    users = create_users(accounts)
+    users = get_users_from_accounts(accounts)
     score(users, languages)
 
     number_pages = math.ceil(len(users)/10)
@@ -187,7 +179,7 @@ def test_rankings_three_pages(live_server, selenium_driver, account, score, lang
         auth_user, password = accounts[0]
         authenticate_user(selenium_driver, auth_user.username, password)
 
-    users = create_users(accounts)
+    users = get_users_from_accounts(accounts)
     score(users, languages)
 
     number_pages = math.ceil(len(users) / 10)
@@ -248,7 +240,7 @@ def test_rankings_more_than_three_pages(live_server, selenium_driver, account, s
         auth_user, password = accounts[0]
         authenticate_user(selenium_driver, auth_user.username, password)
 
-    users = create_users(accounts)
+    users = get_users_from_accounts(accounts)
     score(users, languages)
 
     number_pages = math.ceil(len(users) / 10)

@@ -213,3 +213,12 @@ def get_alphabetically_ordered_url(base_url, query_params):
         url = "{}&{}={}".format(url, key, query_params.get(key))
 
     return url
+
+
+def get_users_from_accounts(accounts):
+    users = []
+
+    for account in accounts:
+        users.append(account[0])
+
+    return users

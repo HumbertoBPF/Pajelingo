@@ -7,6 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from languageschool.models import Game
+from languageschool.tests.utils import get_users_from_accounts
 
 
 @pytest.mark.django_db
@@ -161,11 +162,7 @@ def test_get_conjugations(api_client, conjugations):
 def test_get_scores(api_client, account, languages, score, has_language_filter, has_user_filter):
     accounts = account(n=random.randint(20, 50))
 
-    users = []
-
-    for account in accounts:
-        user, _ = account
-        users.append(user)
+    users = get_users_from_accounts(accounts)
 
     scores = score(users=users, languages=languages)
 
