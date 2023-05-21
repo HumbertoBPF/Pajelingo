@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 
 import csv
@@ -70,3 +71,4 @@ class Command(BaseCommand):
         extract(Score, ["id", "score"], foreign_keys=["user", "language", "game"])
         extract(GameRound, ["id", "round_data"], foreign_keys=["game", "user"])
         extract(AppUser, ["id", "picture"], foreign_keys=["user"], many_to_many=["favorite_words"])
+        extract(User, ["username", "email", "is_active", "is_staff", "last_login", "date_joined"])

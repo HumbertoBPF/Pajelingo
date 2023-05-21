@@ -2,6 +2,7 @@ import ast
 import csv
 
 import pytest
+from django.contrib.auth.models import User
 from django.core.management import call_command
 
 from languageschool.models import Score, Conjugation, Meaning, Article, Category, Language, Game, Word, AppUser
@@ -43,8 +44,9 @@ def test_create_backup(games, languages, categories, articles, words, meanings, 
     assert_backup_file(Language)
     assert_backup_file(Category)
     assert_backup_file(Article)
-    assert_backup_file(Word, many_to_many=["synonyms"])
     assert_backup_file(Meaning)
     assert_backup_file(Conjugation)
     assert_backup_file(Score)
+    assert_backup_file(User)
+    assert_backup_file(Word, many_to_many=["synonyms"])
     assert_backup_file(AppUser, many_to_many=["favorite_words"])
