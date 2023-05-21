@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -83,6 +83,15 @@ class Word(models.Model):
         ]
 
 
+
+class User(AbstractUser):
+    favorite_words = models.ManyToManyField(Word)
+    picture = models.ImageField(upload_to=get_upload_to, blank=True)
+
+    def __str__(self):
+        return str(self.username)
+
+
 class Meaning(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
     meaning = models.TextField()
@@ -165,12 +174,3 @@ class GameRound(models.Model):
                 name='game_round_unique_constraint'
             )
         ]
-
-
-class AppUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    favorite_words = models.ManyToManyField(Word)
-    picture = models.ImageField(upload_to=get_upload_to, blank=True)
-
-    def __str__(self):
-        return str(self.user)

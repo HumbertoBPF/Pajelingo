@@ -143,6 +143,8 @@ MESSAGE_TAGS = {
 MEDIA_ROOT = os.path.join(BASE_DIR,'pajelingo/media')
 MEDIA_URL = '/media/'
 
+AUTH_USER_MODEL = "languageschool.User"
+
 load_dotenv('C:/Users/Humberto/Desktop/Humberto/Study/WebDev/Pajelingo/.env')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -1,9 +1,8 @@
-from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 
 import csv
 
-from languageschool.models import AppUser, Game, Language, Category, Article, Word, Meaning, Conjugation, Score, \
+from languageschool.models import Game, Language, Category, Article, Word, Meaning, Conjugation, Score, \
     GameRound
 
 
@@ -70,5 +69,5 @@ class Command(BaseCommand):
                  "conjugation_4", "conjugation_5", "conjugation_6", "tense"], foreign_keys=["word"])
         extract(Score, ["id", "score"], foreign_keys=["user", "language", "game"])
         extract(GameRound, ["id", "round_data"], foreign_keys=["game", "user"])
-        extract(AppUser, ["id", "picture"], foreign_keys=["user"], many_to_many=["favorite_words"])
-        extract(User, ["username", "email", "is_active", "is_staff", "last_login", "date_joined"])
+        # extract(AppUser, ["id", "picture"], foreign_keys=["user"], many_to_many=["favorite_words"])
+        # extract(User, ["username", "email", "is_active", "is_staff", "last_login", "date_joined"])

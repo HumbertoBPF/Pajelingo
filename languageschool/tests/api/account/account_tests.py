@@ -8,7 +8,6 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.models import AppUser
 from languageschool.tests.utils import get_random_email, get_valid_password, \
     get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
     get_password_without_digits, get_password_without_special_characters, get_too_short_username, get_user_token
@@ -22,10 +21,11 @@ PASSWORD = get_valid_password()
 
 
 def get_profile_picture_base64(user):
-    app_user = AppUser.objects.filter(user__id=user.id).first()
-    if app_user.picture:
-        img = app_user.picture.open("rb")
-        return base64.b64encode(img.read())
+    # app_user = AppUser.objects.filter(user__id=user.id).first()
+    # if app_user.picture:
+    #     img = app_user.picture.open("rb")
+    #     return base64.b64encode(img.read())
+    pass
 
 
 @pytest.mark.django_db
@@ -120,10 +120,10 @@ def test_account_post(api_client, email, username, password):
         assert response.data.get("email") == email
         user = User.objects.filter(email=email, username=username, is_active=False).first()
         assert user is not None
-        assert AppUser.objects.filter(
-            user__email=email,
-            user__username=username
-        ).exists()
+        # assert AppUser.objects.filter(
+        #     user__email=email,
+        #     user__username=username
+        # ).exists()
         assert response.data.get("picture") == get_profile_picture_base64(user)
         # Check that activation email was sent
         assert len(mail.outbox) == 1

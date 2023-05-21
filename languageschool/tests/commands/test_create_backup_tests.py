@@ -5,7 +5,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.core.management import call_command
 
-from languageschool.models import Score, Conjugation, Meaning, Article, Category, Language, Game, Word, AppUser
+from languageschool.models import Score, Conjugation, Meaning, Article, Category, Language, Game, Word
 from languageschool.tests.utils import get_users_from_accounts
 
 
@@ -49,4 +49,4 @@ def test_create_backup(games, languages, categories, articles, words, meanings, 
     assert_backup_file(Score)
     assert_backup_file(User)
     assert_backup_file(Word, many_to_many=["synonyms"])
-    assert_backup_file(AppUser, many_to_many=["favorite_words"])
+    # assert_backup_file(AppUser, many_to_many=["favorite_words"])

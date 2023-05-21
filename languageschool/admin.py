@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
 
-from languageschool.models import AppUser, Article, Category, Conjugation, Game, Language, Meaning, Score, Word, \
-    GameRound
+from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word, \
+    GameRound, User
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -81,16 +80,7 @@ class GameRoundDisplay(admin.ModelAdmin):
     list_per_page = 10
 
 
-class AppUserDisplay(admin.ModelAdmin):
-    list_display = ('id', 'user')
-    list_display_links = ('id', 'user')
-    search_fields = ('user__username',)
-    list_per_page = 10
-    autocomplete_fields = ['favorite_words']
-
-
 # Register your models here.
-admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Game, GameDisplay)
 admin.site.register(Language, LanguageDisplay)
@@ -101,4 +91,3 @@ admin.site.register(Meaning, MeaningDisplay)
 admin.site.register(Conjugation, ConjugationDisplay)
 admin.site.register(Score, ScoreDisplay)
 admin.site.register(GameRound, GameRoundDisplay)
-admin.site.register(AppUser, AppUserDisplay)

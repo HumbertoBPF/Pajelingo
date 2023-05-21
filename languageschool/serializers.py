@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, AppUser
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game
 from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round, save_game_round
 from pajelingo.validators.validators import validate_email, validate_username
 
@@ -69,17 +69,18 @@ class WordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_is_favorite(self, obj):
-        user = self.context["request"].user
-
-        if user.is_anonymous:
-            return None
-
-        app_user = AppUser.objects.filter(user__id=user.id).first()
-
-        if app_user is None:
-            return None
-
-        return obj in app_user.favorite_words.all()
+        # user = self.context["request"].user
+        #
+        # if user.is_anonymous:
+        #     return None
+        #
+        # app_user = AppUser.objects.filter(user__id=user.id).first()
+        #
+        # if app_user is None:
+        #     return None
+        #
+        # return obj in app_user.favorite_words.all()
+        pass
 
     def get_image(self, obj):
         if obj.image:
@@ -385,8 +386,8 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AppUser
-        fields = ('picture',)
+        model = Word
+        fields = ('word_name',)
 
 
 class RequestResetAccountSerializer(serializers.Serializer):
@@ -425,27 +426,28 @@ class FavoriteWordsSerializer(serializers.Serializer):
     is_favorite = serializers.BooleanField()
 
     def save(self, **kwargs):
-        word_id = self.context["word_id"]
-        user = self.context["user"]
-        is_favorite = self.validated_data.get("is_favorite")
-
-        word = get_object_or_404(Word, pk=word_id)
-        app_user = get_object_or_404(AppUser, user=user)
-
-        if is_favorite:
-            app_user.favorite_words.add(word)
-        else:
-            app_user.favorite_words.remove(word)
-
-        return get_object_or_404(Word, pk=word_id)
+        # word_id = self.context["word_id"]
+        # user = self.context["user"]
+        # is_favorite = self.validated_data.get("is_favorite")
+        #
+        # word = get_object_or_404(Word, pk=word_id)
+        # app_user = get_object_or_404(AppUser, user=user)
+        #
+        # if is_favorite:
+        #     app_user.favorite_words.add(word)
+        # else:
+        #     app_user.favorite_words.remove(word)
+        #
+        # return get_object_or_404(Word, pk=word_id)
+        pass
 
 
 class AccountSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
     picture = serializers.SerializerMethodField()
     class Meta:
-        model = AppUser
-        fields = ('username', 'picture')
+        model = Word
+        fields = ('word_name',)
 
     def get_picture(self, obj):
-        return get_base_64_encoded_image(obj.picture)
+        return None

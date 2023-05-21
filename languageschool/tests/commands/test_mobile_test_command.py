@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.core.management import call_command
 
-from languageschool.models import AppUser, Game, Language, Score
+from languageschool.models import Game, Language, Score
 
 
 @pytest.mark.django_db
@@ -22,19 +22,19 @@ def test_mobile_test_setup():
     assert User.objects.filter(email="update-test-android4@test.com", username="update-test-android4").exists()
     assert User.objects.filter(email="test-android-delete@test.com", username="test-android-delete").exists()
 
-    assert AppUser.objects.filter(user__email="test-android@test.com", user__username="test-android").exists()
-    assert AppUser.objects.filter(user__email="update-test-android0@test.com",
-                                  user__username="update-test-android0").exists()
-    assert AppUser.objects.filter(user__email="update-test-android1@test.com",
-                                  user__username="update-test-android1").exists()
-    assert AppUser.objects.filter(user__email="update-test-android2@test.com",
-                                  user__username="update-test-android2").exists()
-    assert AppUser.objects.filter(user__email="update-test-android3@test.com",
-                                  user__username="update-test-android3").exists()
-    assert AppUser.objects.filter(user__email="update-test-android4@test.com",
-                                  user__username="update-test-android4").exists()
-    assert AppUser.objects.filter(user__email="test-android-delete@test.com",
-                                  user__username="test-android-delete").exists()
+    # assert AppUser.objects.filter(user__email="test-android@test.com", user__username="test-android").exists()
+    # assert AppUser.objects.filter(user__email="update-test-android0@test.com",
+    #                               user__username="update-test-android0").exists()
+    # assert AppUser.objects.filter(user__email="update-test-android1@test.com",
+    #                               user__username="update-test-android1").exists()
+    # assert AppUser.objects.filter(user__email="update-test-android2@test.com",
+    #                               user__username="update-test-android2").exists()
+    # assert AppUser.objects.filter(user__email="update-test-android3@test.com",
+    #                               user__username="update-test-android3").exists()
+    # assert AppUser.objects.filter(user__email="update-test-android4@test.com",
+    #                               user__username="update-test-android4").exists()
+    # assert AppUser.objects.filter(user__email="test-android-delete@test.com",
+    #                               user__username="test-android-delete").exists()
 
     test_user = User.objects.filter(email="test-android@test.com", username="test-android").first()
 
@@ -58,8 +58,8 @@ def test_mobile_test_teardown(account, has_new_test_android):
     if has_new_test_android:
         User.objects.create_user(email="new-test-android@test.com", username="new-test-android")
         assert User.objects.filter(email="new-test-android@test.com", username="new-test-android").exists()
-        assert AppUser.objects.filter(user__email="new-test-android@test.com",
-                                      user__username="new-test-android").exists()
+        # assert AppUser.objects.filter(user__email="new-test-android@test.com",
+        #                               user__username="new-test-android").exists()
 
     user_0 = User.objects.filter(email="test-android@test.com", username="test-android").first()
     user_1 = User.objects.filter(email="update-test-android0@test.com", username="update-test-android0").first()
@@ -81,18 +81,18 @@ def test_mobile_test_teardown(account, has_new_test_android):
     assert not User.objects.filter(email="test-android-delete@test.com", username="test-android-delete").exists()
     assert not User.objects.filter(email="new-test-android@test.com", username="new-test-android").exists()
 
-    assert not AppUser.objects.filter(user__email="test-android@test.com", user__username="test-android").exists()
-    assert not AppUser.objects.filter(user__email="update-test-android0@test.com",
-                                  user__username="update-test-android0").exists()
-    assert not AppUser.objects.filter(user__email="update-test-android1@test.com",
-                                  user__username="update-test-android1").exists()
-    assert not AppUser.objects.filter(user__email="update-test-android2@test.com",
-                                  user__username="update-test-android2").exists()
-    assert not AppUser.objects.filter(user__email="update-test-android3@test.com",
-                                  user__username="update-test-android3").exists()
-    assert not AppUser.objects.filter(user__email="update-test-android4@test.com",
-                                  user__username="update-test-android4").exists()
-    assert not AppUser.objects.filter(user__email="test-android-delete@test.com",
-                                  user__username="test-android-delete").exists()
+    # assert not AppUser.objects.filter(user__email="test-android@test.com", user__username="test-android").exists()
+    # assert not AppUser.objects.filter(user__email="update-test-android0@test.com",
+    #                               user__username="update-test-android0").exists()
+    # assert not AppUser.objects.filter(user__email="update-test-android1@test.com",
+    #                               user__username="update-test-android1").exists()
+    # assert not AppUser.objects.filter(user__email="update-test-android2@test.com",
+    #                               user__username="update-test-android2").exists()
+    # assert not AppUser.objects.filter(user__email="update-test-android3@test.com",
+    #                               user__username="update-test-android3").exists()
+    # assert not AppUser.objects.filter(user__email="update-test-android4@test.com",
+    #                               user__username="update-test-android4").exists()
+    # assert not AppUser.objects.filter(user__email="test-android-delete@test.com",
+    #                               user__username="test-android-delete").exists()
 
     assert not Score.objects.filter(user__email="test-android@test.com", user__username="test-android").exists()

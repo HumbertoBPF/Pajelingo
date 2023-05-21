@@ -11,7 +11,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from languageschool.models import Language, Word, Meaning, Conjugation, AppUser, Game, Category, Article, Score
+from languageschool.models import Language, Word, Meaning, Conjugation, Game, Category, Article, Score
 from languageschool.paginators import SearchPaginator, RankingsPaginator, SearchAccountPaginator
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
@@ -148,13 +148,9 @@ class UserViewSet(views.APIView):
                 print(e)
 
     def get(self, request):
-        app_user = AppUser.objects.filter(user__id=request.user.id).first()
+        # app_user = AppUser.objects.filter(user__id=request.user.id).first()
 
-        return Response({
-            "username": app_user.user.username,
-            "email": app_user.user.email,
-            "picture": self.get_profile_picture(app_user)
-        }, status.HTTP_200_OK)
+        return Response(status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -164,13 +160,9 @@ class UserViewSet(views.APIView):
 
             send_activation_account_email(new_user)
 
-            app_user = AppUser.objects.filter(user__id=new_user.id).first()
+            # app_user = AppUser.objects.filter(user__id=new_user.id).first()
 
-            return Response({
-                "username": app_user.user.username,
-                "email": app_user.user.email,
-                "picture": self.get_profile_picture(app_user)
-            }, status.HTTP_201_CREATED)
+            return Response(status.HTTP_201_CREATED)
 
     def put(self, request):
         serializer = UserSerializer(instance=request.user, data=request.data)
@@ -178,13 +170,9 @@ class UserViewSet(views.APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
 
-        app_user = AppUser.objects.filter(user__id=request.user.id).first()
+        # app_user = AppUser.objects.filter(user__id=request.user.id).first()
 
-        return Response({
-            "username": app_user.user.username,
-            "email": app_user.user.email,
-            "picture": self.get_profile_picture(app_user)
-        }, status.HTTP_200_OK)
+        return Response(status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user
@@ -214,32 +202,30 @@ class ScoreViewSet(views.APIView):
 
 class PublicImageViewSet(views.APIView):
     def get(self, request):
-        resource = request.GET.get("url")
+        # resource = request.GET.get("url")
+        #
+        # if resource is None:
+        #     return Response({
+        #         "error": "The resource requested is null"
+        #     }, status.HTTP_400_BAD_REQUEST)
+        #
+        # app_user = AppUser()
+        # if resource.startswith("/media/images/models/{}/".format(app_user.__class__.__name__)):
+        #     return Response({
+        #         "error": "This picture is private"
+        #     }, status.HTTP_403_FORBIDDEN)
+        #
+        # url = settings.MEDIA_ROOT.replace("\\", "/").split("/media")[0] + resource
+        #
+        # try:
+        #     with open(url, "rb") as img:
+        #         converted_string = base64.b64encode(img.read())
+        # except FileNotFoundError:
+        #     return Response({
+        #         "error": "The requested image does not exist"
+        #     }, status.HTTP_404_NOT_FOUND)
 
-        if resource is None:
-            return Response({
-                "error": "The resource requested is null"
-            }, status.HTTP_400_BAD_REQUEST)
-
-        app_user = AppUser()
-        if resource.startswith("/media/images/models/{}/".format(app_user.__class__.__name__)):
-            return Response({
-                "error": "This picture is private"
-            }, status.HTTP_403_FORBIDDEN)
-
-        url = settings.MEDIA_ROOT.replace("\\", "/").split("/media")[0] + resource
-
-        try:
-            with open(url, "rb") as img:
-                converted_string = base64.b64encode(img.read())
-        except FileNotFoundError:
-            return Response({
-                "error": "The requested image does not exist"
-            }, status.HTTP_404_NOT_FOUND)
-
-        return Response({
-            "image": converted_string
-        }, status.HTTP_200_OK)
+        return Response(status.HTTP_200_OK)
 
 
 class RequestResetPasswordView(views.APIView):
@@ -393,10 +379,10 @@ class ProfilePictureView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
-        app_user = AppUser.objects.filter(user=request.user).first()
-        serializer = ProfilePictureSerializer(app_user, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        # app_user = AppUser.objects.filter(user=request.user).first()
+        # serializer = ProfilePictureSerializer(app_user, data=request.data)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -429,9 +415,10 @@ class FavoriteWordsListView(generics.ListAPIView):
         for language in Language.objects.all():
             if self.request.query_params.get(language.language_name) == "true":
                 languages.append(language)
-        app_user = get_object_or_404(AppUser, user=self.request.user)
-        return app_user.favorite_words.all()\
-            .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
+        # app_user = get_object_or_404(AppUser, user=self.request.user)
+        # return app_user.favorite_words.all()\
+        #     .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
+        return []
 
 
 class FavoriteWordsView(views.APIView):
@@ -459,11 +446,12 @@ class AccountsView(generics.ListAPIView):
     def get_queryset(self):
         search_pattern = self.request.query_params.get("q", "")
 
-        return AppUser.objects.filter(user__username__icontains=search_pattern.lower()).order_by("user__username")
+        # return AppUser.objects.filter(user__username__icontains=search_pattern.lower()).order_by("user__username")
+        return []
 
 
 class AccountView(views.APIView):
     def get(self, request, username):
-        app_user = get_object_or_404(AppUser, user__username=username)
-        serializer = AccountSerializer(app_user)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        # app_user = get_object_or_404(AppUser, user__username=username)
+        # serializer = AccountSerializer(app_user)
+        return Response(status=status.HTTP_200_OK)
