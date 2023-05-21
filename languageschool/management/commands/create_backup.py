@@ -71,4 +71,4 @@ class Command(BaseCommand):
         extract(Score, ["id", "score"], foreign_keys=["user", "language", "game"])
         extract(GameRound, ["id", "round_data"], foreign_keys=["game", "user"])
         extract(AppUser, ["id", "picture"], foreign_keys=["user"], many_to_many=["favorite_words"])
-        extract(User, ["username", "email", "is_active", "is_staff", "last_login", "date_joined"])
+        extract(User, ["id", "username", "email", "is_active", "is_staff", "last_login", "date_joined"])
