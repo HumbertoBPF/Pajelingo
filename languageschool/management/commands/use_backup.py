@@ -80,3 +80,4 @@ class Command(BaseCommand):
         fill_table(Conjugation)
         fill_table(Score)
         update_user_table_with_app_user_data()
+        fill_table(GameRound)
