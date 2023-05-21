@@ -39,8 +39,8 @@ def extract(cls, columns, foreign_keys=None, many_to_many=None):
             row.append("None" if attr is None else attr)
 
         for column in foreign_keys:
-            obj = getattr(record, column)
-            row.append("None" if obj is None else obj.id)
+            attr = getattr(record, column)
+            row.append("None" if attr is None else attr)
 
         for column in many_to_many:
             objs = getattr(record, column).all()
@@ -61,14 +61,14 @@ class Command(BaseCommand):
         extract(Language, ["id", "language_name", "personal_pronoun_1", "personal_pronoun_2", "personal_pronoun_3",
                            "personal_pronoun_4", "personal_pronoun_5", "personal_pronoun_6", "flag_image"])
         extract(Category, ["id", "category_name"])
-        extract(Article, ["id", "article_name"], foreign_keys=["language"])
-        extract(Word, ["id", "word_name", "image"], foreign_keys=["language", "article", "category"],
-                many_to_many=["synonyms"])
-        extract(Meaning, ["id", "meaning"], foreign_keys=["word"])
+        extract(User, ["id", "username", "email", "is_active", "is_staff", "last_login", "date_joined", "is_superuser"])
+        extract(Article, ["id", "article_name"], foreign_keys=["language_id"])
+        extract(Meaning, ["id", "meaning"], foreign_keys=["word_id"])
         extract(Conjugation,
                 ["id", "conjugation_1", "conjugation_2", "conjugation_3",
-                 "conjugation_4", "conjugation_5", "conjugation_6", "tense"], foreign_keys=["word"])
-        extract(Score, ["id", "score"], foreign_keys=["user", "language", "game"])
-        extract(GameRound, ["id", "round_data"], foreign_keys=["game", "user"])
-        extract(AppUser, ["id", "picture"], foreign_keys=["user"], many_to_many=["favorite_words"])
-        extract(User, ["id", "username", "email", "is_active", "is_staff", "last_login", "date_joined", "is_superuser"])
+                 "conjugation_4", "conjugation_5", "conjugation_6", "tense"], foreign_keys=["word_id"])
+        extract(Score, ["id", "score"], foreign_keys=["user_id", "language_id", "game_id"])
+        extract(GameRound, ["id", "round_data"], foreign_keys=["game_id", "user_id"])
+        extract(AppUser, ["id", "picture"], foreign_keys=["user_id"], many_to_many=["favorite_words"])
+        extract(Word, ["id", "word_name", "image"], foreign_keys=["language_id", "article_id", "category_id"],
+                many_to_many=["synonyms"])
