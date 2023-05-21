@@ -60,7 +60,7 @@ class Article(models.Model):
 
 class Word(models.Model):
     word_name = models.CharField(max_length=30)
-    language = models.ForeignKey(Language, on_delete=models.CASCADE, blank=True, null=True)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
     synonyms = models.ManyToManyField("self", blank=True)

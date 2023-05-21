@@ -459,7 +459,7 @@ class AccountsView(generics.ListAPIView):
     def get_queryset(self):
         search_pattern = self.request.query_params.get("q", "")
 
-        return AppUser.objects.filter(user__username__icontains=search_pattern.lower())
+        return AppUser.objects.filter(user__username__icontains=search_pattern.lower()).order_by("user__username")
 
 
 class AccountView(views.APIView):
