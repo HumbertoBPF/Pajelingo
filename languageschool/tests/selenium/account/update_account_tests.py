@@ -1,8 +1,8 @@
 import pytest
-from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
+from languageschool.models import User
 from languageschool.tests.selenium.utils import assert_is_login_page, authenticate_user, \
     wait_number_of_elements_to_be, find_element, assert_is_profile_page
 from languageschool.tests.utils import get_random_username, get_valid_password, get_random_email, \

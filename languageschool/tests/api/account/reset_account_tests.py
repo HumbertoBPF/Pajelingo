@@ -3,7 +3,6 @@ import uuid
 
 import pytest
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.urls import reverse
@@ -12,6 +11,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 
+from languageschool.models import User
 from languageschool.tests.utils import get_too_long_password, get_too_short_password, get_password_without_letters, \
     get_password_without_digits, get_password_without_special_characters, get_valid_password
 

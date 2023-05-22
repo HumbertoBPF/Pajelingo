@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
+from languageschool.models import User
 from languageschool.tests.utils import get_user_token
 
 BASE_URL = reverse("profile-picture-api")
@@ -49,7 +50,7 @@ def test_profile_picture_no_image(api_client, account):
     response = api_client.put(BASE_URL, HTTP_AUTHORIZATION="Token {}".format(token))
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    # assert AppUser.objects.filter(
-    #     user__id=user.id,
-    #     picture=""
-    # ).exists()
+    assert User.objects.filter(
+        id=user.id,
+        picture=""
+    ).exists()

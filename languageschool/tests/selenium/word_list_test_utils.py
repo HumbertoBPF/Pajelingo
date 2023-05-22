@@ -4,7 +4,7 @@ import time
 
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word, Meaning
+from languageschool.models import Word, Meaning, User
 from languageschool.tests.selenium.utils import assert_menu, find_element, wait_text_to_be_present, \
     wait_number_of_elements_to_be, scroll_to_element, assert_pagination, go_to_next_page, \
     CSS_SELECTOR_ACTIVE_PAGE_BUTTON
@@ -32,7 +32,7 @@ def get_card_language(card):
 def get_card_word(card):
     return card.find_element(By.CSS_SELECTOR, ".card-body .card-text").text
 
-def assert_search_results(selenium_driver, words, current_page, number_pages, app_user=None, language=None,
+def assert_search_results(selenium_driver, words, current_page, number_pages, user=None, language=None,
                           search_pattern=""):
     expected_number_of_cards = (len(words) % 12 if ((current_page == number_pages) and (len(words) % 12 != 0)) else 12)
 
@@ -50,8 +50,8 @@ def assert_search_results(selenium_driver, words, current_page, number_pages, ap
 
         assert word is not None
 
-        if app_user is not None:
-            is_heart_filled = word in app_user.favorite_words.all()
+        if user is not None:
+            is_heart_filled = word in user.favorite_words.all()
 
             if is_heart_filled:
                 find_element(selenium_driver, CSS_SELECTOR_HEART_FILL_ICON)
@@ -73,7 +73,7 @@ def wait_toggle_heart_icon(random_card, expected_locator):
         counter += 1
 
 
-def assert_meaning_page(selenium_driver, word_name, language_name, app_user=None):
+def assert_meaning_page(selenium_driver, word_name, language_name, user=None):
     word_id = selenium_driver.current_url.split(FRONT_END_URL + "/meanings/")[1].split("#")[0]
 
     word = Word.objects.filter(
@@ -114,10 +114,10 @@ def assert_meaning_page(selenium_driver, word_name, language_name, app_user=None
 
     assert len(meanings_dict) == 0
 
-    if app_user is not None:
+    if user is not None:
         heart_icon_button = find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info"))
 
-        is_favorite_word = word in app_user.favorite_words.all()
+        is_favorite_word = word in user.favorite_words.all()
 
         assert heart_icon_button.text == "Remove from favorite words" if is_favorite_word else "Add to favorite words"
 
@@ -149,7 +149,7 @@ def modal_form_rendering(selenium_driver, languages, user):
     assert search_form_submit_button.text == "Apply"
 
 
-def search(selenium_driver, words, app_user):
+def search(selenium_driver, words, user):
     number_pages = math.ceil(len(words) / 12)
 
     for i in range(number_pages):
@@ -157,13 +157,13 @@ def search(selenium_driver, words, app_user):
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
-        assert_search_results(selenium_driver, words, current_page, number_pages, app_user=app_user)
+        assert_search_results(selenium_driver, words, current_page, number_pages, user=user)
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
 
 
-def search_with_language_filter(selenium_driver, words, app_user, language):
+def search_with_language_filter(selenium_driver, words, user, language):
     filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
     filter_button.click()
 
@@ -185,14 +185,13 @@ def search_with_language_filter(selenium_driver, words, app_user, language):
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
-        assert_search_results(selenium_driver, words, current_page, number_pages, app_user=app_user,
-                              language=language)
+        assert_search_results(selenium_driver, words, current_page, number_pages, user=user, language=language)
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
 
 
-def search_with_search_pattern(selenium_driver, words, app_user, search_pattern):
+def search_with_search_pattern(selenium_driver, words, user, search_pattern):
     time.sleep(1)
     filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
     filter_button.click()
@@ -210,14 +209,14 @@ def search_with_search_pattern(selenium_driver, words, app_user, search_pattern)
         current_page = i + 1
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
-        assert_search_results(selenium_driver, words, current_page, number_pages, app_user=app_user,
+        assert_search_results(selenium_driver, words, current_page, number_pages, user=user,
                               search_pattern=search_pattern)
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
 
 
-def search_with_search_pattern_and_language_filter(selenium_driver, words, app_user, search_pattern, language):
+def search_with_search_pattern_and_language_filter(selenium_driver, words, user, search_pattern, language):
     filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
     filter_button.click()
 
@@ -241,14 +240,14 @@ def search_with_search_pattern_and_language_filter(selenium_driver, words, app_u
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
-        assert_search_results(selenium_driver, words, current_page, number_pages, app_user=app_user, language=language,
+        assert_search_results(selenium_driver, words, current_page, number_pages, user=user, language=language,
                               search_pattern=search_pattern)
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
 
 
-def toggle_favorite_word(selenium_driver, app_user):
+def toggle_favorite_word(selenium_driver, user):
     wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")
 
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
@@ -264,19 +263,19 @@ def toggle_favorite_word(selenium_driver, app_user):
         word_name=word_name
     ).first()
 
-    is_favorite_word = word in app_user.favorite_words.all()
+    is_favorite_word = word in user.favorite_words.all()
 
     if is_favorite_word:
         heart_fill_icon = random_card.find_element(CSS_SELECTOR_HEART_FILL_ICON[0], CSS_SELECTOR_HEART_FILL_ICON[1])
         heart_fill_icon.click()
         wait_toggle_heart_icon(random_card, CSS_SELECTOR_HEART_NON_FILL_ICON)
-        # assert not word in AppUser.objects.get(id=app_user.id).favorite_words.all()
+        assert not word in User.objects.get(id=user.id).favorite_words.all()
     else:
         heart_non_fill_icon = \
             random_card.find_element(CSS_SELECTOR_HEART_NON_FILL_ICON[0], CSS_SELECTOR_HEART_NON_FILL_ICON[1])
         heart_non_fill_icon.click()
         wait_toggle_heart_icon(random_card, CSS_SELECTOR_HEART_FILL_ICON)
-        # assert word in AppUser.objects.get(id=app_user.id).favorite_words.all()
+        assert word in User.objects.get(id=user.id).favorite_words.all()
 
 def search_with_no_results(selenium_driver):
     filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
@@ -298,7 +297,7 @@ def search_with_no_results(selenium_driver):
     assert no_results_text.text == "No result matching your search was found"
 
 
-def access_meaning_page(selenium_driver, app_user):
+def access_meaning_page(selenium_driver, user):
     filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
     filter_button.click()
 
@@ -317,10 +316,10 @@ def access_meaning_page(selenium_driver, app_user):
 
     random_card.click()
 
-    assert_meaning_page(selenium_driver, word_name, language_name, app_user=app_user)
+    assert_meaning_page(selenium_driver, word_name, language_name, user=user)
 
 
-def toggle_favorite_word_in_meaning_page(selenium_driver, app_user):
+def toggle_favorite_word_in_meaning_page(selenium_driver, user):
     filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
     filter_button.click()
 
@@ -352,15 +351,15 @@ def toggle_favorite_word_in_meaning_page(selenium_driver, app_user):
     heart_icon_button = find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info"))
     scroll_to_element(selenium_driver, heart_icon_button)
 
-    is_favorite_word = word in app_user.favorite_words.all()
+    is_favorite_word = word in user.favorite_words.all()
 
     if is_favorite_word:
         find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info .bi-heart"))
         heart_icon_button.click()
         find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info .bi-heart-fill"))
-        # assert not word in AppUser.objects.get(id=app_user.id).favorite_words.all()
+        assert not word in User.objects.get(id=user.id).favorite_words.all()
     else:
         find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info .bi-heart-fill"))
         heart_icon_button.click()
         find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info .bi-heart"))
-        # assert word in AppUser.objects.get(id=app_user.id).favorite_words.all()
+        assert word in User.objects.get(id=user.id).favorite_words.all()

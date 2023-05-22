@@ -1,9 +1,9 @@
 import random
 
 import pytest
-from django.contrib.auth.models import User
 from selenium.webdriver.common.by import By
 
+from languageschool.models import User
 from languageschool.tests.selenium.utils import find_element, authenticate_user, assert_is_login_page, \
     assert_is_profile_page, assert_profile_language_filter, assert_profile_scores
 from pajelingo.settings import FRONT_END_URL

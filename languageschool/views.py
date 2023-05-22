@@ -1,6 +1,5 @@
 import base64
 
-from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
@@ -11,7 +10,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from languageschool.models import Language, Word, Meaning, Conjugation, Game, Category, Article, Score
+from languageschool.models import Language, Word, Meaning, Conjugation, Game, Category, Article, Score, User
 from languageschool.paginators import SearchPaginator, RankingsPaginator, SearchAccountPaginator
 from languageschool.permissions import AllowPostOnly
 from languageschool.serializers import WordSerializer, MeaningSerializer, ArticleGameAnswerSerializer, \
@@ -139,40 +138,44 @@ class UserViewSet(views.APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [AllowPostOnly]
 
-    def get_profile_picture(self, app_user):
-        if app_user.picture:
+    def get_profile_picture(self, user):
+        if user.picture:
             try:
-                img = app_user.picture.open("rb")
+                img = user.picture.open("rb")
                 return base64.b64encode(img.read())
             except FileNotFoundError as e:
                 print(e)
 
     def get(self, request):
-        # app_user = AppUser.objects.filter(user__id=request.user.id).first()
-
-        return Response(status.HTTP_200_OK)
+        return Response({
+            "username": request.user.username,
+            "email": request.user.email,
+            "picture": self.get_profile_picture(request.user)
+        }, status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_user = serializer.save()
 
-        if serializer.is_valid(raise_exception=True):
-            new_user = serializer.save()
+        send_activation_account_email(new_user)
 
-            send_activation_account_email(new_user)
-
-            # app_user = AppUser.objects.filter(user__id=new_user.id).first()
-
-            return Response(status.HTTP_201_CREATED)
+        return Response({
+            "username": new_user.username,
+            "email": new_user.email,
+            "picture": self.get_profile_picture(new_user)
+        }, status.HTTP_201_CREATED)
 
     def put(self, request):
         serializer = UserSerializer(instance=request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-
-        # app_user = AppUser.objects.filter(user__id=request.user.id).first()
-
-        return Response(status.HTTP_200_OK)
+        return Response({
+            "username": request.user.username,
+            "email": request.user.email,
+            "picture": self.get_profile_picture(request.user)
+        }, status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user
@@ -202,30 +205,31 @@ class ScoreViewSet(views.APIView):
 
 class PublicImageViewSet(views.APIView):
     def get(self, request):
-        # resource = request.GET.get("url")
-        #
-        # if resource is None:
-        #     return Response({
-        #         "error": "The resource requested is null"
-        #     }, status.HTTP_400_BAD_REQUEST)
-        #
-        # app_user = AppUser()
-        # if resource.startswith("/media/images/models/{}/".format(app_user.__class__.__name__)):
-        #     return Response({
-        #         "error": "This picture is private"
-        #     }, status.HTTP_403_FORBIDDEN)
-        #
-        # url = settings.MEDIA_ROOT.replace("\\", "/").split("/media")[0] + resource
-        #
-        # try:
-        #     with open(url, "rb") as img:
-        #         converted_string = base64.b64encode(img.read())
-        # except FileNotFoundError:
-        #     return Response({
-        #         "error": "The requested image does not exist"
-        #     }, status.HTTP_404_NOT_FOUND)
+        resource = request.GET.get("url")
 
-        return Response(status.HTTP_200_OK)
+        if resource is None:
+            return Response({
+                "error": "The resource requested is null"
+            }, status.HTTP_400_BAD_REQUEST)
+
+        if resource.startswith("/media/images/models/AppUser/"):
+            return Response({
+                "error": "This picture is private"
+            }, status.HTTP_403_FORBIDDEN)
+
+        url = settings.MEDIA_ROOT.replace("\\", "/").split("/media")[0] + resource
+
+        try:
+            with open(url, "rb") as img:
+                converted_string = base64.b64encode(img.read())
+        except FileNotFoundError:
+            return Response({
+                "error": "The requested image does not exist"
+            }, status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            "image": converted_string
+        }, status.HTTP_200_OK)
 
 
 class RequestResetPasswordView(views.APIView):
@@ -379,10 +383,9 @@ class ProfilePictureView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
-        # app_user = AppUser.objects.filter(user=request.user).first()
-        # serializer = ProfilePictureSerializer(app_user, data=request.data)
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
+        serializer = ProfilePictureSerializer(request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -415,10 +418,8 @@ class FavoriteWordsListView(generics.ListAPIView):
         for language in Language.objects.all():
             if self.request.query_params.get(language.language_name) == "true":
                 languages.append(language)
-        # app_user = get_object_or_404(AppUser, user=self.request.user)
-        # return app_user.favorite_words.all()\
-        #     .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
-        return []
+        return self.request.user.favorite_words.all()\
+            .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
 
 
 class FavoriteWordsView(views.APIView):
@@ -446,12 +447,11 @@ class AccountsView(generics.ListAPIView):
     def get_queryset(self):
         search_pattern = self.request.query_params.get("q", "")
 
-        # return AppUser.objects.filter(user__username__icontains=search_pattern.lower()).order_by("user__username")
-        return []
+        return User.objects.filter(username__icontains=search_pattern).order_by("username")
 
 
 class AccountView(views.APIView):
     def get(self, request, username):
-        # app_user = get_object_or_404(AppUser, user__username=username)
-        # serializer = AccountSerializer(app_user)
-        return Response(status=status.HTTP_200_OK)
+        user = get_object_or_404(User, username=username)
+        serializer = AccountSerializer(user)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)

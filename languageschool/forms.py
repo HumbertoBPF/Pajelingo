@@ -1,11 +1,11 @@
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
-from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from languageschool.models import User
 from pajelingo.validators.validators import validate_email, ERROR_NOT_CONFIRMED_PASSWORD, validate_username
 
 

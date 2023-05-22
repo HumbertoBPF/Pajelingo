@@ -31,41 +31,38 @@ def test_search_modal_rendering(live_server, selenium_driver, account, languages
 @pytest.mark.django_db
 def test_search(live_server, account, selenium_driver, words, languages, is_authenticated):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first() if is_authenticated else None
 
     if is_authenticated:
         authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(SEARCH_URL)
-    # search(selenium_driver, words, app_user)
+    search(selenium_driver, words, user if is_authenticated else None)
 
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
 @pytest.mark.django_db
 def test_search_with_language_filter(live_server, selenium_driver, account, words, languages, is_authenticated):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first() if is_authenticated else None
 
     if is_authenticated:
         authenticate_user(selenium_driver, user.username, password)
 
     random_language = random.choice(languages)
     selenium_driver.get(SEARCH_URL)
-    # search_with_language_filter(selenium_driver, words, app_user, random_language)
+    search_with_language_filter(selenium_driver, words, user if is_authenticated else None, random_language)
 
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
 @pytest.mark.django_db
 def test_search_with_search_pattern(live_server, selenium_driver, account, words, languages, is_authenticated):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first() if is_authenticated else None
 
     if is_authenticated:
         authenticate_user(selenium_driver, user.username, password)
 
     search_pattern = get_random_string(1)
     selenium_driver.get(SEARCH_URL)
-    # search_with_search_pattern(selenium_driver, words, app_user, search_pattern)
+    search_with_search_pattern(selenium_driver, words, user if is_authenticated else None, search_pattern)
 
 
 @pytest.mark.parametrize("is_authenticated", [True, False])
@@ -73,7 +70,6 @@ def test_search_with_search_pattern(live_server, selenium_driver, account, words
 def test_search_with_search_pattern_and_language_filter(live_server, selenium_driver, account, words, languages,
                                                         is_authenticated):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first() if is_authenticated else None
 
     if is_authenticated:
         authenticate_user(selenium_driver, user.username, password)
@@ -81,16 +77,16 @@ def test_search_with_search_pattern_and_language_filter(live_server, selenium_dr
     search_pattern = get_random_string(1)
     random_language = random.choice(languages)
     selenium_driver.get(SEARCH_URL)
-    # search_with_search_pattern_and_language_filter(selenium_driver, words, app_user, search_pattern, random_language)
+    search_with_search_pattern_and_language_filter(selenium_driver, words, user if is_authenticated else None,
+                                                   search_pattern, random_language)
 
 
 @pytest.mark.django_db
 def test_search_toggle_favorite_word(live_server, selenium_driver, account):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first()
     authenticate_user(selenium_driver, user.username, password)
     selenium_driver.get(SEARCH_URL)
-    # toggle_favorite_word(selenium_driver, app_user)
+    toggle_favorite_word(selenium_driver, user)
 
 
 @pytest.mark.django_db
@@ -103,19 +99,17 @@ def test_search_no_results(live_server, selenium_driver, words, languages):
 @pytest.mark.django_db
 def test_meaning(live_server, selenium_driver, account, words, meanings, is_authenticated):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first() if is_authenticated else None
 
     if is_authenticated:
         authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(SEARCH_URL)
-    # access_meaning_page(selenium_driver, app_user)
+    access_meaning_page(selenium_driver, user if is_authenticated else None)
 
 
 @pytest.mark.django_db
 def test_meaning_toggle_favorite_word(live_server, selenium_driver, account, words, meanings):
     user, password = account()[0]
-    # app_user = AppUser.objects.filter(user=user).first()
     authenticate_user(selenium_driver, user.username, password)
     selenium_driver.get(SEARCH_URL)
-    # toggle_favorite_word_in_meaning_page(selenium_driver, app_user)
+    toggle_favorite_word_in_meaning_page(selenium_driver, user)

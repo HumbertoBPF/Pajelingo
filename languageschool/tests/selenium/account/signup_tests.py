@@ -1,10 +1,10 @@
 import pytest
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.models import User
 from django.core import mail
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
+from languageschool.models import User
 from languageschool.tests.selenium.utils import find_element
 from languageschool.tests.utils import get_random_username, get_valid_password, get_random_email, \
     get_too_short_username, get_too_short_password, get_too_long_password, get_password_without_letters, \
@@ -131,10 +131,6 @@ def test_signup(live_server, selenium_driver):
         username=username
     ).first()
     assert user is not None
-    # assert AppUser.objects.filter(
-    #     user__email=email,
-    #     user__username=username
-    # ).exists()
     check_password(password, user.password)
 
     assert len(mail.outbox) == 1

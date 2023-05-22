@@ -1,8 +1,8 @@
-from django.contrib.auth.models import User
 from django.core import mail
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
+from languageschool.models import User
 from languageschool.tests.selenium.utils import find_element, signup_user
 from languageschool.tests.utils import get_random_email, get_random_username, get_valid_password
 from pajelingo.settings import FRONT_END_URL

@@ -1,5 +1,6 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+
+from languageschool.models import User
 
 ERROR_USERNAME_FORMAT = "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters."
 ERROR_NOT_CONFIRMED_PASSWORD = "The passwords do not match."

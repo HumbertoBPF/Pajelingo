@@ -1,7 +1,6 @@
 import random
 
 import pytest
-from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from rest_framework.test import APIClient
 from selenium import webdriver
@@ -10,7 +9,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning
+from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, User
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
 
 
@@ -111,13 +110,11 @@ def account(words):
                                             email=get_random_email(),
                                             password=password)
 
-            # app_user = AppUser.objects.filter(user=user).first()
-
             for i in range(10):
                 favorite_word = random.choice(words)
-                # app_user.favorite_words.add(favorite_word)
+                user.favorite_words.add(favorite_word)
 
-            # app_user.save()
+            user.save()
 
             accounts_list.append((user, password))
         return accounts_list

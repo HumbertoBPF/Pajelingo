@@ -1,9 +1,8 @@
 import random
 
-from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
-from languageschool.models import Game, Language, Score
+from languageschool.models import Game, Language, Score, User
 
 numberOfUsers = 20
 
