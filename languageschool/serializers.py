@@ -1,3 +1,4 @@
+import base64
 import random
 
 from django.contrib.auth.password_validation import validate_password
@@ -110,9 +111,20 @@ class ListScoreSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
+    password = serializers.CharField(max_length=128, write_only=True)
+    bio = serializers.CharField(allow_blank=True)
+    profile_picture = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = User
-        fields = ("email", "username", "password")
+        fields = ("email", "username", "password", "bio", "profile_picture")
+
+    def get_profile_picture(self, obj):
+        if obj.picture:
+            try:
+                img = obj.picture.open("rb")
+                return base64.b64encode(img.read())
+            except FileNotFoundError as e:
+                print(e)
 
     def validate_email(self, value):
         validate_email(value, self.instance)
@@ -130,8 +142,9 @@ class UserSerializer(serializers.ModelSerializer):
         username = validated_data.get("username")
         email = validated_data.get("email")
         password = validated_data.get("password")
+        bio = validated_data.get("bio")
 
-        user = User.objects.create_user(email=email, username=username, password=password)
+        user = User.objects.create_user(email=email, username=username, password=password, bio=bio)
         user.is_active = False
         user.save()
 
@@ -141,9 +154,11 @@ class UserSerializer(serializers.ModelSerializer):
         username = validated_data.get("username")
         email = validated_data.get("email")
         password = validated_data.get("password")
+        bio = validated_data.get("bio")
 
         instance.username = username
         instance.email = email
+        instance.bio = bio
         instance.set_password(password)
         instance.save()
 
@@ -437,7 +452,7 @@ class AccountSerializer(serializers.ModelSerializer):
     picture = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('username', 'picture')
+        fields = ('username', 'bio', 'picture')
 
     def get_picture(self, obj):
         return get_base_64_encoded_image(obj.picture)

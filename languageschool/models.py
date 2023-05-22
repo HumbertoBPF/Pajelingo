@@ -85,8 +85,9 @@ class Word(models.Model):
 
 
 class User(AbstractUser):
-    favorite_words = models.ManyToManyField(Word)
+    favorite_words = models.ManyToManyField(Word, blank=True)
     picture = models.ImageField(upload_to=get_upload_to, blank=True)
+    bio = models.TextField(blank=True)
 
     def __str__(self):
         return str(self.username)

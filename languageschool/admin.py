@@ -50,7 +50,8 @@ class WordDisplay(admin.ModelAdmin):
 
 
 class ConjugationDisplay(admin.ModelAdmin):
-    list_display = ('id', 'word', 'tense', 'conjugation_1', 'conjugation_2', 'conjugation_3', 'conjugation_4', 'conjugation_5', 'conjugation_6')
+    list_display = ('id', 'word', 'tense', 'conjugation_1', 'conjugation_2', 'conjugation_3', 'conjugation_4',
+                    'conjugation_5', 'conjugation_6')
     list_display_links = ('id', 'word')
     search_fields = ('word__word_name',)
     list_filter = ('tense',)

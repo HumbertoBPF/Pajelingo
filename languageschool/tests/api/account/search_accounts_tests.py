@@ -34,8 +34,13 @@ def assert_response(response, q, page, accounts):
 
     for result in results:
         username = result.get("username")
+        bio = result.get("bio")
+
+        assert username is not None
+        assert bio is not None
         assert User.objects.filter(
-            username=username
+            username=username,
+            bio=bio
         ).exists()
         assert query.lower() in username.lower()
 

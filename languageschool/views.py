@@ -138,20 +138,10 @@ class UserViewSet(views.APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [AllowPostOnly]
 
-    def get_profile_picture(self, user):
-        if user.picture:
-            try:
-                img = user.picture.open("rb")
-                return base64.b64encode(img.read())
-            except FileNotFoundError as e:
-                print(e)
-
     def get(self, request):
-        return Response({
-            "username": request.user.username,
-            "email": request.user.email,
-            "picture": self.get_profile_picture(request.user)
-        }, status.HTTP_200_OK)
+        serializer = UserSerializer(request.user)
+
+        return Response(serializer.data, status.HTTP_200_OK)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -160,22 +150,18 @@ class UserViewSet(views.APIView):
 
         send_activation_account_email(new_user)
 
-        return Response({
-            "username": new_user.username,
-            "email": new_user.email,
-            "picture": self.get_profile_picture(new_user)
-        }, status.HTTP_201_CREATED)
+        serializer = UserSerializer(new_user)
+
+        return Response(serializer.data, status.HTTP_201_CREATED)
 
     def put(self, request):
         serializer = UserSerializer(instance=request.user, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        updated_user = serializer.save()
 
-        return Response({
-            "username": request.user.username,
-            "email": request.user.email,
-            "picture": self.get_profile_picture(request.user)
-        }, status.HTTP_200_OK)
+        serializer = UserSerializer(updated_user)
+
+        return Response(serializer.data, status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user

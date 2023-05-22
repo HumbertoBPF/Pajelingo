@@ -60,6 +60,7 @@ def test_account_get(api_client, account):
     assert response.status_code == status.HTTP_200_OK
     assert response.data.get("username") == user.username
     assert response.data.get("email") == user.email
+    assert response.data.get("bio") is not None
     assert response.data.get("picture") == get_profile_picture_base64(user)
 
 
@@ -93,8 +94,15 @@ def test_account_get(api_client, account):
         None
     ]
 )
+@pytest.mark.parametrize(
+    "bio", [
+        get_random_string(random.randint(1, 20)),
+        "",
+        None
+    ]
+)
 @pytest.mark.django_db
-def test_account_post(api_client, email, username, password):
+def test_account_post(api_client, email, username, password, bio):
     """
     Tests the POST /user endpoint with several inputs. One of the combinations (EMAIL, USERNAME, PASSWORD) must return
     201 Created and the picture, email and username attributes while invalid inputs must return 400 Bad Request.
@@ -110,13 +118,18 @@ def test_account_post(api_client, email, username, password):
     if password is not None:
         payload["password"] = password
 
+    if bio is not None:
+        payload["bio"] = bio
+
     response = api_client.post(URL, payload)
 
-    if (email == EMAIL) and (username == USERNAME) and (password == PASSWORD):
+    if (email == EMAIL) and (username == USERNAME) and (password == PASSWORD) and (bio is not None):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data.get("username") == username
         assert response.data.get("email") == email
-        user = User.objects.filter(email=email, username=username, is_active=False).first()
+        assert response.data.get("bio") is not None
+        user = User.objects.filter(email=email, username=username, bio=bio, is_active=False).first()
+        assert user.check_password(password)
         assert user is not None
         assert response.data.get("picture") == get_profile_picture_base64(user)
         # Check that activation email was sent
@@ -146,7 +159,8 @@ def test_account_post_requires_unique_email_and_username(api_client, account, re
     user, _ = account()[0]
 
     payload = {
-        "password": get_valid_password()
+        "password": get_valid_password(),
+        "bio": get_random_string(random.randint(1, 20))
     }
 
     if repeated_email:
@@ -215,8 +229,15 @@ def test_account_put_wrong_credentials(api_client, account):
         None
     ]
 )
+@pytest.mark.parametrize(
+    "bio", [
+        get_random_string(random.randint(1, 20)),
+        "",
+        None
+    ]
+)
 @pytest.mark.django_db
-def test_account_put(api_client, account, email, username, password):
+def test_account_put(api_client, account, email, username, password, bio):
     """
     Tests the PUT /user endpoint with several inputs. One of the combinations (EMAIL, USERNAME, PASSWORD) must return
     200 Ok and the picture, email, and username attributes while invalid inputs must return 400 Bad Request.
@@ -234,16 +255,22 @@ def test_account_put(api_client, account, email, username, password):
     if password is not None:
         payload["password"] = password
 
+    if bio is not None:
+        payload["bio"] = bio
+
     token = get_user_token(api_client, user, user_password)
 
     response = api_client.put(URL, payload, HTTP_AUTHORIZATION="Token {}".format(token))
 
-    if (email == EMAIL) and (username == USERNAME) and (password == PASSWORD):
+    if (email == EMAIL) and (username == USERNAME) and (password == PASSWORD) and (bio is not None):
         assert response.status_code == status.HTTP_200_OK
         assert response.data.get("username") == username
         assert response.data.get("email") == email
+        assert response.data.get("bio") is not None
         assert response.data.get("picture") == get_profile_picture_base64(user)
-        assert User.objects.filter(id=user.id, email=email, username=username).exists()
+        user = User.objects.filter(id=user.id, email=email, username=username, bio=bio).first()
+        assert user is not None
+        assert user.check_password(password)
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert not User.objects.filter(id=user.id, email=email, username=username).exists()
@@ -267,7 +294,8 @@ def test_account_put_requires_unique_email_and_username(api_client, account, rep
     user_to_update, password_user_to_update = users[1]
 
     payload = {
-        "password": get_valid_password()
+        "password": get_valid_password(),
+        "bio": get_random_string(random.randint(1, 20))
     }
 
     if repeated_email:
@@ -309,7 +337,8 @@ def test_account_put_same_email_and_username(api_client, account, same_email, sa
     user_to_update, password_user_to_update = users[1]
 
     payload = {
-        "password": get_valid_password()
+        "password": get_valid_password(),
+        "bio": get_random_string(random.randint(1, 20))
     }
 
     if same_email:
@@ -329,6 +358,14 @@ def test_account_put_same_email_and_username(api_client, account, same_email, sa
     assert response.status_code == status.HTTP_200_OK
     assert User.objects.count() == 2
     assert User.objects.filter(id=user.id, username=user.username, email=user.email).exists()
+    user = User.objects.filter(
+        id=user_to_update.id,
+        username=payload["username"],
+        email=payload["email"],
+        bio=payload["bio"]
+    ).first()
+    assert user is not None
+    assert user.check_password(payload["password"])
     assert User.objects.filter(id=user_to_update.id, username=payload["username"], email=payload["email"]).exists()
 
 
