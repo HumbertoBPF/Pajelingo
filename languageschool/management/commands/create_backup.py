@@ -19,11 +19,8 @@ def write_in_csv(filename, columns, data):
         writer.writerows(data)
 
 
-def extract(cls, columns, foreign_keys=None, many_to_many=None):
+def extract(cls, columns, many_to_many=None):
     data = []
-
-    if foreign_keys is None:
-        foreign_keys = []
 
     if many_to_many is None:
         many_to_many = []
@@ -37,10 +34,6 @@ def extract(cls, columns, foreign_keys=None, many_to_many=None):
             attr = getattr(record, column)
             row.append("None" if attr is None else attr)
 
-        for column in foreign_keys:
-            obj = getattr(record, column)
-            row.append("None" if obj is None else obj.id)
-
         for column in many_to_many:
             objs = getattr(record, column).all()
             many_to_many_column = []
@@ -51,7 +44,7 @@ def extract(cls, columns, foreign_keys=None, many_to_many=None):
 
         data.append(row)
 
-    write_in_csv(f"{cls.__name__}.csv", columns + foreign_keys + many_to_many, data)
+    write_in_csv(f"{cls.__name__}.csv", columns + many_to_many, data)
 
 
 class Command(BaseCommand):
@@ -60,15 +53,15 @@ class Command(BaseCommand):
         extract(Language, ["id", "language_name", "personal_pronoun_1", "personal_pronoun_2", "personal_pronoun_3",
                            "personal_pronoun_4", "personal_pronoun_5", "personal_pronoun_6", "flag_image"])
         extract(Category, ["id", "category_name"])
-        extract(Article, ["id", "article_name"], foreign_keys=["language"])
-        extract(Word, ["id", "word_name", "image"], foreign_keys=["language", "article", "category"],
-                many_to_many=["synonyms"])
-        extract(Meaning, ["id", "meaning"], foreign_keys=["word"])
+        extract(User,
+                ["id", "username", "email", "is_active", "is_staff", "last_login",
+                 "date_joined", "is_superuser", "picture"],  many_to_many=["favorite_words"])
+        extract(Article, ["id", "article_name", "language_id"])
+        extract(Meaning, ["id", "meaning", "word_id"])
         extract(Conjugation,
                 ["id", "conjugation_1", "conjugation_2", "conjugation_3",
-                 "conjugation_4", "conjugation_5", "conjugation_6", "tense"], foreign_keys=["word"])
-        extract(Score, ["id", "score"], foreign_keys=["user", "language", "game"])
-        extract(GameRound, ["id", "round_data"], foreign_keys=["game", "user"])
-        extract(User,
-                ["id", "username", "email", "is_active", "is_staff",
-                 "last_login", "date_joined", "is_superuser", "picture"], many_to_many=["favorite_words"])
+                 "conjugation_4", "conjugation_5", "conjugation_6", "tense", "word_id"])
+        extract(Score, ["id", "score", "user_id", "language_id", "game_id"])
+        extract(GameRound, ["id", "round_data", "game_id", "user_id"])
+        extract(Word, ["id", "word_name", "image", "language_id", "article_id", "category_id"],
+                many_to_many=["synonyms"])
