@@ -18,6 +18,18 @@ def update_user_table_with_app_user_data():
             obj.save()
 
 
+def set_word_table_synonyms():
+    with open(f'C:/Users/Humberto/Desktop/Humberto/Study/WebDev/Pajelingo/backups/Word.csv', mode='r') as f:
+        reader = csv.reader(f)
+        next(reader, None)
+
+        for row in reader:
+            word_id, word_name, image, language_id, article_id, category_id, synonyms = row
+            word = Word.objects.filter(id=word_id).first()
+            word.synonyms.set(ast.literal_eval(synonyms))
+            word.save()
+
+
 def fill_table(cls, many_to_many=None):
     if many_to_many is None:
         many_to_many = []
@@ -40,28 +52,6 @@ def fill_table(cls, many_to_many=None):
 
             cls.objects.create(**args)
 
-        f.seek(1)
-
-        if len(many_to_many) != 0:
-            for row in reader:
-                args = {}
-                many_to_many_args = []
-
-                for i in range(len(row)):
-
-                    if header in many_to_many:
-                        many_to_many_args.append(ast.literal_eval(column))
-                        continue
-
-                    args[header] = None if column == "None" else column
-
-                obj = cls.objects.filter(**args).first()
-
-                for i in range(len(many_to_many)):
-                    getattr(obj, many_to_many[i]).set(many_to_many_args[i])
-
-                obj.save()
-
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -81,3 +71,4 @@ class Command(BaseCommand):
         fill_table(Score)
         update_user_table_with_app_user_data()
         fill_table(GameRound)
+        set_word_table_synonyms()
