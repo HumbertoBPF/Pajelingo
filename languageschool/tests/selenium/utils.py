@@ -1,5 +1,6 @@
 import time
 
+from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -7,8 +8,17 @@ from selenium.webdriver.support.wait import WebDriverWait
 from languageschool.models import Score
 from pajelingo.settings import FRONT_END_URL
 
+# Pagination component CSS selectors
 CSS_SELECTOR_PAGINATION = (By.CSS_SELECTOR, "main .pagination")
 CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
+# User form CSS selectors
+CSS_SELECTOR_USER_FORM_INPUTS = (By.CSS_SELECTOR, "main form .form-control")
+CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn")
+# Profile page buttons
+CSS_SELECTOR_UPDATE_PICTURE_BUTTON = (By.CSS_SELECTOR, "main .btn-info")
+CSS_SELECTOR_EDIT_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main .list-group .list-group-item:nth-of-type(1)")
+CSS_SELECTOR_DELETE_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main .list-group .list-group-item:nth-of-type(2)")
+CSS_SELECTOR_FAVORITE_WORDS_BUTTON = (By.CSS_SELECTOR, "main .list-group .list-group-item:nth-of-type(3)")
 
 def find_element(selenium_driver, locator):
     """
@@ -164,7 +174,7 @@ def authenticate_user(selenium_driver, username, password):
     find_element(selenium_driver, css_selector_carousel)
 
 
-def signup_user(selenium_driver, email, username, password):
+def signup_user(selenium_driver, email, username, bio, password):
     css_selector_inputs = (By.CSS_SELECTOR, "main form .form-control")
     css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
     css_selector_alert_success = (By.CSS_SELECTOR, "main .alert-success")
@@ -176,8 +186,9 @@ def signup_user(selenium_driver, email, username, password):
 
     form_inputs[0].send_keys(email)
     form_inputs[1].send_keys(username)
-    form_inputs[2].send_keys(password)
+    form_inputs[2].send_keys(bio)
     form_inputs[3].send_keys(password)
+    form_inputs[4].send_keys(password)
 
     submit_button.click()
 
@@ -197,23 +208,21 @@ def assert_is_login_page(selenium_driver):
     assert submit_button.text == "Sign in"
 
 
-def assert_is_profile_page(selenium_driver, username, email=None):
-    css_selector_username_credential = (By.CSS_SELECTOR, "main section .col-lg-9 p:nth-of-type(1)")
+def assert_is_profile_page(selenium_driver, username, bio, email=None):
+    nb_credentials = 3 if email is not None else 2
+    css_selector_username_credential = (By.CSS_SELECTOR, "main .col-lg-9 section p:nth-of-type(1)")
+    css_selector_bio_credential = (By.CSS_SELECTOR, f"main .col-lg-9 section p:nth-of-type({nb_credentials})")
 
     wait_text_to_be_present(selenium_driver, css_selector_username_credential, "Username: {}".format(username))
+    wait_text_to_be_present(selenium_driver, css_selector_bio_credential, "Bio: {}".format(bio))
 
     if email is not None:
-        css_selector_email_credential = (By.CSS_SELECTOR, "main section .col-lg-9 p:nth-of-type(2)")
+        css_selector_email_credential = (By.CSS_SELECTOR, "main .col-lg-9 section p:nth-of-type(2)")
 
-        css_selector_update_picture_button = (By.CSS_SELECTOR, "main .col-lg-3 .btn-info")
-        css_selector_edit_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info:nth-of-type(1)")
-        css_selector_delete_account_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-danger")
-        css_selector_favorite_words_button = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info:nth-of-type(3)")
-
-        update_picture_button = find_element(selenium_driver, css_selector_update_picture_button)
-        edit_account_button = find_element(selenium_driver, css_selector_edit_account_button)
-        delete_account_button = find_element(selenium_driver, css_selector_delete_account_button)
-        favorite_words_button = find_element(selenium_driver, css_selector_favorite_words_button)
+        update_picture_button = find_element(selenium_driver, CSS_SELECTOR_UPDATE_PICTURE_BUTTON)
+        edit_account_button = find_element(selenium_driver, CSS_SELECTOR_EDIT_ACCOUNT_BUTTON)
+        delete_account_button = find_element(selenium_driver, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON)
+        favorite_words_button = find_element(selenium_driver, CSS_SELECTOR_FAVORITE_WORDS_BUTTON)
 
         wait_text_to_be_present(selenium_driver, css_selector_email_credential, "Email: {}".format(email))
         assert update_picture_button.text == "Update picture"
@@ -253,10 +262,12 @@ def go_to_next_page(selenium_driver, current_page, number_pages):
 
 
 def assert_profile_language_filter(selenium_driver, languages_expected):
-    css_selector_select_language = (By.CSS_SELECTOR, "main section .form-select")
+    css_selector_select_language_options = (By.CSS_SELECTOR, "main .row .row .col .form-select option")
 
-    select_language = find_element(selenium_driver, css_selector_select_language)
-    select_language_options = select_language.find_elements(By.CSS_SELECTOR, "option")
+    wait_number_of_elements_to_be(selenium_driver, css_selector_select_language_options, len(languages_expected))
+
+    select_language_options = selenium_driver.find_elements(css_selector_select_language_options[0],
+                                                            css_selector_select_language_options[1])
 
     assert len(select_language_options) == len(languages_expected)
     # Check that for each language expected, there is a corresponding select option
@@ -283,8 +294,8 @@ def select_option_from_select_language(select_language, language):
 
 
 def assert_profile_scores(selenium_driver, user, language):
-    css_selector_select_language = (By.CSS_SELECTOR, "main section .form-select")
-    css_selector_scores_table = (By.CSS_SELECTOR, "main section .table")
+    css_selector_select_language = (By.CSS_SELECTOR, "main .row .row .col .form-select")
+    css_selector_scores_table = (By.CSS_SELECTOR, "main .row .row .col .table")
 
     select_language = find_element(selenium_driver, css_selector_select_language)
     scores_table = find_element(selenium_driver, css_selector_scores_table)
@@ -311,3 +322,27 @@ def assert_profile_scores(selenium_driver, user, language):
             game__game_name=game_name,
             score=score
         ).exists()
+
+
+def submit_user_form(selenium_driver, email, username, bio, password, confirm_password):
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_USER_FORM_INPUTS[0], CSS_SELECTOR_USER_FORM_INPUTS[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON)
+
+    form_inputs[0].clear()
+    form_inputs[0].send_keys(email)
+
+    form_inputs[1].clear()
+    form_inputs[1].send_keys(username)
+
+    form_inputs[2].clear()
+    form_inputs[2].send_keys(bio)
+
+    form_inputs[3].send_keys(password)
+
+    if confirm_password is None:
+        form_inputs[4].send_keys("")
+    else:
+        form_inputs[4].send_keys(password if confirm_password else get_random_string(5) + password)
+
+    scroll_to_element(selenium_driver, submit_button)
+    submit_button.click()

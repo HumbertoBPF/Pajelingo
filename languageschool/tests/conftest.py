@@ -10,7 +10,7 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, User
-from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username
+from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, get_random_bio
 
 
 @pytest.fixture
@@ -108,6 +108,7 @@ def account(words):
             password = get_valid_password()
             user = User.objects.create_user(username=get_random_username(),
                                             email=get_random_email(),
+                                            bio=get_random_bio(),
                                             password=password)
 
             for i in range(10):

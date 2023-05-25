@@ -16,8 +16,22 @@ from pajelingo.settings import FRONT_END_URL
 SEARCH_ACCOUNT_URL = FRONT_END_URL + "/accounts"
 CSS_SELECTOR_SEARCH_INPUT = (By.CSS_SELECTOR, "main form .form-control")
 CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
-CSS_SELECTOR_ACCOUNT_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text")
+CSS_SELECTOR_ACCOUNT_CARD = (By.CSS_SELECTOR, "main .card .card-body")
 CSS_SELECTOR_LANGUAGE_SELECT = (By.CSS_SELECTOR, "main .form-select")
+
+
+def get_username_from_account_card(account_card):
+    username_field = account_card.find_element(By.CSS_SELECTOR, ".card-text:nth-of-type(1)")
+    return username_field.text
+
+
+def get_bio_from_account_card(account_card):
+    bio_field = account_card.find_element(By.CSS_SELECTOR, ".card-text:nth-of-type(2)")
+    bio = bio_field.text
+    bio = bio.replace("Bio: ", "").replace("...", "")
+    bio = "" if (bio == "-") else bio
+
+    return bio
 
 
 def assert_search_results(selenium_driver, q, current_page, accounts):
@@ -35,10 +49,20 @@ def assert_search_results(selenium_driver, q, current_page, accounts):
     account_cards = selenium_driver.find_elements(CSS_SELECTOR_ACCOUNT_CARD[0], CSS_SELECTOR_ACCOUNT_CARD[1])
 
     for account_card in account_cards:
-        assert query.lower() in account_card.text.lower()
-        assert User.objects.filter(
-            username=account_card.text
-        ).exists()
+        username = get_username_from_account_card(account_card)
+        bio = get_bio_from_account_card(account_card)
+
+        args = {
+            "username": username
+        }
+
+        if len(bio) < 75:
+            args["bio"] = bio
+        else:
+            args["bio__contains"] = bio
+
+        assert User.objects.filter(**args).exists()
+        assert query.lower() in username.lower()
 
 
 @pytest.mark.django_db
@@ -113,12 +137,14 @@ def test_select_account(live_server, selenium_driver, account, languages):
     account_cards = selenium_driver.find_elements(CSS_SELECTOR_ACCOUNT_CARD[0], CSS_SELECTOR_ACCOUNT_CARD[1])
 
     account_card = random.choice(account_cards)
-    username = account_card.text
+    username = get_username_from_account_card(account_card)
+
+    user = User.objects.filter(username=username).first()
 
     scroll_to_element(selenium_driver, account_card)
     account_card.click()
 
-    assert_is_profile_page(selenium_driver, username)
+    assert_is_profile_page(selenium_driver, username, user.bio)
 
     user = User.objects.get(username=username)
     random_language = random.choice(languages)
@@ -151,9 +177,11 @@ def test_select_account_on_rankings_page(live_server, selenium_driver, account, 
     record_columns = random_ranking_row.find_elements(By.CSS_SELECTOR, "td")
     username = record_columns[1].text
 
+    user = User.objects.filter(username=username).first()
+
     random.choice(record_columns).click()
 
-    assert_is_profile_page(selenium_driver, username)
+    assert_is_profile_page(selenium_driver, username, user.bio)
 
     user = User.objects.get(username=username)
     random_language = random.choice(languages)

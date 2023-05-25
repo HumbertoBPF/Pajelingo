@@ -5,15 +5,13 @@ from selenium.webdriver.common.by import By
 
 from languageschool.models import User
 from languageschool.tests.selenium.utils import find_element, authenticate_user, assert_is_login_page, \
-    assert_is_profile_page, assert_profile_language_filter, assert_profile_scores
+    assert_is_profile_page, assert_profile_language_filter, assert_profile_scores, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON, \
+    CSS_SELECTOR_EDIT_ACCOUNT_BUTTON, CSS_SELECTOR_UPDATE_PICTURE_BUTTON
 from pajelingo.settings import FRONT_END_URL
 
 PROFILE_URL = FRONT_END_URL + "/profile"
 CSS_SELECTOR_FORM_INPUTS = (By.CSS_SELECTOR, "main form .form-control")
 CSS_SELECTOR_UPDATE_ACCOUNT_FORM_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-info")
-CSS_SELECTOR_UPDATE_PICTURE_BUTTON = (By.CSS_SELECTOR, "main .col-lg-3 .btn-info")
-CSS_SELECTOR_EDIT_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-info .bi-person-lines-fill")
-CSS_SELECTOR_DELETE_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main section .col-lg-9 .btn-danger")
 CSS_SELECTOR_CREDENTIALS = (By.CSS_SELECTOR, "main section .col-lg-9 p")
 CSS_SELECTOR_DIALOG_TILE = (By.CSS_SELECTOR, "body .modal .modal-header")
 CSS_SELECTOR_DIALOG_BODY = (By.CSS_SELECTOR, "body .modal .modal-body")
@@ -30,7 +28,7 @@ def assert_is_update_account_page(selenium_driver):
 
     form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
 
-    assert len(form_inputs) == 4
+    assert len(form_inputs) == 5
     assert submit_button.text == "Update"
 
 
@@ -55,7 +53,7 @@ def test_profile(live_server, selenium_driver, account):
 
     selenium_driver.get(PROFILE_URL)
 
-    assert_is_profile_page(selenium_driver, user.username, email=user.email)
+    assert_is_profile_page(selenium_driver, user.username, user.bio, email=user.email)
 
 
 @pytest.mark.django_db
@@ -137,7 +135,7 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
 
     profile_picture_dialog_success_button.click()
 
-    assert_is_profile_page(selenium_driver, user.username, email=user.email)
+    assert_is_profile_page(selenium_driver, user.username, user.bio, email=user.email)
 
 
 @pytest.mark.parametrize(

@@ -4,37 +4,16 @@ from selenium.webdriver.common.by import By
 
 from languageschool.models import User
 from languageschool.tests.selenium.utils import assert_is_login_page, authenticate_user, \
-    wait_number_of_elements_to_be, find_element, assert_is_profile_page
+    wait_number_of_elements_to_be, find_element, assert_is_profile_page, submit_user_form, \
+    CSS_SELECTOR_USER_FORM_INPUTS, CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON
 from languageschool.tests.utils import get_random_username, get_valid_password, get_random_email, \
     get_too_short_username, get_too_short_password, get_too_long_password, get_password_without_letters, \
-    get_password_without_digits, get_password_without_special_characters
+    get_password_without_digits, get_password_without_special_characters, get_random_bio
 from pajelingo.settings import FRONT_END_URL
 
 UPDATE_ACCOUNT_URL = FRONT_END_URL + "/update-account"
-CSS_SELECTOR_FORM_INPUTS = (By.CSS_SELECTOR, "main form .form-control")
-CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-info")
 CSS_SELECTOR_VALIDATION_WARNING = (By.CSS_SELECTOR, "main form .invalid-feedback ul li")
 CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
-
-
-def submit_update_account_form(selenium_driver, email, username, password, confirm_password):
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    form_inputs[0].clear()
-    form_inputs[0].send_keys(email)
-
-    form_inputs[1].clear()
-    form_inputs[1].send_keys(username)
-
-    form_inputs[2].send_keys(password)
-
-    if confirm_password is None:
-        form_inputs[3].send_keys("")
-    else:
-        form_inputs[3].send_keys(password if confirm_password else get_random_string(5) + password)
-
-    submit_button.click()
 
 
 @pytest.mark.django_db
@@ -57,14 +36,15 @@ def test_update_account_form_rendering(live_server, selenium_driver, account):
 
     selenium_driver.get(UPDATE_ACCOUNT_URL)
 
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_USER_FORM_INPUTS, 5)
 
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUTS[0], CSS_SELECTOR_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_USER_FORM_INPUTS[0], CSS_SELECTOR_USER_FORM_INPUTS[1])
+    submit_button = find_element(selenium_driver, CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON)
 
-    assert len(form_inputs) == 4
+    assert len(form_inputs) == 5
     assert form_inputs[0].get_attribute("value") == user.email
     assert form_inputs[1].get_attribute("value") == user.username
+    assert form_inputs[2].get_attribute("value") == user.bio
     assert submit_button.text == "Update"
 
 
@@ -104,13 +84,14 @@ def test_update_account_form_validation(live_server, selenium_driver, account, e
 
     selenium_driver.get(UPDATE_ACCOUNT_URL)
 
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_USER_FORM_INPUTS, 5)
 
     email = "" if (email is None) else email
     username = "" if (username is None) else username
+    bio = get_random_bio()
     password = "" if (password is None) else password
 
-    submit_update_account_form(selenium_driver, email, username, password, confirm_password)
+    submit_user_form(selenium_driver, email, username, bio, password, confirm_password)
 
     form_validation_warnings = find_element(selenium_driver, CSS_SELECTOR_VALIDATION_WARNING)
 
@@ -139,13 +120,14 @@ def test_update_account_repeated_credentials(live_server, selenium_driver, accou
 
     selenium_driver.get(UPDATE_ACCOUNT_URL)
 
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_USER_FORM_INPUTS, 5)
 
     email = another_user.email if is_repeated_email else get_random_email()
     username = another_user.username if is_repeated_username else get_random_username()
+    bio = get_random_bio()
     password = get_valid_password()
 
-    submit_update_account_form(selenium_driver, email, username, password, True)
+    submit_user_form(selenium_driver, email, username, bio, password, True)
 
     alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
 
@@ -167,17 +149,19 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
 
     selenium_driver.get(UPDATE_ACCOUNT_URL)
 
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUTS, 4)
+    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_USER_FORM_INPUTS, 5)
 
     email = user.email if is_same_email else get_random_email()
     username = user.username if is_same_username else get_random_username()
+    bio = get_random_bio()
     password = get_valid_password()
 
-    submit_update_account_form(selenium_driver, email, username, password, True)
+    submit_user_form(selenium_driver, email, username, bio, password, True)
 
-    assert_is_profile_page(selenium_driver, username, email=email)
+    assert_is_profile_page(selenium_driver, username, bio, email=email)
     assert User.objects.filter(
         id=user.id,
         email=email,
-        username=username
+        username=username,
+        bio=bio
     ).exists()

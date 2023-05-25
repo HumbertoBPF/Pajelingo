@@ -112,13 +112,14 @@ class ListScoreSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(max_length=128, write_only=True)
+    # It's necessary to override the bio field to enforce the non-null constraint
     bio = serializers.CharField(allow_blank=True)
-    profile_picture = serializers.SerializerMethodField(read_only=True)
+    picture = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = User
-        fields = ("email", "username", "password", "bio", "profile_picture")
+        fields = ("email", "username", "password", "bio", "picture")
 
-    def get_profile_picture(self, obj):
+    def get_picture(self, obj):
         if obj.picture:
             try:
                 img = obj.picture.open("rb")

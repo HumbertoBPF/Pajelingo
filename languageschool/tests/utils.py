@@ -115,9 +115,18 @@ def get_random_username():
     """
     Gets a random username.
 
-    :return: a random username
+    :return: the random username
     """
     return get_random_string(random.randint(8, 32))
+
+
+def get_random_bio():
+    """
+    Gets a random bio.
+
+    :return: the random bio
+    """
+    return get_random_string(random.randint(1, 500))
 
 
 def get_too_short_password():
