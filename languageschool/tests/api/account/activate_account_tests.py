@@ -80,8 +80,6 @@ def test_activate_account_uuid_does_not_match_active_user(api_client, account):
     match any inactive user.
     """
     user, password = account()[0]
-    user.is_active = True
-    user.save()
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
 
@@ -100,9 +98,7 @@ def test_activate_account_uuid_invalid_token(api_client, account):
     Tests that /api/activate/<uidb64>/<token> raises a 403 Forbidden if the token specified as path parameter is not
     valid.
     """
-    user, password = account()[0]
-    user.is_active = False
-    user.save()
+    user, password = account(is_active=False)[0]
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
 
@@ -120,9 +116,7 @@ def test_activate_account(api_client, account):
     """
     Tests that /api/activate/<uidb64>/<token> with valid path parameters activates the concerned user.
     """
-    user, password = account()[0]
-    user.is_active = False
-    user.save()
+    user, password = account(is_active=False)[0]
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = account_activation_token.make_token(user)
@@ -135,7 +129,5 @@ def test_activate_account(api_client, account):
     response = api_client.put(url)
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert User.objects.filter(
-        id=user.id,
-        is_active=True
-    ).exists()
+    user = User.objects.get(id=user.id)
+    assert user.is_active

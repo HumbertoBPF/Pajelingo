@@ -5,7 +5,7 @@ import pytest
 from django.core.management import call_command
 
 from languageschool.models import Score, Conjugation, Meaning, Article, Category, Language, Game, Word, User
-from languageschool.tests.utils import get_users_from_accounts
+from languageschool.tests.utils import get_users
 
 
 def assert_backup_file(cls, many_to_many=None):
@@ -35,7 +35,7 @@ def assert_backup_file(cls, many_to_many=None):
 @pytest.mark.django_db
 def test_create_backup(games, languages, categories, articles, words, meanings, conjugations, score, account):
     accounts = account(n=10)
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
     score(users, languages)
     call_command("create_backup")
 

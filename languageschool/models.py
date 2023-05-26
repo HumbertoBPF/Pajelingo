@@ -16,7 +16,7 @@ class Game(models.Model):
     instructions = models.TextField(blank=True)
 
     def __str__(self):
-        return str(self.game_name)
+        return self.game_name
 
 
 class Language(models.Model):
@@ -143,7 +143,7 @@ class Score(models.Model):
         if request.user.is_authenticated:
             score = Score.objects.filter(user=request.user, language=language, game=game)
 
-            if len(score) == 0:
+            if score.count() == 0:
                 score = Score(user=request.user, language=language, game=game, score=1)
             else:
                 score = score.latest('id')

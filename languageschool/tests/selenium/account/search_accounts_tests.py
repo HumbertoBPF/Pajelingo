@@ -10,7 +10,7 @@ from languageschool.tests.selenium.rankings_tests import RANKINGS_URL
 from languageschool.tests.selenium.utils import wait_text_to_be_present, wait_number_of_elements_to_be, \
     CSS_SELECTOR_ACTIVE_PAGE_BUTTON, assert_pagination, go_to_next_page, assert_is_profile_page, scroll_to_element, \
     assert_profile_language_filter, assert_profile_scores, find_element, select_option_from_select_language
-from languageschool.tests.utils import get_users_from_accounts
+from languageschool.tests.utils import get_users
 from pajelingo.settings import FRONT_END_URL
 
 SEARCH_ACCOUNT_URL = FRONT_END_URL + "/accounts"
@@ -34,15 +34,15 @@ def get_bio_from_account_card(account_card):
     return bio
 
 
-def assert_search_results(selenium_driver, q, current_page, accounts):
+def assert_search_results(selenium_driver, q, current_page, number_accounts):
     query = "" if (q is None) else q
 
-    number_pages = math.ceil(len(accounts) / 10)
+    number_pages = math.ceil(number_accounts / 10)
 
     expected_number_of_cards = 10
 
-    if (current_page == number_pages) and (len(accounts) % 10 != 0):
-        expected_number_of_cards = len(accounts) % 10
+    if (current_page == number_pages) and (number_accounts % 10 != 0):
+        expected_number_of_cards = number_accounts % 10
 
     wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_ACCOUNT_CARD, expected_number_of_cards)
 
@@ -77,7 +77,8 @@ def test_search_account_form_rendering(live_server, selenium_driver):
 
 @pytest.mark.django_db
 def test_search_all_account(live_server, selenium_driver, account):
-    accounts = account(n=random.randint(11, 30))
+    number_accounts = random.randint(11, 30)
+    account(n=number_accounts)
 
     selenium_driver.get(SEARCH_ACCOUNT_URL)
 
@@ -85,13 +86,13 @@ def test_search_all_account(live_server, selenium_driver, account):
 
     submit_button.click()
 
-    number_pages = math.ceil(len(accounts)/10)
+    number_pages = math.ceil(number_accounts/10)
 
     for i in range(number_pages):
         current_page = i + 1
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
-        assert_search_results(selenium_driver, None, current_page, accounts)
+        assert_search_results(selenium_driver, None, current_page, number_accounts)
         assert_pagination(selenium_driver, current_page, number_pages)
         go_to_next_page(selenium_driver, current_page, number_pages)
 
@@ -102,7 +103,7 @@ def test_search_account(live_server, selenium_driver, account):
 
     q = get_random_string(1)
 
-    accounts = User.objects.filter(username__icontains=q)
+    number_accounts = User.objects.filter(username__icontains=q).count()
 
     selenium_driver.get(SEARCH_ACCOUNT_URL)
 
@@ -112,13 +113,13 @@ def test_search_account(live_server, selenium_driver, account):
     search_input.send_keys(q)
     submit_button.click()
 
-    number_pages = math.ceil(len(accounts)/10)
+    number_pages = math.ceil(number_accounts/10)
 
     for i in range(number_pages):
         current_page = i + 1
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
-        assert_search_results(selenium_driver, q, current_page, accounts)
+        assert_search_results(selenium_driver, q, current_page, number_accounts)
         assert_pagination(selenium_driver, current_page, number_pages)
         go_to_next_page(selenium_driver, current_page, number_pages)
 
@@ -139,14 +140,13 @@ def test_select_account(live_server, selenium_driver, account, languages):
     account_card = random.choice(account_cards)
     username = get_username_from_account_card(account_card)
 
-    user = User.objects.filter(username=username).first()
+    user = User.objects.get(username=username)
 
     scroll_to_element(selenium_driver, account_card)
     account_card.click()
 
     assert_is_profile_page(selenium_driver, username, user.bio)
 
-    user = User.objects.get(username=username)
     random_language = random.choice(languages)
 
     assert_profile_language_filter(selenium_driver, languages)
@@ -157,7 +157,7 @@ def test_select_account(live_server, selenium_driver, account, languages):
 def test_select_account_on_rankings_page(live_server, selenium_driver, account, score, languages):
     accounts = account(n=10)
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
     score(users, languages)
 
     random_language = random.choice(languages)
@@ -177,13 +177,12 @@ def test_select_account_on_rankings_page(live_server, selenium_driver, account, 
     record_columns = random_ranking_row.find_elements(By.CSS_SELECTOR, "td")
     username = record_columns[1].text
 
-    user = User.objects.filter(username=username).first()
+    user = User.objects.get(username=username)
 
     random.choice(record_columns).click()
 
     assert_is_profile_page(selenium_driver, username, user.bio)
 
-    user = User.objects.get(username=username)
     random_language = random.choice(languages)
 
     assert_profile_language_filter(selenium_driver, languages)

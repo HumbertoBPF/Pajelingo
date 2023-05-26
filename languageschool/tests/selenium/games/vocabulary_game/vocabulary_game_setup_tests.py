@@ -29,7 +29,7 @@ def assert_languages(language_options, languages, default_option):
     for language in languages:
         expected_options[language.language_name] = True
 
-    assert len(language_options) == len(languages) + 1
+    assert len(language_options) == languages.count() + 1
     # Check if all the expected options are present among the select options
     for language_option in language_options:
         del expected_options[language_option.text]

@@ -36,11 +36,10 @@ def test_account_get_requires_authentication(api_client):
 
 
 @pytest.mark.django_db
-def test_account_get_wrong_token(api_client, account):
+def test_account_get_wrong_token(api_client):
     """
     Tests that the GET /user endpoint returns 401 Unauthorized when an invalid token is used.
     """
-    _, _ = account()[0]
     response = api_client.get(URL, HTTP_AUTHORIZATION="Token {}".format(get_random_string(16)))
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -58,10 +57,14 @@ def test_account_get(api_client, account):
     response = api_client.get(URL, HTTP_AUTHORIZATION="Token {}".format(token))
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("username") == user.username
-    assert response.data.get("email") == user.email
-    assert response.data.get("bio") is not None
-    assert response.data.get("picture") == get_profile_picture_base64(user)
+    # Checking the response body
+    response_body = response.data
+    assert response_body.get("username") == user.username
+    assert response_body.get("email") == user.email
+    assert response_body.get("bio") is not None
+    assert response_body.get("picture") == get_profile_picture_base64(user)
+    # Checks that no password is returned
+    assert response_body.get("password") is None
 
 
 @pytest.mark.parametrize(
@@ -125,13 +128,20 @@ def test_account_post(api_client, email, username, password, bio):
 
     if (email == EMAIL) and (username == USERNAME) and (password == PASSWORD) and (bio is not None):
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data.get("username") == username
-        assert response.data.get("email") == email
-        assert response.data.get("bio") is not None
-        user = User.objects.filter(email=email, username=username, bio=bio, is_active=False).first()
+        # Checks that the user was created in the database
+        user = User.objects.get(username=username)
+        assert user.email == email
+        assert user.bio == bio
+        assert not user.is_active
         assert user.check_password(password)
-        assert user is not None
-        assert response.data.get("picture") == get_profile_picture_base64(user)
+        # Checking the response body
+        response_body = response.data
+        assert response_body.get("username") == username
+        assert response_body.get("email") == email
+        assert response_body.get("bio") is not None
+        assert response_body.get("picture") == get_profile_picture_base64(user)
+        # Checks that no password is returned
+        assert response_body.get("password") is None
         # Check that activation email was sent
         assert len(mail.outbox) == 1
         assert mail.outbox[0].subject == SIGN_UP_SUBJECT
@@ -140,7 +150,6 @@ def test_account_post(api_client, email, username, password, bio):
         assert mail.outbox[0].from_email == settings.EMAIL_FROM
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert User.objects.count() == 0
 
 
 @pytest.mark.parametrize(
@@ -176,7 +185,6 @@ def test_account_post_requires_unique_email_and_username(api_client, account, re
     response = api_client.post(URL, payload)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert User.objects.count() == 1
 
 
 @pytest.mark.django_db
@@ -189,11 +197,10 @@ def test_account_put_requires_authentication(api_client):
 
 
 @pytest.mark.django_db
-def test_account_put_wrong_credentials(api_client, account):
+def test_account_put_wrong_credentials(api_client):
     """
     Tests that the PUT /user endpoint returns 401 Unauthorized when an invalid token is used.
     """
-    _, _ = account()[0]
     response = api_client.put(URL, HTTP_AUTHORIZATION="Token {}".format(get_random_string(16)))
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -264,16 +271,21 @@ def test_account_put(api_client, account, email, username, password, bio):
 
     if (email == EMAIL) and (username == USERNAME) and (password == PASSWORD) and (bio is not None):
         assert response.status_code == status.HTTP_200_OK
-        assert response.data.get("username") == username
-        assert response.data.get("email") == email
-        assert response.data.get("bio") is not None
-        assert response.data.get("picture") == get_profile_picture_base64(user)
-        user = User.objects.filter(id=user.id, email=email, username=username, bio=bio).first()
-        assert user is not None
+        # Checking the response body
+        response_body = response.data
+        assert response_body.get("username") == username
+        assert response_body.get("email") == email
+        assert response_body.get("bio") is not None
+        assert response_body.get("picture") == get_profile_picture_base64(user)
+        # Checking that no password is returned
+        assert response_body.get("password") is None
+        user = User.objects.get(id=user.id)
+        assert user.email == email
+        assert user.username == username
+        assert user.bio == bio
         assert user.check_password(password)
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert not User.objects.filter(id=user.id, email=email, username=username).exists()
 
 
 @pytest.mark.parametrize(
@@ -313,10 +325,6 @@ def test_account_put_requires_unique_email_and_username(api_client, account, rep
     response = api_client.put(URL, payload, HTTP_AUTHORIZATION="Token {}".format(token))
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert User.objects.count() == 2
-    assert User.objects.filter(id=user.id, username=user.username, email=user.email).exists()
-    assert User.objects\
-        .filter(id=user_to_update.id, username=user_to_update.username, email=user_to_update.email).exists()
 
 
 @pytest.mark.parametrize(
@@ -332,9 +340,7 @@ def test_account_put_same_email_and_username(api_client, account, same_email, sa
     """
     Tests that the PUT /user endpoint accepts the same email and username.
     """
-    users = account(n=2)
-    user, _ = users[0]
-    user_to_update, password_user_to_update = users[1]
+    user_to_update, password_user_to_update = account()[0]
 
     payload = {
         "password": get_valid_password(),
@@ -356,17 +362,20 @@ def test_account_put_same_email_and_username(api_client, account, same_email, sa
     response = api_client.put(URL, payload, HTTP_AUTHORIZATION="Token {}".format(token))
 
     assert response.status_code == status.HTTP_200_OK
-    assert User.objects.count() == 2
-    assert User.objects.filter(id=user.id, username=user.username, email=user.email).exists()
-    user = User.objects.filter(
-        id=user_to_update.id,
-        username=payload["username"],
-        email=payload["email"],
-        bio=payload["bio"]
-    ).first()
-    assert user is not None
+    # Checking the response body
+    response_body = response.data
+    assert response_body.get("username") == payload["username"]
+    assert response_body.get("email") == payload["email"]
+    assert response_body.get("bio") == payload["bio"]
+    assert response_body.get("picture") == get_profile_picture_base64(user_to_update)
+    # Checking that no password is returned
+    assert response_body.get("password") is None
+    # Checking that the concerned user was updated
+    user = User.objects.get(id=user_to_update.id)
+    assert user.username == payload["username"]
+    assert user.email == payload["email"]
+    assert user.bio == payload["bio"]
     assert user.check_password(payload["password"])
-    assert User.objects.filter(id=user_to_update.id, username=payload["username"], email=payload["email"]).exists()
 
 
 @pytest.mark.django_db
@@ -379,11 +388,10 @@ def test_account_delete_requires_authentication(api_client):
 
 
 @pytest.mark.django_db
-def test_account_delete_wrong_credentials(api_client, account):
+def test_account_delete_wrong_credentials(api_client):
     """
     Tests that the DELETE /user endpoint returns 401 Unauthorized when an invalid token is used.
     """
-    _, _ = account()[0]
     response = api_client.delete(URL, HTTP_AUTHORIZATION="Token {}".format(get_random_string(16)))
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

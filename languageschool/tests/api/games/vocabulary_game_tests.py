@@ -13,10 +13,12 @@ BASE_URL = reverse("vocabulary-game-api")
 
 
 def get_correct_answer(word, base_language):
-    for synonym in word.synonyms.all():
-        if synonym.language.id == base_language.id:
-            return synonym.word_name
-    return ""
+    synonym_in_base_language = word.synonyms.filter(language__id=base_language.id).values("word_name")
+
+    if len(synonym_in_base_language) == 0:
+        return ""
+    else:
+        return synonym_in_base_language[0].get("word_name")
 
 
 @pytest.mark.parametrize("has_base_language, has_target_language", [
@@ -84,10 +86,12 @@ def test_vocabulary_game_setup_non_authenticated_user(api_client, words, languag
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    returned_word = response.data
+
+    response_body = response.data
+
     assert Word.objects.filter(
-        id=returned_word.get("id"),
-        word_name=returned_word.get("word"),
+        id=response_body.get("id"),
+        word_name=response_body.get("word"),
         language=random_target_language
     ).exists()
 
@@ -111,17 +115,19 @@ def test_vocabulary_game_setup_authenticated_user(api_client, account, words, la
     response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
 
     assert response.status_code == status.HTTP_200_OK
-    returned_word = response.data
+
+    response_body = response.data
+
     assert Word.objects.filter(
-        id=returned_word.get("id"),
-        word_name=returned_word.get("word"),
+        id=response_body.get("id"),
+        word_name=response_body.get("word"),
         language=random_target_language
     ).exists()
     assert GameRound.objects.filter(
         game__id=1,
         user=user,
         round_data={
-            "word_id": returned_word.get("id"),
+            "word_id": response_body.get("id"),
             "base_language": random_base_language.language_name
         }
     ).exists()
@@ -212,14 +218,7 @@ def test_vocabulary_play_not_authenticated_user(api_client, words, languages, is
     None as current score for non-authenticated users.
     """
     random_word = random.choice(words)
-
-    eligible_languages = []
-
-    for language in languages:
-        if language.language_name != random_word.language.language_name:
-            eligible_languages.append(language)
-
-    random_base_language = random.choice(eligible_languages)
+    random_base_language = random.choice(languages.exclude(id=random_word.language_id))
 
     correct_answer = get_correct_answer(random_word, random_base_language)
 
@@ -229,10 +228,12 @@ def test_vocabulary_play_not_authenticated_user(api_client, words, languages, is
         "answer": correct_answer if is_correct else get_random_string(8)
     })
 
+    response_body = response.data
+
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("result") is is_correct
-    assert response.data.get("correct_answer") == correct_answer
-    assert response.data.get("score") is None
+    assert response_body.get("result") is is_correct
+    assert response_body.get("correct_answer") == correct_answer
+    assert response_body.get("score") is None
 
 
 @pytest.mark.parametrize("is_correct", [True, False])
@@ -243,15 +244,9 @@ def test_vocabulary_play_authenticated_user_without_game_round(api_client, accou
     to get a word and consequently persist game round data.
     """
     user, password = account()[0]
+
     random_word = random.choice(words)
-
-    eligible_languages = []
-
-    for language in languages:
-        if language.language_name != random_word.language.language_name:
-            eligible_languages.append(language)
-
-    random_base_language = random.choice(eligible_languages)
+    random_base_language = random.choice(languages.exclude(id=random_word.language_id))
 
     correct_answer = get_correct_answer(random_word, random_base_language)
 
@@ -277,14 +272,7 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
     vocabulary_game = Game.objects.get(id=1)
 
     random_word = random.choice(words)
-
-    eligible_languages = []
-
-    for language in languages:
-        if language.language_name != random_word.language.language_name:
-            eligible_languages.append(language)
-
-    random_base_language = random.choice(eligible_languages)
+    random_base_language = random.choice(languages.exclude(id=random_word.language_id))
 
     correct_answer = get_correct_answer(random_word, random_base_language)
 
@@ -305,9 +293,11 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
         "answer": correct_answer if is_correct else get_random_string(8)
     }, HTTP_AUTHORIZATION="Token {}".format(token))
 
+    response_body = response.data
+
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("result") is is_correct
-    assert response.data.get("correct_answer") == correct_answer
+    assert response_body.get("result") is is_correct
+    assert response_body.get("correct_answer") == correct_answer
     if is_correct:
         assert Score.objects.filter(
             user=user,
@@ -315,9 +305,9 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
             game=vocabulary_game,
             score=1
         ).exists()
-        assert response.data.get("score") == 1
+        assert response_body.get("score") == 1
     else:
-        assert response.data.get("score") is None
+        assert response_body.get("score") is None
     assert not GameRound.objects.filter(
         user=user,
         game=vocabulary_game

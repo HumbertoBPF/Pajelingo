@@ -64,12 +64,12 @@ def test_conjugation_game_setup_non_authenticated_user(api_client, verbs, langua
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    returned_word = response.data
+    response_body = response.data
     assert Conjugation.objects.filter(
-        word__id=returned_word.get("id"),
-        word__word_name=returned_word.get("word"),
+        word__id=response_body.get("id"),
+        word__word_name=response_body.get("word"),
         word__language=random_language,
-        tense=returned_word.get("tense")
+        tense=response_body.get("tense")
     ).exists()
 
 
@@ -90,19 +90,19 @@ def test_conjugation_game_setup_authenticated_user(api_client, account, verbs, l
     response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
 
     assert response.status_code == status.HTTP_200_OK
-    returned_word = response.data
+    response_body = response.data
     assert Conjugation.objects.filter(
-        word__id=returned_word.get("id"),
-        word__word_name=returned_word.get("word"),
+        word__id=response_body.get("id"),
+        word__word_name=response_body.get("word"),
         word__language=random_language,
-        tense=returned_word.get("tense")
+        tense=response_body.get("tense")
     ).exists()
     assert GameRound.objects.filter(
         game__id=3,
         user=user,
         round_data={
-            "word_id": returned_word.get("id"),
-            "tense": returned_word.get("tense")
+            "word_id": response_body.get("id"),
+            "tense": response_body.get("tense")
         }
     )
 
@@ -184,7 +184,7 @@ def test_conjugation_game_play_invalid_conjugation(api_client, conjugations):
     random_conjugation = random.choice(conjugations)
 
     response = api_client.post(BASE_URL, data={
-        "word_id": random_conjugation.word.id,
+        "word_id": random_conjugation.word_id,
         "tense": get_random_string(8),
         "conjugation_1": get_random_string(8),
         "conjugation_2": get_random_string(8),
@@ -216,7 +216,7 @@ def test_conjugation_game_play_non_authenticated_user(api_client, verbs, conjuga
                  and has_correct_conjugation_4 and has_correct_conjugation_5 and has_correct_conjugation_6
 
     response = api_client.post(BASE_URL, data={
-        "word_id": random_conjugation.word.id,
+        "word_id": random_conjugation.word_id,
         "tense": random_conjugation.tense,
         "conjugation_1": random_conjugation.conjugation_1 if has_correct_conjugation_1 else get_random_string(8),
         "conjugation_2": random_conjugation.conjugation_2 if has_correct_conjugation_2 else get_random_string(8),
@@ -226,12 +226,14 @@ def test_conjugation_game_play_non_authenticated_user(api_client, verbs, conjuga
         "conjugation_6": random_conjugation.conjugation_6 if has_correct_conjugation_6 else get_random_string(8)
     })
 
+    response_body = response.data
+
     expected_correct_answer = get_correct_answer(random_conjugation)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("result") is is_correct
-    assert response.data.get("correct_answer") == expected_correct_answer
-    assert response.data.get("score") is None
+    assert response_body.get("result") is is_correct
+    assert response_body.get("correct_answer") == expected_correct_answer
+    assert response_body.get("score") is None
 
 
 @pytest.mark.parametrize("has_correct_conjugation_1", [True, False])
@@ -298,7 +300,7 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
         game=conjugation_game,
         user=user,
         round_data={
-            "word_id": random_conjugation.word.id,
+            "word_id": random_conjugation.word_id,
             "tense": random_conjugation.tense
         }
     )
@@ -306,7 +308,7 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
     token = get_user_token(api_client, user, password)
 
     response = api_client.post(BASE_URL, data={
-        "word_id": random_conjugation.word.id,
+        "word_id": random_conjugation.word_id,
         "tense": random_conjugation.tense,
         "conjugation_1": random_conjugation.conjugation_1 if has_correct_conjugation_1 else get_random_string(8),
         "conjugation_2": random_conjugation.conjugation_2 if has_correct_conjugation_2 else get_random_string(8),
@@ -316,11 +318,13 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
         "conjugation_6": random_conjugation.conjugation_6 if has_correct_conjugation_6 else get_random_string(8)
     }, HTTP_AUTHORIZATION="Token {}".format(token))
 
+    response_body = response.data
+
     expected_correct_answer = get_correct_answer(random_conjugation)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("result") is is_correct
-    assert response.data.get("correct_answer") == expected_correct_answer
+    assert response_body.get("result") is is_correct
+    assert response_body.get("correct_answer") == expected_correct_answer
 
     if is_correct:
         assert Score.objects.filter(
@@ -329,9 +333,10 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
             game=conjugation_game,
             score=1
         ).exists()
-        assert response.data.get("score") == 1
+        assert response_body.get("score") == 1
     else:
-        assert response.data.get("score") is None
+        assert response_body.get("score") is None
+
     assert not GameRound.objects.filter(
         game=conjugation_game,
         user=user

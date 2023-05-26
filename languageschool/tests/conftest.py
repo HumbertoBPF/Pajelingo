@@ -45,10 +45,10 @@ def words(languages, articles):
         synonyms = []
         for language in languages:
             articles_language = articles.filter(language=language)
-            article_index = random.randint(0, len(articles_language) - 1)
+            random_article = random.choice(articles_language)
             word = Word.objects.create(word_name=get_random_string(random.randint(10, 30)),
                                        language=language,
-                                       article=articles_language[article_index])
+                                       article=random_article)
             word.synonyms.set(synonyms.copy())
             synonyms.append(word)
     return Word.objects.all()
@@ -101,7 +101,7 @@ def game_factory(pk, game_name, link):
 
 @pytest.fixture
 def account(words):
-    def account_factory(n=1):
+    def account_factory(n=1, is_active=True):
         accounts_list = []
 
         for _ in range(n):
@@ -109,7 +109,8 @@ def account(words):
             user = User.objects.create_user(username=get_random_username(),
                                             email=get_random_email(),
                                             bio=get_random_bio(),
-                                            password=password)
+                                            password=password,
+                                            is_active=is_active)
 
             for i in range(10):
                 favorite_word = random.choice(words)

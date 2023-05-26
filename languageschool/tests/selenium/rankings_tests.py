@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 from languageschool.models import Score
 from languageschool.tests.selenium.utils import find_element, authenticate_user, CSS_SELECTOR_PAGINATION, \
     CSS_SELECTOR_ACTIVE_PAGE_BUTTON, go_to_next_page, select_option_from_select_language
-from languageschool.tests.utils import get_users_from_accounts
+from languageschool.tests.utils import get_users
 from pajelingo.settings import FRONT_END_URL
 
 RANKINGS_URL = FRONT_END_URL + "/rankings"
@@ -39,6 +39,7 @@ def assert_language_select(selenium_driver, languages):
 def get_expected_score(username, language):
     scores = Score.objects.filter(user__username=username, language=language)
     expected_score = 0
+
     for score in scores:
         expected_score += score.score
 
@@ -127,7 +128,7 @@ def test_rankings_two_pages(live_server, selenium_driver, account, score, langua
         auth_user, password = accounts[0]
         authenticate_user(selenium_driver, auth_user.username, password)
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
     score(users, languages)
 
     number_pages = math.ceil(len(users)/10)
@@ -179,7 +180,7 @@ def test_rankings_three_pages(live_server, selenium_driver, account, score, lang
         auth_user, password = accounts[0]
         authenticate_user(selenium_driver, auth_user.username, password)
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
     score(users, languages)
 
     number_pages = math.ceil(len(users) / 10)
@@ -240,7 +241,7 @@ def test_rankings_more_than_three_pages(live_server, selenium_driver, account, s
         auth_user, password = accounts[0]
         authenticate_user(selenium_driver, auth_user.username, password)
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
     score(users, languages)
 
     number_pages = math.ceil(len(users) / 10)

@@ -258,5 +258,5 @@ def test_reset_account(api_client, account):
     })
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    updated_user = User.objects.filter(id=user.id).first()
+    updated_user = User.objects.get(id=user.id)
     assert check_password(password, updated_user.password)

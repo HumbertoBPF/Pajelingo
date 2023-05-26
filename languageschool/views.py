@@ -330,7 +330,7 @@ class ConjugationGameView(views.APIView):
         conjugation = serializer.save()
 
         return Response(data={
-            "id": conjugation.word.id,
+            "id": conjugation.word_id,
             "word": conjugation.word.word_name,
             "tense": conjugation.tense
         }, status=status.HTTP_200_OK)
@@ -352,16 +352,16 @@ class ActivationView(views.APIView):
     def put(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.filter(pk=uid, is_active=False).first()
-        except(TypeError, ValueError, OverflowError):
-            user = None
+            user = User.objects.get(pk=uid)
 
-        if user is not None and account_activation_token.check_token(user, token):
-            user.is_active = True
-            user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
+            if user.is_active or (not account_activation_token.check_token(user, token)):
+                return Response(status=status.HTTP_403_FORBIDDEN)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+        user.is_active = True
+        user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProfilePictureView(views.APIView):
@@ -404,7 +404,7 @@ class FavoriteWordsListView(generics.ListAPIView):
         for language in Language.objects.all():
             if self.request.query_params.get(language.language_name) == "true":
                 languages.append(language)
-        return self.request.user.favorite_words.all()\
+        return self.request.user.favorite_words\
             .filter(word_name__icontains=search_pattern, language__in=languages).order_by(Lower('word_name'))
 
 

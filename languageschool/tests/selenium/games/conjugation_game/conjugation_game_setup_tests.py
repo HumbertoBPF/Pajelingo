@@ -41,7 +41,7 @@ def test_conjugation_game_setup_form_rendering(live_server, selenium_driver, lan
 
     select_options = selenium_driver.find_elements(By.CSS_SELECTOR, "main form .form-select option")
 
-    assert len(select_options) == len(languages) + 1
+    assert len(select_options) == languages.count() + 1
     # Check if all the expected options are present among the select options
     for select_option in select_options:
         del expected_options[select_option.text]

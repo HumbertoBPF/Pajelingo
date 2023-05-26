@@ -74,7 +74,7 @@ class WordSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return None
 
-        return obj in user.favorite_words.all()
+        return user.favorite_words.contains(obj)
 
     def get_image(self, obj):
         if obj.image:
@@ -145,9 +145,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.get("password")
         bio = validated_data.get("bio")
 
-        user = User.objects.create_user(email=email, username=username, password=password, bio=bio)
-        user.is_active = False
-        user.save()
+        user = User.objects.create_user(email=email, username=username, password=password, bio=bio, is_active=False)
 
         return user
 
@@ -217,10 +215,11 @@ class ConjugationGameSetupSerializer(serializers.Serializer):
 
         language = get_object_or_404(Language, language_name=language)
 
-        conjugation = random.choice(Conjugation.objects.filter(word__language=language))
+        conjugations = Conjugation.objects.select_related("word").filter(word__language=language)
+        conjugation = random.choice(conjugations)
 
         round_data = {
-            "word_id": conjugation.word.id,
+            "word_id": conjugation.word_id,
             "tense": conjugation.tense
         }
 
@@ -382,7 +381,7 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
 
         if not request.user.is_anonymous:
             check_game_round(request, 3, {
-                "word_id": conjugation.word.id,
+                "word_id": conjugation.word_id,
                 "tense": conjugation.tense
             })
 
@@ -421,14 +420,17 @@ class ResetAccountSerializer(serializers.Serializer):
         token = kwargs.get("token")
         password = self.validated_data.get("password")
 
-        user = User.objects.filter(pk=pk, is_active=True).first()
+        try:
+            user = User.objects.get(pk=pk)
 
-        if (user is None) or not (default_token_generator.check_token(user, token)):
+            if (not user.is_active) or not (default_token_generator.check_token(user, token)):
+                return False
+
+            user.set_password(password)
+            user.save()
+            return True
+        except User.DoesNotExist:
             return False
-
-        user.set_password(password)
-        user.save()
-        return True
 
 
 class FavoriteWordsSerializer(serializers.Serializer):

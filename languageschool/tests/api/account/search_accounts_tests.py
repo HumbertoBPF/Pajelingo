@@ -12,11 +12,10 @@ from languageschool.models import User
 SEARCH_ACCOUNTS_URL = reverse("search-accounts-api")
 
 
-def assert_response(response, q, page, accounts):
+def assert_response(response, q, page, number_accounts):
     query = "" if (q is None) else q
 
-    number_accounts = len(accounts)
-    expected_number_pages = math.ceil(float(number_accounts) / 10.0)
+    expected_number_pages = math.ceil(number_accounts / 10)
 
     data = response.data
 
@@ -38,10 +37,8 @@ def assert_response(response, q, page, accounts):
 
         assert username is not None
         assert bio is not None
-        assert User.objects.filter(
-            username=username,
-            bio=bio
-        ).exists()
+        user = User.objects.get(username=username)
+        assert user.bio == bio
         assert query.lower() in username.lower()
 
     assert count == number_accounts
@@ -55,10 +52,11 @@ def assert_response(response, q, page, accounts):
 
 @pytest.mark.django_db
 def test_search_accounts_no_query_param(api_client, account):
-    accounts = account(n=random.randint(11, 30))
+    number_accounts = random.randint(11, 30)
+    account(n=number_accounts)
     accounts_dict = {}
 
-    expected_number_pages = math.ceil(float(len(accounts))/10.0)
+    expected_number_pages = math.ceil(number_accounts/10)
 
     for i in range(expected_number_pages):
         page = i + 1
@@ -71,13 +69,13 @@ def test_search_accounts_no_query_param(api_client, account):
 
         response = api_client.get(url)
 
-        assert_response(response, None, page, accounts)
+        assert_response(response, None, page, number_accounts)
 
         for result in response.data.get("results"):
             username = result.get("username")
             accounts_dict[username] = True
 
-    assert len(accounts_dict) == len(accounts)
+    assert len(accounts_dict) == number_accounts
 
 
 @pytest.mark.django_db
@@ -86,10 +84,10 @@ def test_search_accounts_with_query_param(api_client, account):
 
     q = get_random_string(1)
 
-    accounts = User.objects.filter(username__icontains=q)
+    number_matched_accounts = User.objects.filter(username__icontains=q).count()
     accounts_dict = {}
 
-    expected_number_pages = math.ceil(float(len(accounts))/10.0)
+    expected_number_pages = math.ceil(number_matched_accounts/10)
 
     for i in range(expected_number_pages):
         page = i + 1
@@ -103,13 +101,13 @@ def test_search_accounts_with_query_param(api_client, account):
 
         response = api_client.get(url)
 
-        assert_response(response, q, page, accounts)
+        assert_response(response, q, page, number_matched_accounts)
 
         for result in response.data.get("results"):
             username = result.get("username")
             accounts_dict[username] = True
 
-    assert len(accounts_dict) == len(accounts)
+    assert len(accounts_dict) == number_matched_accounts
 
 
 @pytest.mark.django_db
@@ -128,5 +126,7 @@ def test_search_account(api_client, account):
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("username") == user.username
-    assert response.data.get("picture") is None
+    response_body = response.data
+    assert response_body.get("username") == user.username
+    assert response_body.get("picture") is None
+    assert response_body.get("bio") == user.bio

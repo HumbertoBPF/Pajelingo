@@ -310,7 +310,7 @@ def assert_profile_scores(selenium_driver, user, language):
 
     expected_scores = Score.objects.filter(user=user, language=language)
 
-    assert len(score_table_records) == len(expected_scores)
+    assert len(score_table_records) == expected_scores.count()
 
     for score_table_record in score_table_records:
         columns = score_table_record.find_elements(By.CSS_SELECTOR, "td")

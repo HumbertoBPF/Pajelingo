@@ -44,19 +44,19 @@ def get_base_64_encoded_image(image_file):
 
 
 def save_game_round(request, game_id, round_data):
-    game_round = GameRound.objects.filter(game__id=game_id).first()
-
     if not request.user.is_anonymous:
-        if game_round is None:
-            GameRound.objects.create(
-                game=Game.objects.get(id=game_id),
-                user=request.user,
-                round_data=round_data
-            )
-        else:
+        try:
+            game_round = GameRound.objects.get(game__id=game_id)
             game_round.user = request.user
             game_round.round_data = round_data
             game_round.save()
+        except GameRound.DoesNotExist:
+            game = Game.objects.get(id=game_id)
+            GameRound.objects.create(
+                game=game,
+                user=request.user,
+                round_data=round_data
+            )
 
 
 def check_game_round(request, game_id, round_data):

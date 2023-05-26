@@ -63,12 +63,10 @@ def test_article_game_setup_non_authenticated_user(api_client, languages, words)
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    returned_word = response.data
-    assert Word.objects.filter(
-        id=returned_word.get("id"),
-        word_name=returned_word.get("word"),
-        language=random_language
-    ).exists()
+    response_body = response.data
+    returned_word = Word.objects.get(id=response_body.get("id"))
+    assert returned_word.word_name == response_body.get("word")
+    assert returned_word.language == random_language
 
 
 @pytest.mark.django_db
@@ -87,17 +85,18 @@ def test_article_game_setup_authenticated_user(api_client, account, languages, w
     response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
 
     assert response.status_code == status.HTTP_200_OK
-    returned_word = response.data
-    assert Word.objects.filter(
-        id=returned_word.get("id"),
-        word_name=returned_word.get("word"),
-        language=random_language
-    ).exists()
+
+    response_body = response.data
+
+    returned_word = Word.objects.get(id=response_body.get("id"))
+    assert returned_word.word_name == response_body.get("word")
+    assert returned_word.language == random_language
+
     assert GameRound.objects.filter(
         game__id=2,
         user=user,
         round_data={
-            "word_id": returned_word.get("id")
+            "word_id": response_body.get("id")
         }
     ).exists()
 
@@ -154,9 +153,10 @@ def test_article_game_play_not_authenticated_user(api_client, words, is_correct)
     })
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("result") is is_correct
-    assert response.data.get("correct_answer") == str(word)
-    assert response.data.get("score") is None
+    response_body = response.data
+    assert response_body.get("result") is is_correct
+    assert response_body.get("correct_answer") == str(word)
+    assert response_body.get("score") is None
 
 
 @pytest.mark.parametrize("is_correct", [True, False])
@@ -207,8 +207,11 @@ def test_article_game_play_authenticated_user(api_client, account, words, is_cor
     }, HTTP_AUTHORIZATION="Token {}".format(token))
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data.get("result") is is_correct
-    assert response.data.get("correct_answer") == str(random_word)
+
+    response_body = response.data
+
+    assert response_body.get("result") is is_correct
+    assert response_body.get("correct_answer") == str(random_word)
 
     if is_correct:
         assert Score.objects.filter(
@@ -217,9 +220,9 @@ def test_article_game_play_authenticated_user(api_client, account, words, is_cor
             game=article_game,
             score=1
         ).exists()
-        assert response.data.get("score") == 1
+        assert response_body.get("score") == 1
     else:
-        assert response.data.get("score") is None
+        assert response_body.get("score") is None
     assert not GameRound.objects.filter(
         user=user,
         game=article_game

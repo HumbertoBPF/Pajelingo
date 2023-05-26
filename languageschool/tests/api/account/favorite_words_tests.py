@@ -13,14 +13,18 @@ from languageschool.tests.utils import get_user_token, get_alphabetically_ordere
 URL_GET = reverse("list-favorite-words-api")
 
 
+def get_expected_number_of_pages(expected_number_results):
+    return 1 if (expected_number_results == 0) else math.ceil(expected_number_results / 12)
+
+
 def assert_word(returned_word, expected_word):
     assert expected_word.id == returned_word.get("id")
     assert expected_word.word_name == returned_word.get("word_name")
     assert expected_word.language.language_name == returned_word.get("language")
-    assert expected_word.article.id == returned_word.get("article")
+    assert expected_word.article_id == returned_word.get("article")
     expected_category = None if (expected_word.category is None) else expected_word.category.category_name
     assert expected_category == returned_word.get("category")
-    assert list(expected_word.synonyms.all().values_list('id', flat=True)) == returned_word.get("synonyms")
+    assert list(expected_word.synonyms.values_list('id', flat=True)) == returned_word.get("synonyms")
     expected_image_url = expected_word.image.url if expected_word.image else None
     assert expected_image_url == returned_word.get("image")
 
@@ -63,7 +67,7 @@ def test_favorite_words_put_add_favorite_word(api_client, account, words):
     returned_word = response.data
 
     assert response.status_code == status.HTTP_200_OK
-    assert random_word in user.favorite_words.all()
+    assert user.favorite_words.contains(random_word)
     assert_word(returned_word, random_word)
     assert returned_word.get("is_favorite")
 
@@ -83,6 +87,7 @@ def test_favorite_words_put_remove_favorite_word(api_client, account, words):
     returned_word = response.data
 
     assert response.status_code == status.HTTP_200_OK
+    assert not user.favorite_words.contains(random_word)
     assert_word(returned_word, random_word)
     assert not returned_word.get("is_favorite")
 
@@ -100,6 +105,8 @@ def test_favorite_words_get_without_filters(api_client, account, languages):
     """
     user, password = account()[0]
     favorite_words = user.favorite_words.all()
+    expected_number_matched_words = favorite_words.count()
+
     token = get_user_token(api_client, user, password)
 
     query_params = {}
@@ -117,7 +124,7 @@ def test_favorite_words_get_without_filters(api_client, account, languages):
         response = api_client.get(next_page, HTTP_AUTHORIZATION="Token {}".format(token))
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data.get("count") == len(favorite_words)
+        assert response.data.get("count") == expected_number_matched_words
         assert response.data.get("previous") == (None if (expected_previous_page is None) else expected_previous_page)
 
         results = response.data.get("results")
@@ -134,7 +141,7 @@ def test_favorite_words_get_without_filters(api_client, account, languages):
         next_page = response.data.get("next")
         number_pages += 1
 
-    assert number_pages == math.ceil(len(favorite_words)/12)
+    assert number_pages == get_expected_number_of_pages(expected_number_matched_words)
 
 
 @pytest.mark.django_db
@@ -144,11 +151,11 @@ def test_favorite_words_get_with_language_filter(api_client, account, languages)
     language filter is specified.
     """
     user, password = account()[0]
-    favorite_words = user.favorite_words.all()
     token = get_user_token(api_client, user, password)
 
     random_language = random.choice(languages)
-    matched_words = favorite_words.filter(language=random_language)
+    matched_words = user.favorite_words.filter(language=random_language)
+    expected_number_matched_words = matched_words.count()
 
     query_string = urlencode({
         random_language.language_name: "true"
@@ -162,25 +169,25 @@ def test_favorite_words_get_with_language_filter(api_client, account, languages)
         response = api_client.get(next_page, HTTP_AUTHORIZATION="Token {}".format(token))
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data.get("count") == len(matched_words)
+        assert response.data.get("count") == expected_number_matched_words
         assert response.data.get("previous") == (None if (expected_previous_page is None) else expected_previous_page)
 
         results = response.data.get("results")
 
         for result in results:
             assert result.get("language") == random_language.language_name
-            assert favorite_words.filter(id=result.get("id"),
-                                         language__language_name=result.get("language"),
-                                         category__category_name=result.get("category"),
-                                         word_name=result.get("word_name"),
-                                         article__id=result.get("article")).exists()
+            assert matched_words.filter(id=result.get("id"),
+                                        language__language_name=result.get("language"),
+                                        category__category_name=result.get("category"),
+                                        word_name=result.get("word_name"),
+                                        article__id=result.get("article")).exists()
             assert result.get("is_favorite")
 
         expected_previous_page = next_page
         next_page = response.data.get("next")
         number_pages += 1
 
-    assert number_pages == math.ceil(len(matched_words)/12)
+    assert number_pages == get_expected_number_of_pages(expected_number_matched_words)
 
 
 @pytest.mark.django_db
@@ -190,11 +197,11 @@ def test_favorite_words_get_with_search_filter(api_client, account, languages):
     filter is specified.
     """
     user, password = account()[0]
-    favorite_words = user.favorite_words.all()
     token = get_user_token(api_client, user, password)
 
     search_filter = get_random_string(1, string.ascii_letters)
-    matched_words = favorite_words.filter(word_name__icontains=search_filter)
+    matched_words = user.favorite_words.filter(word_name__icontains=search_filter)
+    expected_number_matched_words = matched_words.count()
 
     query_params = {
         "search": search_filter
@@ -213,22 +220,22 @@ def test_favorite_words_get_with_search_filter(api_client, account, languages):
         response = api_client.get(next_page, HTTP_AUTHORIZATION="Token {}".format(token))
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data.get("count") == len(matched_words)
+        assert response.data.get("count") == expected_number_matched_words
         assert response.data.get("previous") == (None if (expected_previous_page is None) else expected_previous_page)
 
         results = response.data.get("results")
 
         for result in results:
             assert search_filter.lower() in result.get("word_name").lower()
-            assert favorite_words.filter(id=result.get("id"),
-                                         language__language_name=result.get("language"),
-                                         category__category_name=result.get("category"),
-                                         word_name=result.get("word_name"),
-                                         article__id=result.get("article")).exists()
+            assert matched_words.filter(id=result.get("id"),
+                                        language__language_name=result.get("language"),
+                                        category__category_name=result.get("category"),
+                                        word_name=result.get("word_name"),
+                                        article__id=result.get("article")).exists()
             assert result.get("is_favorite")
 
         expected_previous_page = next_page
         next_page = response.data.get("next")
         number_pages += 1
 
-    assert number_pages == math.ceil(len(matched_words)/12)
+    assert number_pages == get_expected_number_of_pages(expected_number_matched_words)

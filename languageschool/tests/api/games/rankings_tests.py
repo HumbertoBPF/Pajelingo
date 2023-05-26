@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.tests.utils import get_ranking, get_users_from_accounts
+from languageschool.tests.utils import get_ranking, get_users
 
 BASE_URL = reverse("rankings-api")
 
@@ -56,7 +56,7 @@ def test_get_rankings_check_response_params(api_client, account, score, language
     """
     accounts = account(n=random.randint(21, 50))
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
 
     score(users=users, languages=languages)
 
@@ -89,7 +89,7 @@ def test_get_rankings_scores(api_client, account, score, languages, is_authentic
     accounts = account(n=random.randint(21, 50))
     authenticated_user = random.choice(accounts)[0] if is_authenticated else None
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
 
     score(users=users, languages=languages)
 
@@ -156,7 +156,7 @@ def test_get_rankings_pagination(api_client, account, score, languages):
     """
     accounts = account(n=random.randint(21, 50))
 
-    users = get_users_from_accounts(accounts)
+    users = get_users(accounts)
 
     score(users=users, languages=languages)
 

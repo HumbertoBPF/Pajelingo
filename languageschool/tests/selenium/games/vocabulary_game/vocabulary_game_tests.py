@@ -96,7 +96,7 @@ def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_drive
         language=target_language
     ).first()
 
-    synonym = word.synonyms.all().filter(language=base_language).first()
+    synonym = word.synonyms.filter(language=base_language).first()
     answer = synonym.word_name if is_correct else get_random_string(8)
 
     submit_answer(selenium_driver, answer)
@@ -135,7 +135,7 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
         language=target_language
     ).first()
 
-    synonym = word.synonyms.all().filter(language=base_language).first()
+    synonym = word.synonyms.filter(language=base_language).first()
     answer = synonym.word_name if is_correct else get_random_string(8)
 
     submit_answer(selenium_driver, answer)

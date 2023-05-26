@@ -39,11 +39,11 @@ def test_list_scores_get_score(api_client, account, languages, score, games):
 
     response = api_client.get(URL, data=data, HTTP_AUTHORIZATION="Token {}".format(token))
 
-    data = response.data
-    json = data[0]
+    response_body = response.data
+    json = response_body[0]
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(data) == 1
+    assert len(response_body) == 1
     assert json.get("user") == user.username
     assert json.get("language") == language.language_name
     assert json.get("game") == game.game_name
@@ -79,7 +79,7 @@ def test_list_scores_get_score_missing_parameters(api_client, account, languages
 
     response = api_client.get(URL, data=data, HTTP_AUTHORIZATION="Token {}".format(token))
 
-    json = response.data
+    response_body = response.data
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert json.get("error") == MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
+    assert response_body.get("error") == MISSING_PARAMETERS_SCORE_SEARCH_MESSAGE
