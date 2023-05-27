@@ -9,7 +9,6 @@ from rest_framework.exceptions import ValidationError
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, User
 from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round, save_game_round
-from pajelingo.validators.validators import validate_email, validate_username
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -110,14 +109,20 @@ class ListScoreSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(required=True)
-    password = serializers.CharField(max_length=128, write_only=True)
-    # It's necessary to override the bio field to enforce the non-null constraint
-    bio = serializers.CharField(allow_blank=True)
     picture = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = User
         fields = ("email", "username", "password", "bio", "picture")
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            },
+            # It's necessary to override the bio field to enforce the non-null constraint
+            'bio': {
+                'allow_blank': True,
+                'required': True
+            }
+        }
 
     def get_picture(self, obj):
         if obj.picture:
@@ -126,14 +131,6 @@ class UserSerializer(serializers.ModelSerializer):
                 return base64.b64encode(img.read())
             except FileNotFoundError as e:
                 print(e)
-
-    def validate_email(self, value):
-        validate_email(value, self.instance)
-        return value
-
-    def validate_username(self, value):
-        validate_username(value)
-        return value
 
     def validate_password(self, value):
         validate_password(value)
@@ -145,9 +142,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.get("password")
         bio = validated_data.get("bio")
 
-        user = User.objects.create_user(email=email, username=username, password=password, bio=bio, is_active=False)
-
-        return user
+        return User.objects.create_user(email=email, username=username, password=password, bio=bio, is_active=False)
 
     def update(self, instance, validated_data):
         username = validated_data.get("username")

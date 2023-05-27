@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import UniqueConstraint
+from django.utils.translation import gettext_lazy as _
 
 
 def get_upload_to(instance, filename):
@@ -85,6 +88,19 @@ class Word(models.Model):
 
 
 class User(AbstractUser):
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=True,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[UnicodeUsernameValidator(), MinLengthValidator(8)],
+        error_messages={
+            "unique": _("A user with that username already exists."),
+        },
+    )
+    email = models.EmailField(_("email address"), unique=True)
     favorite_words = models.ManyToManyField(Word, blank=True)
     picture = models.ImageField(upload_to=get_upload_to, blank=True)
     bio = models.TextField(max_length=500, blank=True)
@@ -141,15 +157,14 @@ class Score(models.Model):
         :return: if the update is performed, the updated score is returned. Otherwise, None is returned.
         """
         if request.user.is_authenticated:
-            score = Score.objects.filter(user=request.user, language=language, game=game)
 
-            if score.count() == 0:
-                score = Score(user=request.user, language=language, game=game, score=1)
-            else:
-                score = score.latest('id')
+            try:
+                score = Score.objects.get(user=request.user, language=language, game=game)
                 score.score += 1
+                score.save()
+            except Score.DoesNotExist:
+                score = Score.objects.create(user=request.user, language=language, game=game, score=1)
 
-            score.save()
             return score
 
         return None

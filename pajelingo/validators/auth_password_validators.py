@@ -1,12 +1,10 @@
 from django.core.exceptions import ValidationError
 
-from pajelingo.validators.validators import ERROR_REQUIRED_FIELD
 
 ERROR_LETTER_PASSWORD = "The password must have at least one letter."
 ERROR_DIGIT_PASSWORD = "The password must have at least one digit."
 ERROR_SPECIAL_CHARACTER_PASSWORD = "The password must have at least one special character."
 ERROR_LENGTH_PASSWORD = "The password must have a length between 8 and 30."
-ALL_PASSWORD_ERRORS = "{}\n{}\n{}\n{}\n{}".format(ERROR_REQUIRED_FIELD, ERROR_LENGTH_PASSWORD, ERROR_DIGIT_PASSWORD, ERROR_LETTER_PASSWORD, ERROR_SPECIAL_CHARACTER_PASSWORD)
 
 class PasswordLengthValidator(object):
     def __init__(self, min_length=8, max_length=30):
