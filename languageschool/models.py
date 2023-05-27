@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -45,6 +46,7 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
 
+
 class Article(models.Model):
     article_name = models.CharField(max_length=10)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
@@ -86,7 +88,6 @@ class Word(models.Model):
         ]
 
 
-
 class User(AbstractUser):
     username = models.CharField(
         _("username"),
@@ -101,6 +102,7 @@ class User(AbstractUser):
         },
     )
     email = models.EmailField(_("email address"), unique=True)
+    password = models.CharField(_("password"), max_length=128, validators=[validate_password])
     favorite_words = models.ManyToManyField(Word, blank=True)
     picture = models.ImageField(upload_to=get_upload_to, blank=True)
     bio = models.TextField(max_length=500, blank=True)

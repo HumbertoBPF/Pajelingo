@@ -2,9 +2,10 @@ from django.contrib import admin
 
 from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word, \
     GameRound, User
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(DefaultUserAdmin):
     list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login')
     list_display_links = ('username', 'email')
     search_fields = ('username', 'email')

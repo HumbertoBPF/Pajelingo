@@ -7,6 +7,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import views, generics, status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -199,9 +200,7 @@ class PublicImageViewSet(views.APIView):
             }, status.HTTP_400_BAD_REQUEST)
 
         if resource.startswith("/media/images/models/AppUser/"):
-            return Response({
-                "error": "This picture is private"
-            }, status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
 
         url = settings.MEDIA_ROOT.replace("\\", "/").split("/media")[0] + resource
 
@@ -355,9 +354,9 @@ class ActivationView(views.APIView):
             user = User.objects.get(pk=uid)
 
             if user.is_active or (not account_activation_token.check_token(user, token)):
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                raise PermissionDenied()
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
 
         user.is_active = True
         user.save()
@@ -381,15 +380,13 @@ class ResetAccountView(views.APIView):
         try:
             pk = force_str(urlsafe_base64_decode(uidb64))
         except(TypeError, ValueError, OverflowError):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
 
         serializer = ResetAccountSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save(pk=pk, token=token)
 
-        if serializer.save(pk=pk, token=token):
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FavoriteWordsListView(generics.ListAPIView):

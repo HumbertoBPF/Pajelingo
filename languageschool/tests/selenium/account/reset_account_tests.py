@@ -151,7 +151,7 @@ def test_reset_account_already_used_link(live_server, selenium_driver, account):
     alert = find_element(selenium_driver, CSS_SELECTOR_ALERT)
 
     assert alert.text == "Password successfully updated!"
-    user = User.objects.filter(id=user.id, username=user.username, email=user.email).first()
+    user = User.objects.get(id=user.id)
     assert check_password(password, user.password)
 
     selenium_driver.get(FRONT_END_URL + reset_endpoint)
@@ -182,5 +182,5 @@ def test_reset_account(live_server, selenium_driver, account):
     alert = find_element(selenium_driver, CSS_SELECTOR_ALERT)
 
     assert alert.text == "Password successfully updated!"
-    user = User.objects.filter(id=user.id, username=user.username, email=user.email).first()
+    user = User.objects.get(id=user.id)
     assert check_password(password, user.password)

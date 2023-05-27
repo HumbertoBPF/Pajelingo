@@ -5,7 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 
 from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, User
 from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round, save_game_round
@@ -132,9 +132,6 @@ class UserSerializer(serializers.ModelSerializer):
             except FileNotFoundError as e:
                 print(e)
 
-    def validate_password(self, value):
-        validate_password(value)
-        return value
 
     def create(self, validated_data):
         username = validated_data.get("username")
@@ -403,12 +400,10 @@ class RequestResetAccountSerializer(serializers.Serializer):
             send_reset_account_email(user)
 
 
-class ResetAccountSerializer(serializers.Serializer):
-    password = serializers.CharField()
-
-    def validate_password(self, value):
-        validate_password(value)
-        return value
+class ResetAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('password',)
 
     def save(self, **kwargs):
         pk = kwargs.get("pk")
@@ -419,13 +414,12 @@ class ResetAccountSerializer(serializers.Serializer):
             user = User.objects.get(pk=pk)
 
             if (not user.is_active) or not (default_token_generator.check_token(user, token)):
-                return False
+                raise PermissionDenied()
 
             user.set_password(password)
             user.save()
-            return True
         except User.DoesNotExist:
-            return False
+            raise PermissionDenied()
 
 
 class FavoriteWordsSerializer(serializers.Serializer):
