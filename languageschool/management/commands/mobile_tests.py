@@ -8,18 +8,19 @@ from languageschool.models import Game, Language, Score, Word, User
 
 class SetUpAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        list_of_ids = [self.create_test_user("test-android@test.com", "test-android", "str0ng-p4ssw0rd"),
+        list_of_ids = [self.create_test_user("test-android@test.com", "test-android", "str0ng-p4ssw0rd", "bio"),
                        self.create_test_user("update-test-android0@test.com", "update-test-android0",
-                                             "upd4te-str0ng-p4ssw0rd0"),
+                                             "upd4te-str0ng-p4ssw0rd0", "bio 0"),
                        self.create_test_user("update-test-android1@test.com", "update-test-android1",
-                                             "upd4te-str0ng-p4ssw0rd1"),
+                                             "upd4te-str0ng-p4ssw0rd1", "bio 1"),
                        self.create_test_user("update-test-android2@test.com", "update-test-android2",
-                                             "upd4te-str0ng-p4ssw0rd2"),
+                                             "upd4te-str0ng-p4ssw0rd2", "bio 2"),
                        self.create_test_user("update-test-android3@test.com", "update-test-android3",
-                                             "upd4te-str0ng-p4ssw0rd3"),
+                                             "upd4te-str0ng-p4ssw0rd3", "bio 3"),
                        self.create_test_user("update-test-android4@test.com", "update-test-android4",
-                                             "upd4te-str0ng-p4ssw0rd4"),
-                       self.create_test_user("test-android-delete@test.com", "test-android-delete", "str0ng-p4ssw0rd")]
+                                             "upd4te-str0ng-p4ssw0rd4", "bio 4"),
+                       self.create_test_user("test-android-delete@test.com", "test-android-delete",
+                                             "str0ng-p4ssw0rd", "bio delete")]
 
         test_user = User.objects.get(pk=list_of_ids[0])
 
@@ -42,10 +43,8 @@ class SetUpAction(argparse.Action):
         print("Users created for mobile tests:")
         print(list_of_ids)
 
-    def create_test_user(self, email, username, password):
-        test_user = User.objects.create_user(email=email, username=username)
-        test_user.set_password(password)
-        test_user.save()
+    def create_test_user(self, email, username, password, bio):
+        test_user = User.objects.create_user(email=email, username=username, password=password, bio=bio)
         return test_user.id
 
 
@@ -57,14 +56,18 @@ class TearDownAction(argparse.Action):
 
     def delete_test_user_by_id(self, list_of_ids):
         for pk in list_of_ids:
-            user = User.objects.filter(pk=pk).first()
-            if user is not None:
+            try:
+                user = User.objects.get(pk=pk)
                 user.delete()
+            except User.DoesNotExist:
+                print(f"User with pk {pk} was not found")
 
     def delete_test_user_by_username(self, username):
-        user = User.objects.filter(username=username).first()
-        if user is not None:
+        try:
+            user = User.objects.get(username=username)
             user.delete()
+        except User.DoesNotExist:
+            print(f"User with username {username} was not found")
 
 
 class Command(BaseCommand):

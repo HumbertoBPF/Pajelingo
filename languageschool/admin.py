@@ -6,10 +6,11 @@ from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
 
 class UserAdmin(DefaultUserAdmin):
-    list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login')
+    list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login', 'date_joined')
     list_display_links = ('username', 'email')
     search_fields = ('username', 'email')
     list_per_page = 10
+    ordering = ("-date_joined",)
 
 
 class GameDisplay(admin.ModelAdmin):
