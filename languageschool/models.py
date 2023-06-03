@@ -99,7 +99,7 @@ class LanguageDomainValidator(BadgeValidator):
 
 class Badge(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    image = models.ImageField()
+    image = models.ImageField(upload_to=get_upload_to, blank=True)
     color = models.CharField(max_length=6)
     description = models.TextField(max_length=200)
 

@@ -196,6 +196,15 @@ def password_factory(length, has_letters, has_digits, has_special_character):
     return password + get_random_string(length - len(password), allowed_chars)
 
 
+def assert_badges(badges, user):
+    for badge in badges:
+        assert user.badges.filter(
+            name=badge.get("name"),
+            description=badge.get("description"),
+            color=badge.get("color")
+        ).exists()
+
+
 def get_ranking(language):
     scores = Score.objects.filter(language=language).values('user__username')\
         .annotate(score=Sum('score')).order_by('-score')

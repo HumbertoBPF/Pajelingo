@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, User
+from languageschool.models import Language, Word, Article, Category, Conjugation, Game, Score, Meaning, User, Badge
 from languageschool.tests.utils import get_valid_password, get_random_email, get_random_username, get_random_bio
 
 
@@ -99,13 +99,39 @@ def game_factory(pk, game_name, link):
                                link=link)
 
 
+@pytest.fixture(autouse=True)
+def badges():
+    Badge.objects.create(id=1,
+                         name="Explorer",
+                         color="008000" ,
+                         description="Discover all the games in one language")
+    Badge.objects.create(id=2,
+                         name="Linguistic mastery",
+                         color="0000FF",
+                         description="Score more than 100 in all games in one language")
+    Badge.objects.create(id=3,
+                         name="Bilingual",
+                         color="CD7F32",
+                         description="Score than 100 in all games and two languages")
+    Badge.objects.create(id=4,
+                         name="Trilingual",
+                         color="C0C0C0",
+                         description="Score more than 100 in all games and three languages")
+    Badge.objects.create(id=5,
+                         name="Polyglot",
+                         color="FFD700",
+                         description="Score more than 100 in all games and four languages")
+    return Badge.objects.all()
+
+
 @pytest.fixture
-def account(words):
+def account(words, badges):
     def account_factory(n=1, is_active=True):
         accounts_list = []
 
         for _ in range(n):
             password = get_valid_password()
+
             user = User.objects.create_user(username=get_random_username(),
                                             email=get_random_email(),
                                             bio=get_random_bio(),
@@ -116,7 +142,8 @@ def account(words):
                 favorite_word = random.choice(words)
                 user.favorite_words.add(favorite_word)
 
-            user.save()
+            user_badges = random.sample(list(badges.values_list("id", flat=True)), k=2)
+            user.badges.add(*user_badges)
 
             accounts_list.append((user, password))
         return accounts_list

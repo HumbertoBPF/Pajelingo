@@ -10,7 +10,8 @@ from rest_framework import status
 from languageschool.models import User
 from languageschool.tests.utils import get_random_email, get_valid_password, \
     get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
-    get_password_without_digits, get_password_without_special_characters, get_too_short_username, get_user_token
+    get_password_without_digits, get_password_without_special_characters, get_too_short_username, get_user_token, \
+    assert_badges
 from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE
 from pajelingo import settings
 
@@ -46,7 +47,7 @@ def test_account_get_wrong_token(api_client):
 
 
 @pytest.mark.django_db
-def test_account_get(api_client, account):
+def test_account_get(api_client, account, badges):
     """
     Tests that the GET /user endpoint returns 200 when the credentials are correct.
     """
@@ -63,6 +64,8 @@ def test_account_get(api_client, account):
     assert response_body.get("email") == user.email
     assert response_body.get("bio") is not None
     assert response_body.get("picture") == get_profile_picture_base64(user)
+    assert len(response_body.get("badges")) == 2
+    assert_badges(response_body.get("badges"), user)
     # Checks that no password is returned
     assert response_body.get("password") is None
 
@@ -137,6 +140,7 @@ def test_account_post(api_client, email, username, password, bio):
         assert response_body.get("email") == email
         assert response_body.get("bio") is not None
         assert response_body.get("picture") == get_profile_picture_base64(user)
+        assert len(response_body.get("badges")) == 0
         # Checks that no password is returned
         assert response_body.get("password") is None
         # Check that activation email was sent
@@ -238,7 +242,7 @@ def test_account_put_wrong_credentials(api_client):
     ]
 )
 @pytest.mark.django_db
-def test_account_put(api_client, account, email, username, password, bio):
+def test_account_put(api_client, account, email, username, password, bio, badges):
     """
     Tests the PUT /user endpoint with several inputs. One of the combinations (EMAIL, USERNAME, PASSWORD) must return
     200 Ok and the picture, email, and username attributes while invalid inputs must return 400 Bad Request.
@@ -271,6 +275,8 @@ def test_account_put(api_client, account, email, username, password, bio):
         assert response_body.get("email") == email
         assert response_body.get("bio") is not None
         assert response_body.get("picture") == get_profile_picture_base64(user)
+        assert len(response_body.get("badges")) == 2
+        assert_badges(response_body.get("badges"), user)
         # Checking that no password is returned
         assert response_body.get("password") is None
         user = User.objects.get(id=user.id)
@@ -330,7 +336,7 @@ def test_account_put_requires_unique_email_and_username(api_client, account, rep
     ]
 )
 @pytest.mark.django_db
-def test_account_put_same_email_and_username(api_client, account, same_email, same_username):
+def test_account_put_same_email_and_username(api_client, account, same_email, same_username, badges):
     """
     Tests that the PUT /user endpoint accepts the same email and username.
     """
@@ -362,6 +368,8 @@ def test_account_put_same_email_and_username(api_client, account, same_email, sa
     assert response_body.get("email") == payload["email"]
     assert response_body.get("bio") == payload["bio"]
     assert response_body.get("picture") == get_profile_picture_base64(user_to_update)
+    assert len(response_body.get("badges")) == 2
+    assert_badges(response_body.get("badges"), user_to_update)
     # Checking that no password is returned
     assert response_body.get("password") is None
     # Checking that the concerned user was updated

@@ -8,6 +8,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import status
 
 from languageschool.models import User
+from languageschool.tests.utils import assert_badges
 
 SEARCH_ACCOUNTS_URL = reverse("search-accounts-api")
 
@@ -34,11 +35,17 @@ def assert_response(response, q, page, number_accounts):
     for result in results:
         username = result.get("username")
         bio = result.get("bio")
+        badges = result.get("badges")
 
         assert username is not None
         assert bio is not None
         user = User.objects.get(username=username)
+
         assert user.bio == bio
+        assert len(badges) == 2
+
+        assert_badges(result.get("badges"), user)
+
         assert query.lower() in username.lower()
 
     assert count == number_accounts
@@ -130,3 +137,5 @@ def test_search_account(api_client, account):
     assert response_body.get("username") == user.username
     assert response_body.get("picture") is None
     assert response_body.get("bio") == user.bio
+    assert len(response_body.get("badges")) == 2
+    assert_badges(response_body.get("badges"), user)
