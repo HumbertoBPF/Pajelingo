@@ -71,8 +71,7 @@ def test_account_get(api_client, account):
     "email", [
         EMAIL,
         get_random_string(random.randint(1, 5))+" "+get_random_email(),
-        get_random_string(random.randint(1, 16)),
-        "",
+        get_random_string(random.randint(0, 16)),
         None
     ]
 )
@@ -81,7 +80,6 @@ def test_account_get(api_client, account):
         USERNAME,
         get_random_string(random.randint(1, 5))+" "+get_random_username(),
         get_too_short_username(),
-        "",
         None
     ]
 )
@@ -93,14 +91,13 @@ def test_account_get(api_client, account):
         get_password_without_letters(),
         get_password_without_digits(),
         get_password_without_special_characters(),
-        "",
+        get_random_string(random.randint(0, 2)),
         None
     ]
 )
 @pytest.mark.parametrize(
     "bio", [
-        get_random_string(random.randint(1, 20)),
-        "",
+        get_random_string(random.randint(0, 20)),
         None
     ]
 )
@@ -210,8 +207,7 @@ def test_account_put_wrong_credentials(api_client):
     "email", [
         EMAIL,
         get_random_string(random.randint(1, 5))+" "+get_random_email(),
-        get_random_string(random.randint(1, 16)),
-        "",
+        get_random_string(random.randint(0, 16)),
         None
     ]
 )
@@ -220,7 +216,6 @@ def test_account_put_wrong_credentials(api_client):
         USERNAME,
         get_random_string(random.randint(1, 5))+" "+get_random_username(),
         get_too_short_username(),
-        "",
         None
     ]
 )
@@ -232,14 +227,13 @@ def test_account_put_wrong_credentials(api_client):
         get_password_without_letters(),
         get_password_without_digits(),
         get_password_without_special_characters(),
-        "",
+        get_random_string(random.randint(0, 2)),
         None
     ]
 )
 @pytest.mark.parametrize(
     "bio", [
-        get_random_string(random.randint(1, 20)),
-        "",
+        get_random_string(0),
         None
     ]
 )

@@ -108,7 +108,7 @@ def get_random_email():
 
 
 def get_too_short_username():
-    return get_random_string(random.randint(1, 7))
+    return get_random_string(random.randint(0, 7))
 
 
 def get_random_username():

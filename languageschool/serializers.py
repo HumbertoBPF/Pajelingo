@@ -1,4 +1,3 @@
-import base64
 import random
 
 from django.contrib.auth.password_validation import validate_password
@@ -7,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
-from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, User
+from languageschool.models import Article, Category, Conjugation, Language, Meaning, Score, Word, Game, User, Badge
 from languageschool.utils import send_reset_account_email, get_base_64_encoded_image, check_game_round, save_game_round
 
 
@@ -109,10 +108,11 @@ class ListScoreSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    picture = serializers.SerializerMethodField(read_only=True)
+    picture = serializers.SerializerMethodField()
+    badges = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ("email", "username", "password", "bio", "picture")
+        fields = ("email", "username", "password", "bio", "picture", "badges")
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -125,13 +125,14 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def get_picture(self, obj):
-        if obj.picture:
-            try:
-                img = obj.picture.open("rb")
-                return base64.b64encode(img.read())
-            except FileNotFoundError as e:
-                print(e)
+        return get_base_64_encoded_image(obj.picture)
 
+    def get_badges(self, obj):
+        return BadgesSerializer(obj.badges.all(), many=True).data
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
         username = validated_data.get("username")
@@ -154,6 +155,17 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class BadgesSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Badge
+        fields = ("name", "description", "image", "color")
+
+    def get_image(self, obj):
+        return get_base_64_encoded_image(obj.image)
 
 
 class ScoreSerializer(serializers.Serializer):
@@ -264,9 +276,10 @@ class ArticleGameAnswerSerializer(serializers.Serializer):
 
         word = get_object_or_404(Word, pk=word_id)
 
+        correct_answer = str(word)
         is_correct_answer = (word.article.article_name == answer)
-
         score = None
+        new_badges = []
 
         if not request.user.is_anonymous:
             check_game_round(request, 2, {
@@ -276,8 +289,16 @@ class ArticleGameAnswerSerializer(serializers.Serializer):
             if is_correct_answer:
                 score = Score.increment_score(request, word.language, get_object_or_404(Game, id=2))
                 score = score.score
+                new_badges = Badge.update_badges(request.user)
 
-        return is_correct_answer, str(word), score
+        new_badges = Badge.objects.filter(id__in=new_badges)
+
+        return {
+            "correct_answer": correct_answer,
+            "result": is_correct_answer,
+            "score": score,
+            "new_badges": BadgesSerializer(new_badges, many=True).data
+        }
 
 
 class VocabularyGameAnswerSerializer(serializers.Serializer):
@@ -315,8 +336,8 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
                 correct_translation += synonym.word_name
 
         is_correct_answer = (correct_translation == answer)
-
         score = None
+        new_badges = []
 
         if not request.user.is_anonymous:
             check_game_round(request, 1, {
@@ -327,8 +348,16 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
             if is_correct_answer:
                 score = Score.increment_score(request, word_to_translate.language, get_object_or_404(Game, id=1))
                 score = score.score
+                new_badges = Badge.update_badges(request.user)
 
-        return is_correct_answer, correct_translation, score
+        new_badges = Badge.objects.filter(id__in=new_badges)
+
+        return {
+            "correct_answer": correct_translation,
+            "result": is_correct_answer,
+            "score": score,
+            "new_badges": BadgesSerializer(new_badges, many=True).data
+        }
 
 
 class ConjugationGameAnswerSerializer(serializers.Serializer):
@@ -370,6 +399,7 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
                             and conjugation_6 == conjugation.conjugation_6
 
         score = None
+        new_badges = []
 
         if not request.user.is_anonymous:
             check_game_round(request, 3, {
@@ -380,8 +410,16 @@ class ConjugationGameAnswerSerializer(serializers.Serializer):
             if is_correct_answer:
                 score = Score.increment_score(request, language, get_object_or_404(Game, id=3))
                 score = score.score
+                new_badges = Badge.update_badges(request.user)
 
-        return is_correct_answer, correct_answer, score
+        new_badges = Badge.objects.filter(id__in=new_badges)
+
+        return {
+            "correct_answer": correct_answer,
+            "result": is_correct_answer,
+            "score": score,
+            "new_badges": BadgesSerializer(new_badges, many=True).data
+        }
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -404,6 +442,10 @@ class ResetAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('password',)
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
 
     def save(self, **kwargs):
         pk = kwargs.get("pk")
@@ -442,9 +484,13 @@ class FavoriteWordsSerializer(serializers.Serializer):
 
 class AccountSerializer(serializers.ModelSerializer):
     picture = serializers.SerializerMethodField()
+    badges = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('username', 'bio', 'picture')
+        fields = ('username', 'bio', 'picture', 'badges')
 
     def get_picture(self, obj):
         return get_base_64_encoded_image(obj.picture)
+
+    def get_badges(self, obj):
+        return BadgesSerializer(obj.badges.all(), many=True).data

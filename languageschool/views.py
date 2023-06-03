@@ -283,13 +283,9 @@ class ArticleGameView(views.APIView):
         serializer = ArticleGameAnswerSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        is_answer_correct, correct_answer, score = serializer.save()
+        response_data = serializer.save()
 
-        return Response(data={
-            "result": is_answer_correct,
-            "correct_answer": correct_answer,
-            "score": score
-        }, status=status.HTTP_200_OK)
+        return Response(data=response_data, status=status.HTTP_200_OK)
 
 
 class VocabularyGameView(views.APIView):
@@ -310,13 +306,9 @@ class VocabularyGameView(views.APIView):
         serializer = VocabularyGameAnswerSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        is_answer_correct, correct_answer, score = serializer.save()
+        response_data = serializer.save()
 
-        return Response(data={
-            "result": is_answer_correct,
-            "correct_answer": correct_answer,
-            "score": score
-        }, status=status.HTTP_200_OK)
+        return Response(data=response_data, status=status.HTTP_200_OK)
 
 
 class ConjugationGameView(views.APIView):
@@ -338,13 +330,9 @@ class ConjugationGameView(views.APIView):
         serializer = ConjugationGameAnswerSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        is_answer_correct, correct_answer, score = serializer.save()
+        response_data = serializer.save()
 
-        return Response(data={
-            "result": is_answer_correct,
-            "correct_answer": correct_answer,
-            "score": score
-        }, status=status.HTTP_200_OK)
+        return Response(data=response_data, status=status.HTTP_200_OK)
 
 
 class ActivationView(views.APIView):

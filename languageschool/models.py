@@ -1,5 +1,6 @@
+from abc import ABC, abstractmethod
+
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -45,6 +46,102 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
+
+
+class BadgeValidator(ABC):
+    def __init__(self, languages, games, user):
+        self.languages = languages
+        self.games = games
+        self.user = user
+
+    @abstractmethod
+    def validate(self):
+        pass
+
+class ExplorerBadgeValidator(BadgeValidator):
+    def validate(self):
+        for language in self.languages:
+            explored_all_games = True
+
+            for game in self.games:
+                explored_all_games = \
+                    explored_all_games and \
+                    Score.objects.filter(game=game, language=language, user=self.user).exists()
+                # No need to continue if a game has not been played yet
+                if not explored_all_games:
+                    break
+
+            if explored_all_games:
+                return True
+
+        return False
+
+class LanguageDomainValidator(BadgeValidator):
+    def validate(self):
+        more_than_100_points = 0
+
+        for language in self.languages:
+            more_than_100_points_in_language = True
+
+            for game in self.games:
+                more_than_100_points_in_language = \
+                    more_than_100_points_in_language and \
+                    Score.objects.filter(game=game, language=language, user=self.user, score__gte=100).exists()
+                # If both validations have become false, we can stop iterating over the games for this language
+                if not more_than_100_points_in_language:
+                    break
+
+            if more_than_100_points_in_language:
+                more_than_100_points += 1
+
+        return more_than_100_points
+
+
+class Badge(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    image = models.ImageField()
+    color = models.CharField(max_length=6)
+    description = models.TextField(max_length=200)
+
+    @staticmethod
+    def update_badges(user):
+        languages = Language.objects.all()
+        games = Game.objects.all()
+
+        explorer_badge_id = 1
+        linguistic_mastery_badge_id = 2
+        bilingual_badge_id = 3
+        trilingual_badge_id = 4
+        polyglot_badge_id = 5
+
+        is_explorer = ExplorerBadgeValidator(languages, games, user).validate()
+        more_than_100_points = LanguageDomainValidator(languages, games, user).validate()
+
+        current_badges = user.badges.values_list("id", flat=True)
+
+        list_new_badges = []
+
+        if is_explorer and (explorer_badge_id not in current_badges):
+            list_new_badges.append(explorer_badge_id)
+
+        if more_than_100_points > 0 and (linguistic_mastery_badge_id not in current_badges):
+            list_new_badges.append(linguistic_mastery_badge_id)
+
+        if more_than_100_points > 1 and (bilingual_badge_id not in current_badges):
+            list_new_badges.append(bilingual_badge_id)
+
+        if more_than_100_points > 2 and (trilingual_badge_id not in current_badges):
+            list_new_badges.append(trilingual_badge_id)
+
+        if more_than_100_points > 3 and (polyglot_badge_id not in current_badges):
+            list_new_badges.append(polyglot_badge_id)
+
+        user.badges.add(*list_new_badges)
+
+        return list_new_badges
+
+    def __str__(self):
+        return self.name
 
 
 class Article(models.Model):
@@ -102,10 +199,10 @@ class User(AbstractUser):
         },
     )
     email = models.EmailField(_("email address"), unique=True)
-    password = models.CharField(_("password"), max_length=128, validators=[validate_password])
     favorite_words = models.ManyToManyField(Word, blank=True)
     picture = models.ImageField(upload_to=get_upload_to, blank=True)
     bio = models.TextField(max_length=500, blank=True)
+    badges = models.ManyToManyField(Badge, blank=True)
 
     def __str__(self):
         return str(self.username)

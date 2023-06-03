@@ -1,16 +1,44 @@
 from django.contrib import admin
 
 from languageschool.models import Article, Category, Conjugation, Game, Language, Meaning, Score, Word, \
-    GameRound, User
+    GameRound, User, Badge
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-
+from django.utils.translation import gettext_lazy as _
 
 class UserAdmin(DefaultUserAdmin):
+    fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        (_("Personal info"), {"fields": ("first_name", "last_name", "email", "bio")}),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("App data"), {"fields": ("favorite_words", "badges")})
+    )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "username", "password1", "password2", "bio"),
+            },
+        ),
+    )
     list_display = ('username', 'email', 'is_active', 'is_staff', 'last_login', 'date_joined')
     list_display_links = ('username', 'email')
     search_fields = ('username', 'email')
     list_per_page = 10
     ordering = ("-date_joined",)
+    autocomplete_fields = ("favorite_words", "badges")
 
 
 class GameDisplay(admin.ModelAdmin):
@@ -83,6 +111,13 @@ class GameRoundDisplay(admin.ModelAdmin):
     list_per_page = 10
 
 
+class BadgeDisplay(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description')
+    list_display_links = ('id', 'name')
+    search_fields = ('name',)
+    list_per_page = 10
+
+
 # Register your models here.
 admin.site.register(User, UserAdmin)
 admin.site.register(Game, GameDisplay)
@@ -94,3 +129,4 @@ admin.site.register(Meaning, MeaningDisplay)
 admin.site.register(Conjugation, ConjugationDisplay)
 admin.site.register(Score, ScoreDisplay)
 admin.site.register(GameRound, GameRoundDisplay)
+admin.site.register(Badge, BadgeDisplay)
