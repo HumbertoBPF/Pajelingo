@@ -11,7 +11,7 @@ from languageschool.models import User
 from languageschool.tests.utils import get_random_email, get_valid_password, \
     get_too_long_password, get_too_short_password, get_random_username, get_password_without_letters, \
     get_password_without_digits, get_password_without_special_characters, get_too_short_username, get_user_token, \
-    assert_badges
+    assert_badges, attribute_user_badges
 from languageschool.utils import SIGN_UP_SUBJECT, SIGN_UP_MESSAGE
 from pajelingo import settings
 
@@ -52,6 +52,7 @@ def test_account_get(api_client, account, badges):
     Tests that the GET /user endpoint returns 200 when the credentials are correct.
     """
     user, password = account()[0]
+    attribute_user_badges()
 
     token = get_user_token(api_client, user, password)
 
@@ -248,6 +249,7 @@ def test_account_put(api_client, account, email, username, password, bio, badges
     200 Ok and the picture, email, and username attributes while invalid inputs must return 400 Bad Request.
     """
     user, user_password = account()[0]
+    attribute_user_badges()
 
     payload = {}
 
@@ -341,6 +343,7 @@ def test_account_put_same_email_and_username(api_client, account, same_email, sa
     Tests that the PUT /user endpoint accepts the same email and username.
     """
     user_to_update, password_user_to_update = account()[0]
+    attribute_user_badges()
 
     payload = {
         "password": get_valid_password(),

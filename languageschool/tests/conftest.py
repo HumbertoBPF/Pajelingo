@@ -142,9 +142,6 @@ def account(words, badges):
                 favorite_word = random.choice(words)
                 user.favorite_words.add(favorite_word)
 
-            user_badges = random.sample(list(badges.values_list("id", flat=True)), k=2)
-            user.badges.add(*user_badges)
-
             accounts_list.append((user, password))
         return accounts_list
     return account_factory

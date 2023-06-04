@@ -8,7 +8,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import status
 
 from languageschool.models import User
-from languageschool.tests.utils import assert_badges
+from languageschool.tests.utils import assert_badges, attribute_user_badges
 
 SEARCH_ACCOUNTS_URL = reverse("search-accounts-api")
 
@@ -63,6 +63,8 @@ def test_search_accounts_no_query_param(api_client, account):
     account(n=number_accounts)
     accounts_dict = {}
 
+    attribute_user_badges()
+
     expected_number_pages = math.ceil(number_accounts/10)
 
     for i in range(expected_number_pages):
@@ -93,6 +95,8 @@ def test_search_accounts_with_query_param(api_client, account):
 
     number_matched_accounts = User.objects.filter(username__icontains=q).count()
     accounts_dict = {}
+
+    attribute_user_badges()
 
     expected_number_pages = math.ceil(number_matched_accounts/10)
 
@@ -128,6 +132,8 @@ def test_search_account_not_found(api_client):
 @pytest.mark.django_db
 def test_search_account(api_client, account):
     user, password = account()[0]
+    attribute_user_badges()
+
     url = reverse("account-api", kwargs={"username": user.username})
 
     response = api_client.get(url)

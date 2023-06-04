@@ -6,22 +6,10 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
 
-from languageschool.models import Conjugation, Score, GameRound, Game
-from languageschool.tests.utils import get_user_token
+from languageschool.models import Conjugation, Score, GameRound, Badge
+from languageschool.tests.utils import get_user_token, get_conjugation_game_answer, achieve_explorer_badge
 
-BASE_URL = reverse("conjugation-game-api")
-
-
-def get_correct_answer(conjugation):
-    language = conjugation.word.language
-
-    return "{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n"\
-        .format(language.personal_pronoun_1, conjugation.conjugation_1,
-                language.personal_pronoun_2, conjugation.conjugation_2,
-                language.personal_pronoun_3, conjugation.conjugation_3,
-                language.personal_pronoun_4, conjugation.conjugation_4,
-                language.personal_pronoun_5, conjugation.conjugation_5,
-                language.personal_pronoun_6, conjugation.conjugation_6)
+CONJUGATION_GAME_URL = reverse("conjugation-game-api")
 
 
 @pytest.mark.django_db
@@ -29,7 +17,7 @@ def test_conjugation_game_setup_no_language(api_client):
     """
     Checks that /api/conjugation-game raises a 404 Not Found when no language is specified.
     """
-    response = api_client.get(BASE_URL)
+    response = api_client.get(CONJUGATION_GAME_URL)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -41,7 +29,7 @@ def test_conjugation_game_setup_invalid_language(api_client):
     query_string = urlencode({
         "language": get_random_string(8)
     })
-    url = "{}?{}".format(BASE_URL, query_string)
+    url = "{}?{}".format(CONJUGATION_GAME_URL, query_string)
 
     response = api_client.get(url)
 
@@ -59,7 +47,7 @@ def test_conjugation_game_setup_non_authenticated_user(api_client, verbs, langua
     query_string = urlencode({
         "language": random_language.language_name
     })
-    url = "{}?{}".format(BASE_URL, query_string)
+    url = "{}?{}".format(CONJUGATION_GAME_URL, query_string)
 
     response = api_client.get(url)
 
@@ -85,7 +73,7 @@ def test_conjugation_game_setup_authenticated_user(api_client, account, verbs, l
     query_string = urlencode({
         "language": random_language.language_name
     })
-    url = "{}?{}".format(BASE_URL, query_string)
+    url = "{}?{}".format(CONJUGATION_GAME_URL, query_string)
 
     response = api_client.get(url, HTTP_AUTHORIZATION="Token {}".format(get_user_token(api_client, user, password)))
 
@@ -148,7 +136,7 @@ def test_conjugation_game_play_required_parameters(api_client, has_id, has_tense
     if has_conjugation_6:
         payload["conjugation_6"] = get_random_string(8)
 
-    response = api_client.post(BASE_URL, data=payload)
+    response = api_client.post(CONJUGATION_GAME_URL, data=payload)
 
     if has_id and has_tense and has_conjugation_1 and has_conjugation_2 and has_conjugation_3 and has_conjugation_4 \
             and has_conjugation_5 and has_conjugation_6:
@@ -162,7 +150,7 @@ def test_conjugation_game_play_invalid_verb(api_client):
     """
     Checks that /api/conjugation-game raises a 404 Not Found when the specified word id does not match any verb.
     """
-    response = api_client.post(BASE_URL, data={
+    response = api_client.post(CONJUGATION_GAME_URL, data={
         "word_id": random.randint(1, 1000),
         "tense": get_random_string(8),
         "conjugation_1": get_random_string(8),
@@ -183,7 +171,7 @@ def test_conjugation_game_play_invalid_conjugation(api_client, conjugations):
     """
     random_conjugation = random.choice(conjugations)
 
-    response = api_client.post(BASE_URL, data={
+    response = api_client.post(CONJUGATION_GAME_URL, data={
         "word_id": random_conjugation.word_id,
         "tense": get_random_string(8),
         "conjugation_1": get_random_string(8),
@@ -203,19 +191,22 @@ def test_conjugation_game_play_invalid_conjugation(api_client, conjugations):
 @pytest.mark.parametrize("has_correct_conjugation_5", [True, False])
 @pytest.mark.parametrize("has_correct_conjugation_6", [True, False])
 @pytest.mark.django_db
-def test_conjugation_game_play_non_authenticated_user(api_client, verbs, conjugations, has_correct_conjugation_1,
-                                                      has_correct_conjugation_2, has_correct_conjugation_3,
-                                                      has_correct_conjugation_4, has_correct_conjugation_5,
-                                                      has_correct_conjugation_6):
+def test_conjugation_game_play_non_authenticated_user(api_client, account, verbs, conjugations,
+                                                      has_correct_conjugation_1, has_correct_conjugation_2,
+                                                      has_correct_conjugation_3, has_correct_conjugation_4,
+                                                      has_correct_conjugation_5, has_correct_conjugation_6):
     """
     Checks that /api/conjugation-game returns 200 Ok when a valid verb and conjugation is specified. The result, the
     correct answer and None as current score are returned in the request body.
     """
+    user, _ = account()[0]
+    achieve_explorer_badge(user)
+
     random_conjugation = random.choice(conjugations)
     is_correct = has_correct_conjugation_1 and has_correct_conjugation_2 and has_correct_conjugation_3 \
                  and has_correct_conjugation_4 and has_correct_conjugation_5 and has_correct_conjugation_6
 
-    response = api_client.post(BASE_URL, data={
+    response = api_client.post(CONJUGATION_GAME_URL, data={
         "word_id": random_conjugation.word_id,
         "tense": random_conjugation.tense,
         "conjugation_1": random_conjugation.conjugation_1 if has_correct_conjugation_1 else get_random_string(8),
@@ -228,12 +219,13 @@ def test_conjugation_game_play_non_authenticated_user(api_client, verbs, conjuga
 
     response_body = response.data
 
-    expected_correct_answer = get_correct_answer(random_conjugation)
+    expected_correct_answer = get_conjugation_game_answer(random_conjugation)
 
     assert response.status_code == status.HTTP_200_OK
     assert response_body.get("result") is is_correct
     assert response_body.get("correct_answer") == expected_correct_answer
     assert response_body.get("score") is None
+    assert response_body.get("new_badges") == []
 
 
 @pytest.mark.parametrize("has_correct_conjugation_1", [True, False])
@@ -260,7 +252,7 @@ def test_conjugation_game_play_authenticated_user_without_game_round(api_client,
 
     token = get_user_token(api_client, user, password)
 
-    response = api_client.post(BASE_URL, data={
+    response = api_client.post(CONJUGATION_GAME_URL, data={
         "word_id": random_conjugation.word.id,
         "tense": random_conjugation.tense,
         "conjugation_1": random_conjugation.conjugation_1 if has_correct_conjugation_1 else get_random_string(8),
@@ -290,14 +282,22 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
     correct answer and the current score are returned in the request body.
     """
     user, password = account()[0]
-    conjugation_game = Game.objects.get(id=3)
+    achieve_explorer_badge(user)
+
+    conjugation_game_id = 3
 
     random_conjugation = random.choice(conjugations)
     is_correct = has_correct_conjugation_1 and has_correct_conjugation_2 and has_correct_conjugation_3 \
                  and has_correct_conjugation_4 and has_correct_conjugation_5 and has_correct_conjugation_6
 
+    initial_score = Score.objects.filter(
+        user=user,
+        language=random_conjugation.word.language,
+        game__id=conjugation_game_id
+    ).first()
+
     GameRound.objects.create(
-        game=conjugation_game,
+        game_id=conjugation_game_id,
         user=user,
         round_data={
             "word_id": random_conjugation.word_id,
@@ -307,7 +307,7 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
 
     token = get_user_token(api_client, user, password)
 
-    response = api_client.post(BASE_URL, data={
+    response = api_client.post(CONJUGATION_GAME_URL, data={
         "word_id": random_conjugation.word_id,
         "tense": random_conjugation.tense,
         "conjugation_1": random_conjugation.conjugation_1 if has_correct_conjugation_1 else get_random_string(8),
@@ -320,7 +320,7 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
 
     response_body = response.data
 
-    expected_correct_answer = get_correct_answer(random_conjugation)
+    expected_correct_answer = get_conjugation_game_answer(random_conjugation)
 
     assert response.status_code == status.HTTP_200_OK
     assert response_body.get("result") is is_correct
@@ -330,14 +330,24 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
         assert Score.objects.filter(
             user=user,
             language=random_conjugation.word.language,
-            game=conjugation_game,
+            game_id=conjugation_game_id,
             score=1
         ).exists()
-        assert response_body.get("score") == 1
+        assert response_body.get("score") == 1 if (initial_score is None) else initial_score.score + 1
+
+        new_badges = response_body.get("new_badges")
+
+        assert len(new_badges) == 1
+        assert Badge.objects.filter(
+            name=new_badges[0].get("name"),
+            color=new_badges[0].get("color"),
+            description=new_badges[0].get("description")
+        ).exists()
     else:
         assert response_body.get("score") is None
+        assert response_body.get("new_badges") == []
 
     assert not GameRound.objects.filter(
-        game=conjugation_game,
+        game_id=conjugation_game_id,
         user=user
     ).exists()

@@ -6,7 +6,7 @@ from django.db.models import Sum
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 
-from languageschool.models import Score
+from languageschool.models import Score, Language, Game, User, Badge
 
 TOKEN_URL = reverse("user-token-api")
 
@@ -231,3 +231,47 @@ def get_alphabetically_ordered_url(base_url, query_params):
         url = "{}&{}={}".format(url, key, query_params.get(key))
 
     return url
+
+
+def get_conjugation_game_answer(conjugation):
+    language = conjugation.word.language
+
+    return "{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n"\
+        .format(language.personal_pronoun_1, conjugation.conjugation_1,
+                language.personal_pronoun_2, conjugation.conjugation_2,
+                language.personal_pronoun_3, conjugation.conjugation_3,
+                language.personal_pronoun_4, conjugation.conjugation_4,
+                language.personal_pronoun_5, conjugation.conjugation_5,
+                language.personal_pronoun_6, conjugation.conjugation_6)
+
+
+def get_vocabulary_game_answer(word, base_language):
+    synonym_in_base_language = word.synonyms.filter(language__id=base_language.id).values("word_name")
+
+    if len(synonym_in_base_language) == 0:
+        return ""
+    else:
+        return synonym_in_base_language[0].get("word_name")
+
+
+def achieve_explorer_badge(user):
+    languages = Language.objects.all()
+    games = Game.objects.all()
+    random_language = random.choice(languages)
+
+    for game in games:
+        Score.objects.create(
+            user=user,
+            language=random_language,
+            game=game,
+            score=1
+        )
+
+
+def attribute_user_badges():
+    users = User.objects.all()
+    badges = Badge.objects.all()
+
+    for user in users:
+        user_badges = random.sample(list(badges.values_list("id", flat=True)), k=2)
+        user.badges.add(*user_badges)

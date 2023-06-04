@@ -120,7 +120,7 @@ class Badge(models.Model):
         current_badges = user.badges.values_list("id", flat=True)
 
         list_new_badges = []
-
+        print("HELLO", is_explorer)
         if is_explorer and (explorer_badge_id not in current_badges):
             list_new_badges.append(explorer_badge_id)
 
@@ -137,7 +137,7 @@ class Badge(models.Model):
             list_new_badges.append(polyglot_badge_id)
 
         user.badges.add(*list_new_badges)
-
+        print("HELLO", list_new_badges)
         return list_new_badges
 
     def __str__(self):
