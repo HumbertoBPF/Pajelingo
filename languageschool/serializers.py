@@ -353,7 +353,7 @@ class VocabularyGameAnswerSerializer(serializers.Serializer):
         new_badges = Badge.objects.filter(id__in=new_badges)
 
         return {
-            "correct_answer": correct_translation,
+            "correct_answer": f"{word_to_translate.word_name}: {correct_translation}",
             "result": is_correct_answer,
             "score": score,
             "new_badges": BadgesSerializer(new_badges, many=True).data
