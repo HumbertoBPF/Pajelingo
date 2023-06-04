@@ -5,15 +5,16 @@ from selenium.webdriver.common.by import By
 from languageschool.models import User
 from languageschool.tests.selenium.utils import assert_is_login_page, authenticate_user, \
     wait_number_of_elements_to_be, find_element, assert_is_profile_page, submit_user_form, \
-    CSS_SELECTOR_USER_FORM_INPUTS, CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON
+    CSS_SELECTOR_USER_FORM_INPUTS, CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON, wait_for_redirect
 from languageschool.tests.utils import get_random_username, get_valid_password, get_random_email, \
     get_too_short_username, get_too_short_password, get_too_long_password, get_password_without_letters, \
-    get_password_without_digits, get_password_without_special_characters, get_random_bio
+    get_password_without_digits, get_password_without_special_characters, get_random_bio, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
 UPDATE_ACCOUNT_URL = FRONT_END_URL + "/update-account"
 CSS_SELECTOR_VALIDATION_WARNING = (By.CSS_SELECTOR, "main form .invalid-feedback ul li")
 CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
+CSS_SELECTOR_ACCOUNT_DETAILS = (By.CSS_SELECTOR, "main .row .row section h5")
 
 
 @pytest.mark.django_db
@@ -144,6 +145,7 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
     Tests that it is allowed to keep the current username and/or email when updating the account credentials.
     """
     user, user_password = account()[0]
+    attribute_user_badges()
 
     authenticate_user(selenium_driver, user.username, user_password)
 
@@ -157,11 +159,14 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
     password = get_valid_password()
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
+    # Waiting to be redirected to the profile
+    wait_for_redirect(selenium_driver, FRONT_END_URL + "/profile")
 
-    assert_is_profile_page(selenium_driver, username, bio, email=email)
-    assert User.objects.filter(
+    user = User.objects.filter(
         id=user.id,
         email=email,
         username=username,
         bio=bio
-    ).exists()
+    ).first()
+    assert user is not None
+    assert_is_profile_page(selenium_driver, user, is_auth_user=True)

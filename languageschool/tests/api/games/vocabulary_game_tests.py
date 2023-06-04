@@ -226,7 +226,7 @@ def test_vocabulary_play_not_authenticated_user(api_client, words, languages, ac
 
     assert response.status_code == status.HTTP_200_OK
     assert response_body.get("result") is is_correct
-    assert response_body.get("correct_answer") == correct_answer
+    assert response_body.get("correct_answer") == f"{random_word.word_name}: {correct_answer}"
     assert response_body.get("score") is None
     assert response_body.get("new_badges") == []
 
@@ -300,7 +300,7 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
 
     assert response.status_code == status.HTTP_200_OK
     assert response_body.get("result") is is_correct
-    assert response_body.get("correct_answer") == correct_answer
+    assert response_body.get("correct_answer") == f"{random_word.word_name}: {correct_answer}"
     if is_correct:
         assert Score.objects.filter(
             user=user,

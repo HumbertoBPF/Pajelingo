@@ -4,13 +4,16 @@ import pytest
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word
+from languageschool.models import Word, Badge
 from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
+from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
 
 CSS_SELECTOR_WORD_INPUT = (By.CSS_SELECTOR, "main form #wordInput")
 CSS_SELECTOR_ANSWER_INPUT = (By.CSS_SELECTOR, "main form #answerInput")
 CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
+CSS_SELECTOR_BADGE_NOTIFICATION_HEADER = (By.CSS_SELECTOR, "main .toast-container .toast-header")
+CSS_SELECTOR_BADGE_NOTIFICATION_BODY = (By.CSS_SELECTOR, "main .toast-container .toast-body")
 
 def get_languages(languages):
     base_language = random.choice(languages)
@@ -117,6 +120,7 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
     an incorrect answer.
     """
     user, password = account()[0]
+    achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
     base_language, target_language = get_languages(languages)
@@ -147,3 +151,12 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
                                               "\nYour score is 1" if is_correct else "")
 
     assert feedback_alert.text == expected_feedback
+
+    if is_correct:
+        badge_explorer = Badge.objects.get(id=1)
+
+        badge_notification_header = find_element(selenium_driver, CSS_SELECTOR_BADGE_NOTIFICATION_HEADER)
+        badge_notification_body = find_element(selenium_driver, CSS_SELECTOR_BADGE_NOTIFICATION_BODY)
+
+        assert badge_notification_header.text == f"New achievement: {badge_explorer.name}"
+        assert badge_notification_body.text == badge_explorer.description

@@ -10,7 +10,7 @@ from languageschool.tests.selenium.rankings_tests import RANKINGS_URL
 from languageschool.tests.selenium.utils import wait_text_to_be_present, wait_number_of_elements_to_be, \
     CSS_SELECTOR_ACTIVE_PAGE_BUTTON, assert_pagination, go_to_next_page, assert_is_profile_page, scroll_to_element, \
     assert_profile_language_filter, assert_profile_scores, find_element, select_option_from_select_language
-from languageschool.tests.utils import get_users
+from languageschool.tests.utils import get_users, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
 SEARCH_ACCOUNT_URL = FRONT_END_URL + "/accounts"
@@ -127,6 +127,7 @@ def test_search_account(live_server, selenium_driver, account):
 @pytest.mark.django_db
 def test_select_account(live_server, selenium_driver, account, languages):
     account(n=random.randint(11, 30))
+    attribute_user_badges()
 
     selenium_driver.get(SEARCH_ACCOUNT_URL)
 
@@ -145,7 +146,7 @@ def test_select_account(live_server, selenium_driver, account, languages):
     scroll_to_element(selenium_driver, account_card)
     account_card.click()
 
-    assert_is_profile_page(selenium_driver, username, user.bio)
+    assert_is_profile_page(selenium_driver, user)
 
     random_language = random.choice(languages)
 
@@ -156,6 +157,7 @@ def test_select_account(live_server, selenium_driver, account, languages):
 @pytest.mark.django_db
 def test_select_account_on_rankings_page(live_server, selenium_driver, account, score, languages):
     accounts = account(n=10)
+    attribute_user_badges()
 
     users = get_users(accounts)
     score(users, languages)
@@ -181,7 +183,7 @@ def test_select_account_on_rankings_page(live_server, selenium_driver, account, 
 
     random.choice(record_columns).click()
 
-    assert_is_profile_page(selenium_driver, username, user.bio)
+    assert_is_profile_page(selenium_driver, user)
 
     random_language = random.choice(languages)
 

@@ -7,6 +7,7 @@ from languageschool.models import User
 from languageschool.tests.selenium.utils import find_element, authenticate_user, assert_is_login_page, \
     assert_is_profile_page, assert_profile_language_filter, assert_profile_scores, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON, \
     CSS_SELECTOR_EDIT_ACCOUNT_BUTTON, CSS_SELECTOR_UPDATE_PICTURE_BUTTON
+from languageschool.tests.utils import attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
 PROFILE_URL = FRONT_END_URL + "/profile"
@@ -48,12 +49,13 @@ def test_profile(live_server, selenium_driver, account):
     credentials as well as the "update profile picture", "edit account" and "delete account" button are displayed.
     """
     user, password = account()[0]
+    attribute_user_badges()
 
     authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(PROFILE_URL)
 
-    assert_is_profile_page(selenium_driver, user.username, user.bio, email=user.email)
+    assert_is_profile_page(selenium_driver, user, is_auth_user=True)
 
 
 @pytest.mark.django_db
@@ -117,6 +119,7 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
     button, the users are redirected back to the profile page after having their profile picture updated.
     """
     user, password = account()[0]
+    attribute_user_badges()
 
     authenticate_user(selenium_driver, user.username, password)
 
@@ -135,7 +138,7 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
 
     profile_picture_dialog_success_button.click()
 
-    assert_is_profile_page(selenium_driver, user.username, user.bio, email=user.email)
+    assert_is_profile_page(selenium_driver, user, is_auth_user=True)
 
 
 @pytest.mark.parametrize(

@@ -28,11 +28,21 @@ def find_element(selenium_driver, locator):
     :param locator: locator to be matched
     :type locator: tuple
 
-    :return: the element object matching the specified locator. If no element matching the locator could be found, a
-    timeout exception is raised.
+    :return: the element object matching the specified locator. If no element matching the locator could be found, a timeout exception is raised.
     """
     wait = WebDriverWait(selenium_driver, 10)
     return wait.until(ec.visibility_of_element_located(locator))
+
+def wait_for_redirect(selenium_driver, url):
+    """
+    Expects a redirect to the specified url.
+
+    :param selenium_driver: Selenium web driver
+    :param url: expected url
+    :type url: str
+    """
+    wait = WebDriverWait(selenium_driver, 10)
+    wait.until(ec.url_to_be(url))
 
 def wait_text_to_be_present(selenium_driver, locator, text):
     """
@@ -208,15 +218,24 @@ def assert_is_login_page(selenium_driver):
     assert submit_button.text == "Sign in"
 
 
-def assert_is_profile_page(selenium_driver, username, bio, email=None):
-    nb_credentials = 3 if email is not None else 2
+def assert_is_profile_page(selenium_driver, user, is_auth_user=False):
+    nb_credentials = 3 if is_auth_user else 2
     css_selector_username_credential = (By.CSS_SELECTOR, "main .col-lg-9 section p:nth-of-type(1)")
     css_selector_bio_credential = (By.CSS_SELECTOR, f"main .col-lg-9 section p:nth-of-type({nb_credentials})")
+    css_selector_badges = (By.CSS_SELECTOR, "main > .row .row:nth-of-type(2) > .col > button")
 
-    wait_text_to_be_present(selenium_driver, css_selector_username_credential, "Username: {}".format(username))
-    wait_text_to_be_present(selenium_driver, css_selector_bio_credential, "Bio: {}".format(bio))
+    wait_text_to_be_present(selenium_driver, css_selector_username_credential, "Username: {}".format(user.username))
+    wait_text_to_be_present(selenium_driver, css_selector_bio_credential, "Bio: {}".format(user.bio))
 
-    if email is not None:
+    badges = selenium_driver.find_elements(css_selector_badges[0], css_selector_badges[1])
+
+    assert len(badges) == user.badges.count()
+
+    for badge in badges:
+        badge_name = badge.text
+        assert user.badges.filter(name=badge_name).exists()
+
+    if is_auth_user:
         css_selector_email_credential = (By.CSS_SELECTOR, "main .col-lg-9 section p:nth-of-type(2)")
 
         update_picture_button = find_element(selenium_driver, CSS_SELECTOR_UPDATE_PICTURE_BUTTON)
@@ -224,7 +243,7 @@ def assert_is_profile_page(selenium_driver, username, bio, email=None):
         delete_account_button = find_element(selenium_driver, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON)
         favorite_words_button = find_element(selenium_driver, CSS_SELECTOR_FAVORITE_WORDS_BUTTON)
 
-        wait_text_to_be_present(selenium_driver, css_selector_email_credential, "Email: {}".format(email))
+        wait_text_to_be_present(selenium_driver, css_selector_email_credential, "Email: {}".format(user.email))
         assert update_picture_button.text == "Update picture"
         assert edit_account_button.text == "Edit account"
         assert delete_account_button.text == "Delete account"
