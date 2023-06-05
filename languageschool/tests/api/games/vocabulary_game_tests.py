@@ -302,13 +302,15 @@ def test_vocabulary_play_authenticated_user(api_client, account, words, language
     assert response_body.get("result") is is_correct
     assert response_body.get("correct_answer") == f"{random_word.word_name}: {correct_answer}"
     if is_correct:
+        expected_score = 1 if (initial_score is None) else initial_score.score + 1
+
         assert Score.objects.filter(
             user=user,
             language=random_word.language,
             game_id=vocabulary_game_id,
-            score=1
+            score=expected_score
         ).exists()
-        assert response_body.get("score") == 1 if (initial_score is None) else initial_score.score + 1
+        assert response_body.get("score") == expected_score
 
         new_badges = response_body.get("new_badges")
 

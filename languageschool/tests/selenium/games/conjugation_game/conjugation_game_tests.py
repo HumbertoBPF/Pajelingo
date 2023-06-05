@@ -4,7 +4,7 @@ import pytest
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Conjugation, Badge
+from languageschool.models import Conjugation, Badge, Score
 from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user, \
     wait_number_of_elements_to_be
 from languageschool.tests.utils import achieve_explorer_badge
@@ -122,19 +122,17 @@ def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driv
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
-    expected_feedback = "{}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}".format("Correct answer :)" if is_correct else "Wrong answer",
-                                       random_language.personal_pronoun_1, conjugation.conjugation_1,
-                                       random_language.personal_pronoun_2, conjugation.conjugation_2,
-                                       random_language.personal_pronoun_3, conjugation.conjugation_3,
-                                       random_language.personal_pronoun_4, conjugation.conjugation_4,
-                                       random_language.personal_pronoun_5, conjugation.conjugation_5,
-                                       random_language.personal_pronoun_6, conjugation.conjugation_6)
+    correct_answer = f"{random_language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
+                     f"{random_language.personal_pronoun_2} {conjugation.conjugation_2}\n" \
+                     f"{random_language.personal_pronoun_3} {conjugation.conjugation_3}\n" \
+                     f"{random_language.personal_pronoun_4} {conjugation.conjugation_4}\n" \
+                     f"{random_language.personal_pronoun_5} {conjugation.conjugation_5}\n" \
+                     f"{random_language.personal_pronoun_6} {conjugation.conjugation_6}"
+
+    if is_correct:
+        expected_feedback = f"Correct answer :)\n{correct_answer}"
+    else:
+        expected_feedback = f"Wrong answer\n{correct_answer}"
 
     assert feedback_alert.text == expected_feedback
 
@@ -151,7 +149,16 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
     achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
+    conjugation_game_id = 3
     random_language = random.choice(languages)
+
+    initial_score = Score.objects.filter(
+        user=user,
+        language=random_language,
+        game__id=conjugation_game_id
+    ).first()
+    expected_score = 1 if (initial_score is None) else initial_score.score + 1
+
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
@@ -179,21 +186,17 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
-    expected_feedback = "{}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}\n" \
-                        "{} {}" \
-                        "{}".format("Correct answer :)" if is_correct else "Wrong answer",
-                                    random_language.personal_pronoun_1, conjugation.conjugation_1,
-                                    random_language.personal_pronoun_2, conjugation.conjugation_2,
-                                    random_language.personal_pronoun_3, conjugation.conjugation_3,
-                                    random_language.personal_pronoun_4, conjugation.conjugation_4,
-                                    random_language.personal_pronoun_5, conjugation.conjugation_5,
-                                    random_language.personal_pronoun_6, conjugation.conjugation_6,
-                                    "\nYour score is 1" if is_correct else "")
+    correct_answer = f"{random_language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
+                     f"{random_language.personal_pronoun_2} {conjugation.conjugation_2}\n" \
+                     f"{random_language.personal_pronoun_3} {conjugation.conjugation_3}\n" \
+                     f"{random_language.personal_pronoun_4} {conjugation.conjugation_4}\n" \
+                     f"{random_language.personal_pronoun_5} {conjugation.conjugation_5}\n" \
+                     f"{random_language.personal_pronoun_6} {conjugation.conjugation_6}"
+
+    if is_correct:
+        expected_feedback = f"Correct answer :)\n{correct_answer}\nYour score is {expected_score}"
+    else:
+        expected_feedback = f"Wrong answer\n{correct_answer}"
 
     assert feedback_alert.text == expected_feedback
 

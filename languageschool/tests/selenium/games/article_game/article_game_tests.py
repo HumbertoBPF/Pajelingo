@@ -4,7 +4,7 @@ import pytest
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word, Badge
+from languageschool.models import Word, Badge, Score
 from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
@@ -74,7 +74,10 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver, 
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
-    expected_feedback = "{}\n{}".format("Correct answer :)" if is_correct else "Wrong answer", word)
+    if is_correct:
+        expected_feedback = f"Correct answer :)\n{word}"
+    else:
+        expected_feedback = f"Wrong answer\n{word}"
 
     assert feedback_alert.text == expected_feedback
 
@@ -90,7 +93,16 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver, acco
     achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
+    article_game_id = 2
     random_language = random.choice(languages)
+
+    initial_score = Score.objects.filter(
+        user=user,
+        language=random_language,
+        game__id=article_game_id
+    ).first()
+    expected_score = 1 if (initial_score is None) else initial_score.score + 1
+
     selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
 
     css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
@@ -110,8 +122,10 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver, acco
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
-    expected_feedback = "{}\n{}{}".format(
-        "Correct answer :)" if is_correct else "Wrong answer", word, "\nYour score is 1" if is_correct else "")
+    if is_correct:
+        expected_feedback = f"Correct answer :)\n{word}\nYour score is {expected_score}"
+    else:
+        expected_feedback = f"Wrong answer\n{word}"
 
     assert feedback_alert.text == expected_feedback
 

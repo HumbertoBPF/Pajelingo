@@ -4,7 +4,7 @@ import pytest
 from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word, Badge
+from languageschool.models import Word, Badge, Score
 from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
@@ -123,7 +123,16 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
     achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
+    vocabulary_game_id = 1
     base_language, target_language = get_languages(languages)
+
+    initial_score = Score.objects.filter(
+        user=user,
+        language=target_language,
+        game__id=vocabulary_game_id
+    ).first()
+    expected_score = 1 if (initial_score is None) else initial_score.score + 1
+
     selenium_driver \
         .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
              .format(base_language, target_language))
@@ -146,9 +155,15 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
 
     feedback_alert = find_element(selenium_driver, css_selector_alert)
 
-    expected_feedback = "{}\n{}: {}{}".format("Correct answer :)" if is_correct else "Wrong answer", word.word_name,
-                                              get_correct_answer(word, base_language),
-                                              "\nYour score is 1" if is_correct else "")
+    correct_answer = get_correct_answer(word, base_language)
+
+    if is_correct:
+        expected_feedback = f"Correct answer :)\n" \
+                            f"{word.word_name}: {correct_answer}" \
+                            f"\nYour score is {expected_score}"
+    else:
+        expected_feedback = f"Wrong answer\n" \
+                            f"{word.word_name}: {correct_answer}"
 
     assert feedback_alert.text == expected_feedback
 

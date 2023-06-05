@@ -327,13 +327,15 @@ def test_conjugation_game_play_authenticated_user(api_client, account, verbs, co
     assert response_body.get("correct_answer") == expected_correct_answer
 
     if is_correct:
+        expected_score = 1 if (initial_score is None) else initial_score.score + 1
+
         assert Score.objects.filter(
             user=user,
             language=random_conjugation.word.language,
             game_id=conjugation_game_id,
-            score=1
+            score=expected_score
         ).exists()
-        assert response_body.get("score") == 1 if (initial_score is None) else initial_score.score + 1
+        assert response_body.get("score") == expected_score
 
         new_badges = response_body.get("new_badges")
 

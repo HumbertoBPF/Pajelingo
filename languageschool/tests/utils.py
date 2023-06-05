@@ -236,13 +236,12 @@ def get_alphabetically_ordered_url(base_url, query_params):
 def get_conjugation_game_answer(conjugation):
     language = conjugation.word.language
 
-    return "{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n"\
-        .format(language.personal_pronoun_1, conjugation.conjugation_1,
-                language.personal_pronoun_2, conjugation.conjugation_2,
-                language.personal_pronoun_3, conjugation.conjugation_3,
-                language.personal_pronoun_4, conjugation.conjugation_4,
-                language.personal_pronoun_5, conjugation.conjugation_5,
-                language.personal_pronoun_6, conjugation.conjugation_6)
+    return f"{language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
+           f"{language.personal_pronoun_2} {conjugation.conjugation_2}\n" \
+           f"{language.personal_pronoun_3} {conjugation.conjugation_3}\n" \
+           f"{language.personal_pronoun_4} {conjugation.conjugation_4}\n" \
+           f"{language.personal_pronoun_5} {conjugation.conjugation_5}\n" \
+           f"{language.personal_pronoun_6} {conjugation.conjugation_6}\n"
 
 
 def get_vocabulary_game_answer(word, base_language):
