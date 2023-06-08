@@ -83,7 +83,7 @@ def test_account_get(api_client, account, badges):
     "username", [
         USERNAME,
         get_random_string(random.randint(1, 5))+" "+get_random_username(),
-        get_too_short_username(),
+        get_too_short_username(blank=True),
         None
     ]
 )
@@ -220,7 +220,7 @@ def test_account_put_wrong_credentials(api_client):
     "username", [
         USERNAME,
         get_random_string(random.randint(1, 5))+" "+get_random_username(),
-        get_too_short_username(),
+        get_too_short_username(blank=True),
         None
     ]
 )
@@ -238,7 +238,7 @@ def test_account_put_wrong_credentials(api_client):
 )
 @pytest.mark.parametrize(
     "bio", [
-        get_random_string(0),
+        get_random_string(random.randint(0, 20)),
         None
     ]
 )

@@ -3,7 +3,7 @@ import random
 
 from django.core.management import BaseCommand
 
-from languageschool.models import Game, Language, Score, Word, User
+from languageschool.models import Game, Language, Score, Word, User, Badge
 
 
 class SetUpAction(argparse.Action):
@@ -39,6 +39,8 @@ class SetUpAction(argparse.Action):
         for game in games:
             for language in languages:
                 Score.objects.create(user=test_user, language=language, game=game, score=random.randint(1, 1000))
+
+        Badge.update_badges(test_user)
 
         print("Users created for mobile tests:")
         print(list_of_ids)

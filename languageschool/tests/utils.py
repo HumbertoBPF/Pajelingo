@@ -107,8 +107,9 @@ def get_random_email():
     return get_random_string(random.randint(8, 32)) + "@test.com"
 
 
-def get_too_short_username():
-    return get_random_string(random.randint(0, 7))
+def get_too_short_username(blank=False):
+    min_length = 0 if blank else 1
+    return get_random_string(random.randint(min_length, 7))
 
 
 def get_random_username():
