@@ -1,6 +1,7 @@
 import random
 
 import pytest
+from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import User
@@ -16,7 +17,8 @@ CSS_SELECTOR_UPDATE_ACCOUNT_FORM_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .b
 CSS_SELECTOR_CREDENTIALS = (By.CSS_SELECTOR, "main section .col-lg-9 p")
 CSS_SELECTOR_DIALOG_TILE = (By.CSS_SELECTOR, "body .modal .modal-header")
 CSS_SELECTOR_DIALOG_BODY = (By.CSS_SELECTOR, "body .modal .modal-body")
-CSS_SELECTOR_DIALOG_PROFILE_PICTURE = (By.CSS_SELECTOR, "body .modal .modal-body ul")
+CSS_SELECTOR_DIALOG_INPUT = (By.CSS_SELECTOR, "body .modal .modal-body input")
+CSS_SELECTOR_DIALOG_ERROR = (By.CSS_SELECTOR, "body .modal .modal-body ul")
 CSS_SELECTOR_DIALOG_CANCEL_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-secondary")
 CSS_SELECTOR_DIALOG_DANGER_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-danger")
 CSS_SELECTOR_DIALOG_SUCCESS_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-success")
@@ -59,7 +61,7 @@ def test_profile(live_server, selenium_driver, account):
 
 
 @pytest.mark.django_db
-def test_profile_delete_account(live_server, selenium_driver, account):
+def test_profile_delete_account_modal_rendering(live_server, selenium_driver, account):
     """
     Tests that deleting the profile works as expected, that is, a dialog is opened asking for confirmation and when
     users confirm, their account is deleted.
@@ -79,10 +81,68 @@ def test_profile_delete_account(live_server, selenium_driver, account):
     delete_dialog_delete_button = find_element(selenium_driver, CSS_SELECTOR_DIALOG_DANGER_BUTTON)
 
     assert delete_dialog_title.text == "Are you sure?"
-    assert delete_dialog_body.text == "Are you sure that you want to delete your profile? All information such as " \
-                                      "scores in the games is going to be permanently lost!"
+    assert delete_dialog_body.text == "Write \"permanently delete\" to confirm. " \
+                                      "Notice that personal data such as game scores will be permanently lost!"
     assert delete_dialog_cancel_button.text == "Cancel"
     assert delete_dialog_delete_button.text == "Yes, I want to delete my profile"
+
+
+@pytest.mark.django_db
+def test_profile_delete_account_confirmation_text_does_not_match(live_server, selenium_driver, account):
+    """
+    Tests that deleting the profile works as expected, that is, a dialog is opened asking for confirmation and when
+    users confirm, their account is deleted.
+    """
+    user, password = account()[0]
+
+    authenticate_user(selenium_driver, user.username, password)
+
+    selenium_driver.get(PROFILE_URL)
+
+    delete_account_button = find_element(selenium_driver, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON)
+    delete_account_button.click()
+
+    delete_dialog_input = find_element(selenium_driver, CSS_SELECTOR_DIALOG_INPUT)
+    delete_dialog_delete_button = find_element(selenium_driver, CSS_SELECTOR_DIALOG_DANGER_BUTTON)
+
+    delete_dialog_input.send_keys(get_random_string(8))
+
+    warning_file_not_image = find_element(selenium_driver, CSS_SELECTOR_DIALOG_ERROR)
+    assert warning_file_not_image.text == "The text does not match \"permanently delete\"."
+
+    delete_dialog_delete_button.click()
+
+    alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
+
+    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
+    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
+           "The text does not match \"permanently delete\"."
+
+    assert User.objects.filter(
+        username=user.username,
+        email=user.email
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_profile_delete_account(live_server, selenium_driver, account):
+    """
+    Tests that deleting the profile works as expected, that is, a dialog is opened asking for confirmation and when
+    users confirm, their account is deleted.
+    """
+    user, password = account()[0]
+
+    authenticate_user(selenium_driver, user.username, password)
+
+    selenium_driver.get(PROFILE_URL)
+
+    delete_account_button = find_element(selenium_driver, CSS_SELECTOR_DELETE_ACCOUNT_BUTTON)
+    delete_account_button.click()
+
+    delete_dialog_input = find_element(selenium_driver, CSS_SELECTOR_DIALOG_INPUT)
+    delete_dialog_delete_button = find_element(selenium_driver, CSS_SELECTOR_DIALOG_DANGER_BUTTON)
+
+    delete_dialog_input.send_keys("permanently delete")
 
     delete_dialog_delete_button.click()
 
@@ -163,7 +223,7 @@ def test_profile_update_profile_picture_error_file_format(live_server, selenium_
     update_picture_button.click()
 
     profile_picture_dialog_title = find_element(selenium_driver, CSS_SELECTOR_DIALOG_TILE)
-    profile_picture_dialog_body = find_element(selenium_driver, CSS_SELECTOR_DIALOG_BODY)
+    file_input = find_element(selenium_driver, CSS_SELECTOR_DIALOG_INPUT)
     profile_picture_dialog_cancel_button = find_element(selenium_driver, CSS_SELECTOR_DIALOG_CANCEL_BUTTON)
     profile_picture_dialog_success_button = find_element(selenium_driver, CSS_SELECTOR_DIALOG_SUCCESS_BUTTON)
 
@@ -171,10 +231,9 @@ def test_profile_update_profile_picture_error_file_format(live_server, selenium_
     assert profile_picture_dialog_cancel_button.text == "Cancel"
     assert profile_picture_dialog_success_button.text == "Update"
 
-    file_input = profile_picture_dialog_body.find_element(By.CSS_SELECTOR, "input")
     file_input.send_keys(filename)
 
-    warning_file_not_image = find_element(selenium_driver, CSS_SELECTOR_DIALOG_PROFILE_PICTURE)
+    warning_file_not_image = find_element(selenium_driver, CSS_SELECTOR_DIALOG_ERROR)
     assert warning_file_not_image.text == "The selected file is not an image"
 
     profile_picture_dialog_success_button.click()
