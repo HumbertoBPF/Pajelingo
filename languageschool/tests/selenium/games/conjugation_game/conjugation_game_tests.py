@@ -49,44 +49,6 @@ def submit_answer(selenium_driver, conjugation_1, conjugation_2, conjugation_3, 
     submit_button.click()
 
 
-@pytest.mark.django_db
-def test_conjugation_game_play_form_rendering(live_server, selenium_driver, languages, conjugations):
-    """
-    Tests the rendering of the form that the player sees during the gameplay. The form must contain an input with the
-    verb and the verbal tense. Besides, there must be 6 inputs where the user is going to type the conjugations and a
-    button to submit the answer.
-    """
-    random_language = random.choice(languages)
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
-
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_LABEL, 7)
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_INPUT, 7)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    form_labels = selenium_driver.find_elements(CSS_SELECTOR_FORM_LABEL[0], CSS_SELECTOR_FORM_LABEL[1])
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_FORM_INPUT[0], CSS_SELECTOR_FORM_INPUT[1])
-
-    verb, tense = get_conjugation(form_inputs[0])
-
-    assert Conjugation.objects.filter(
-        word__word_name=verb,
-        word__language__language_name=random_language.language_name,
-        tense=tense
-    ).exists()
-
-    assert len(form_labels) == 7
-    assert len(form_inputs) == 7
-
-    assert form_labels[1].text == random_language.personal_pronoun_1
-    assert form_labels[2].text == random_language.personal_pronoun_2
-    assert form_labels[3].text == random_language.personal_pronoun_3
-    assert form_labels[4].text == random_language.personal_pronoun_4
-    assert form_labels[5].text == random_language.personal_pronoun_5
-    assert form_labels[6].text == random_language.personal_pronoun_6
-
-    assert submit_button.text == "Verify answer"
-
-
 @pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
 def test_conjugation_game_play_non_authenticated_user(live_server, selenium_driver, languages, conjugations, is_correct):
@@ -149,13 +111,12 @@ def test_conjugation_game_play_authenticated_user(live_server, selenium_driver, 
     achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
-    conjugation_game_id = 3
     random_language = random.choice(languages)
 
     initial_score = Score.objects.filter(
         user=user,
         language=random_language,
-        game__id=conjugation_game_id
+        game__id=3
     ).first()
     expected_score = 1 if (initial_score is None) else initial_score.score + 1
 

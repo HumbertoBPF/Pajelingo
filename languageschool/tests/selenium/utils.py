@@ -11,14 +11,21 @@ from pajelingo.settings import FRONT_END_URL
 # Pagination component CSS selectors
 CSS_SELECTOR_PAGINATION = (By.CSS_SELECTOR, "main .pagination")
 CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
-# User form CSS selectors
-CSS_SELECTOR_USER_FORM_INPUTS = (By.CSS_SELECTOR, "main form .form-control")
-CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn")
 # Profile page buttons
 CSS_SELECTOR_UPDATE_PICTURE_BUTTON = (By.CSS_SELECTOR, "main .btn-info")
 CSS_SELECTOR_EDIT_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main .list-group .list-group-item:nth-of-type(1)")
 CSS_SELECTOR_DELETE_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "main .list-group .list-group-item:nth-of-type(2)")
 CSS_SELECTOR_FAVORITE_WORDS_BUTTON = (By.CSS_SELECTOR, "main .list-group .list-group-item:nth-of-type(3)")
+
+TEST_ID_EMAIL_INPUT = "email-input"
+TEST_ID_USERNAME_INPUT = "username-input"
+TEST_ID_BIO_INPUT = "bio-input"
+TEST_ID_PASSWORD_INPUT = "password-input"
+TEST_ID_CONFIRM_PASSWORD_INPUT = "password-confirmation-input"
+TEST_ID_SUBMIT_BUTTON = "submit-button"
+
+def find_by_test_id(selenium_driver, test_id):
+    return find_element(selenium_driver, (By.CSS_SELECTOR, f"[data-testid={test_id}]"))
 
 def find_element(selenium_driver, locator):
     """
@@ -344,24 +351,28 @@ def assert_profile_scores(selenium_driver, user, language):
 
 
 def submit_user_form(selenium_driver, email, username, bio, password, confirm_password):
-    form_inputs = selenium_driver.find_elements(CSS_SELECTOR_USER_FORM_INPUTS[0], CSS_SELECTOR_USER_FORM_INPUTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_USER_FORM_SUBMIT_BUTTON)
+    email_input = find_by_test_id(selenium_driver, TEST_ID_EMAIL_INPUT).find_element(By.CSS_SELECTOR, "input")
+    email_input.clear()
+    email_input.send_keys(email)
 
-    form_inputs[0].clear()
-    form_inputs[0].send_keys(email)
+    username_input = find_by_test_id(selenium_driver, TEST_ID_USERNAME_INPUT).find_element(By.CSS_SELECTOR, "input")
+    username_input.clear()
+    username_input.send_keys(username)
 
-    form_inputs[1].clear()
-    form_inputs[1].send_keys(username)
+    bio_input = find_by_test_id(selenium_driver, TEST_ID_BIO_INPUT).find_element(By.CSS_SELECTOR, "textarea")
+    bio_input.clear()
+    bio_input.send_keys(bio)
 
-    form_inputs[2].clear()
-    form_inputs[2].send_keys(bio)
+    password_input = find_by_test_id(selenium_driver, TEST_ID_PASSWORD_INPUT).find_element(By.CSS_SELECTOR, "input")
+    password_input.send_keys(password)
 
-    form_inputs[3].send_keys(password)
-
+    password_confirmation_input = find_by_test_id(selenium_driver, TEST_ID_CONFIRM_PASSWORD_INPUT)\
+        .find_element(By.CSS_SELECTOR, "input")
     if confirm_password is None:
-        form_inputs[4].send_keys("")
+        password_confirmation_input.send_keys("")
     else:
-        form_inputs[4].send_keys(password if confirm_password else get_random_string(5) + password)
+        password_confirmation_input.send_keys(password if confirm_password else get_random_string(5) + password)
 
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
     scroll_to_element(selenium_driver, submit_button)
     submit_button.click()

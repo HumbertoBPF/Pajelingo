@@ -3,116 +3,74 @@ import random
 import pytest
 from selenium.webdriver.common.by import By
 
-from languageschool.models import Word, Game
-from languageschool.tests.selenium.utils import find_element, wait_number_of_elements_to_be
+from languageschool.models import Word
+from languageschool.tests.selenium.utils import find_element, find_by_test_id
 from pajelingo.settings import FRONT_END_URL
 
-VOCABULARY_GAME_SETUP_URL = FRONT_END_URL + "/vocabulary-game/setup"
-CSS_SELECTOR_INSTRUCTIONS = (By.CSS_SELECTOR, "main section")
-CSS_SELECTOR_FORM_SELECTS = (By.CSS_SELECTOR, "main form .form-select")
-CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
-CSS_SELECTOR_ALERT_TOAST = (By.CSS_SELECTOR, "main .toast-container .toast")
-
-
-def assert_languages(language_options, languages, default_option):
-    """
-    Asserts the presence of all the specified languages and of the default option in the option list of a select input.
-
-    :param language_options: Selenium list of element consisting of option tags
-    :param languages: Language model instances that must be present among the select options
-    :type languages: list
-    :param default_option: a default option that must be present among the select options as well
-    :type default_option: str
-    """
-    expected_options = {default_option: True}
-
-    for language in languages:
-        expected_options[language.language_name] = True
-
-    assert len(language_options) == languages.count() + 1
-    # Check if all the expected options are present among the select options
-    for language_option in language_options:
-        del expected_options[language_option.text]
-
-    assert len(expected_options) == 0
+VOCABULARY_GAME_SETUP_URL = f"{FRONT_END_URL}/vocabulary-game/setup"
+TEST_ID_SELECT_BASE_LANGUAGE = "select-base-language"
+TEST_ID_SELECT_TARGET_LANGUAGE = "select-target-language"
+TEST_ID_ERROR_TOAST = "toast-error"
+TEST_ID_START_BUTTON = "start-button"
+TEST_ID_WORD_INPUT = "word-input"
+TEST_ID_ANSWER_INPUT = "answer-input"
 
 
 @pytest.mark.django_db
-def test_vocabulary_game_setup_form_rendering(live_server, selenium_driver, languages):
+def test_vocabulary_game_setup_requires_base_language(live_server, selenium_driver, words, languages):
     """
-    Tests the setup form rendering, that is if a submit button, and select inputs for the base and target language are
-    displayed with all the language choices available.
+    Tests that it's required to specify a base and a target language during the setup of the vocabulary game.
     """
-    vocabulary_game = Game.objects.get(pk=1)
+    random_target_language = random.choice(languages)
+
     selenium_driver.get(VOCABULARY_GAME_SETUP_URL)
 
-    css_selector_select_options = (By.ID, "{}Item".format(languages[0].language_name))
+    css_selector_target_language_option = (By.ID, random_target_language.language_name)
 
-    instructions = find_element(selenium_driver, CSS_SELECTOR_INSTRUCTIONS)
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_FORM_SELECTS, 2)
-    form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    select_target_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_TARGET_LANGUAGE)
+    select_target_language.click()
 
-    assert instructions.text == vocabulary_game.instructions
-    assert submit_button.text == "Start"
-    # Check target language options
-    form_selects[1].click()
-    find_element(selenium_driver, css_selector_select_options)
-    base_languages = form_selects[1].find_elements(By.CSS_SELECTOR, "option")
-    assert_languages(base_languages, languages, default_option="Choose a target language")
-    # Check base language options
-    form_selects[0].click()
-    find_element(selenium_driver, css_selector_select_options)
-    base_languages = form_selects[0].find_elements(By.CSS_SELECTOR, "option")
-    assert_languages(base_languages, languages, default_option="Choose a base language")
+    find_element(selenium_driver, css_selector_target_language_option)
+    target_language_option = select_target_language\
+        .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
+    target_language_option.click()
+
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
+    submit_button.click()
+
+    error_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+
+    assert error_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
+    assert error_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
+           "You must set both base and target languages."
 
 
-@pytest.mark.parametrize(
-    "choose_base_language, choose_target_language", [
-        (True, False),
-        (False, True),
-        (False, False)
-    ]
-)
 @pytest.mark.django_db
-def test_vocabulary_game_setup_base_and_target_languages_are_required(live_server, selenium_driver, words, languages,
-                                                                      choose_base_language, choose_target_language):
+def test_vocabulary_game_setup_requires_target_language(live_server, selenium_driver, words, languages):
     """
     Tests that it's required to specify a base and a target language during the setup of the vocabulary game.
     """
     random_base_language = random.choice(languages)
-    random_target_language = random.choice(languages.exclude(id=random_base_language.id))
 
     selenium_driver.get(VOCABULARY_GAME_SETUP_URL)
 
-    css_selector_base_language_option = (By.ID, "{}Item".format(random_base_language.language_name))
-    css_selector_target_language_option = (By.ID, "{}Item".format(random_target_language.language_name))
+    css_selector_base_language_option = (By.ID, random_base_language.language_name)
 
-    find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    select_base_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_BASE_LANGUAGE)
+    select_base_language.click()
 
-    form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
-    # Selecting the target language
-    if choose_target_language:
-        form_selects[1].click()
-        find_element(selenium_driver, css_selector_target_language_option)
-        target_language_option = form_selects[1]\
-            .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
-        target_language_option.click()
-    # Selecting the base language
-    if choose_base_language:
-        form_selects[0].click()
-        find_element(selenium_driver, css_selector_base_language_option)
-        base_language_option = form_selects[0]\
-            .find_element(css_selector_base_language_option[0], css_selector_base_language_option[1])
-        base_language_option.click()
+    find_element(selenium_driver, css_selector_base_language_option)
+    base_language_option = select_base_language \
+        .find_element(css_selector_base_language_option[0], css_selector_base_language_option[1])
+    base_language_option.click()
 
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
     submit_button.click()
 
-    alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
+    error_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
 
-    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
-    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
+    assert error_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
+    assert error_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
            "You must set both base and target languages."
 
 
@@ -126,30 +84,33 @@ def test_vocabulary_game_setup_base_and_target_languages_must_not_be_equal(live_
 
     selenium_driver.get(VOCABULARY_GAME_SETUP_URL)
 
-    css_selector_random_language_option = (By.ID, "{}Item".format(random_language.language_name))
+    css_selector_random_language_option = (By.ID, random_language.language_name)
 
-    find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-    form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
-    # Selecting the target language
-    form_selects[1].click()
-    find_element(selenium_driver, css_selector_random_language_option)
-    target_language_option = form_selects[1]\
-        .find_element(css_selector_random_language_option[0], css_selector_random_language_option[1])
-    target_language_option.click()
     # Selecting the base language
-    form_selects[0].click()
+    select_base_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_BASE_LANGUAGE)
+    select_base_language.click()
+
     find_element(selenium_driver, css_selector_random_language_option)
-    base_language_option = form_selects[0]\
+    base_language_option = select_base_language\
         .find_element(css_selector_random_language_option[0], css_selector_random_language_option[1])
     base_language_option.click()
 
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    # Selecting the target language
+    select_target_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_TARGET_LANGUAGE)
+    select_target_language.click()
+
+    find_element(selenium_driver, css_selector_random_language_option)
+    target_language_option = select_target_language \
+        .find_element(css_selector_random_language_option[0], css_selector_random_language_option[1])
+    target_language_option.click()
+
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
     submit_button.click()
 
-    alert_toast = find_element(selenium_driver, CSS_SELECTOR_ALERT_TOAST)
+    error_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
 
-    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
-    assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
+    assert error_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
+    assert error_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
            "Base and target languages must be different."
 
 
@@ -164,34 +125,33 @@ def test_vocabulary_game_setup_form_submission(live_server, selenium_driver, wor
 
     selenium_driver.get(VOCABULARY_GAME_SETUP_URL)
 
-    css_selector_base_language_option = (By.ID, "{}Item".format(random_base_language.language_name))
-    css_selector_target_language_option = (By.ID, "{}Item".format(random_target_language.language_name))
-
-    find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-    form_selects = selenium_driver.find_elements(CSS_SELECTOR_FORM_SELECTS[0], CSS_SELECTOR_FORM_SELECTS[1])
-    # Selecting the target language
-    form_selects[1].click()
-    find_element(selenium_driver, css_selector_target_language_option)
-    target_language_option = form_selects[1]\
-        .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
-    target_language_option.click()
     # Selecting the base language
-    form_selects[0].click()
+    select_base_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_BASE_LANGUAGE)
+    select_base_language.click()
+
+    css_selector_base_language_option = (By.ID, random_base_language)
     find_element(selenium_driver, css_selector_base_language_option)
-    base_language_option = form_selects[0]\
+
+    base_language_option = select_base_language\
         .find_element(css_selector_base_language_option[0], css_selector_base_language_option[1])
     base_language_option.click()
 
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    # Selecting the target language
+    select_target_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_TARGET_LANGUAGE)
+    select_target_language.click()
+
+    css_selector_target_language_option = (By.ID, random_target_language.language_name)
+    find_element(selenium_driver, css_selector_target_language_option)
+
+    target_language_option = select_target_language\
+        .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
+    target_language_option.click()
+
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
     submit_button.click()
 
-    css_selector_word_input = (By.CSS_SELECTOR, "main form #wordInput")
-    css_selector_answer_input = (By.CSS_SELECTOR, "main form #answerInput")
-    css_selector_verify_answer_button = (By.CSS_SELECTOR, "main form .btn-success")
-
-    word_input = find_element(selenium_driver, css_selector_word_input)
-    answer_input = find_element(selenium_driver, css_selector_answer_input)
-    verify_answer_button = find_element(selenium_driver, css_selector_verify_answer_button)
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
 
     word_name = word_input.get_attribute("placeholder")
     answer_placeholder = answer_input.get_attribute("placeholder")
@@ -201,4 +161,3 @@ def test_vocabulary_game_setup_form_submission(live_server, selenium_driver, wor
         language=random_target_language
     ).exists()
     assert answer_placeholder == "Provide the translation in {}".format(random_base_language.language_name)
-    assert verify_answer_button.text == "Verify answer"

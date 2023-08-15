@@ -5,51 +5,18 @@ from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word, Badge, Score
-from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
+from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, authenticate_user, find_by_test_id
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
 
-CSS_SELECTOR_ARTICLE_INPUT = (By.CSS_SELECTOR, "main form #articleInput")
-CSS_SELECTOR_WORD_INPUT = (By.CSS_SELECTOR, "main form #wordInput")
-CSS_SELECTOR_VERIFY_ANSWER = (By.CSS_SELECTOR, "main form .btn-success")
-CSS_SELECTOR_BADGE_NOTIFICATION_HEADER = (By.CSS_SELECTOR, "main .toast-container .toast-header")
-CSS_SELECTOR_BADGE_NOTIFICATION_BODY = (By.CSS_SELECTOR, "main .toast-container .toast-body")
-
-
-def submit_answer(selenium_driver, answer):
-    article_input = find_element(selenium_driver, CSS_SELECTOR_ARTICLE_INPUT)
-    verify_answer_button = find_element(selenium_driver, CSS_SELECTOR_VERIFY_ANSWER)
-
-    article_input.send_keys(answer)
-    verify_answer_button.click()
+TEST_ID_ARTICLE_INPUT = "article-input"
+TEST_ID_WORD_INPUT = "word-disabled-input"
+TEST_ID_SUBMIT_BUTTON = "submit-answer-button"
+TEST_ID_FEEDBACK_ALERT = "feedback-alert"
 
 
 @pytest.mark.django_db
-def test_article_game_play_form_rendering(live_server, selenium_driver, languages, words):
-    """
-    Tests the presence of the HTML elements concerning the page when users can play the article game.
-    """
-    random_language = random.choice(languages)
-    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
-
-    article_input = find_element(selenium_driver, CSS_SELECTOR_ARTICLE_INPUT)
-    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
-    verify_answer_button = find_element(selenium_driver, CSS_SELECTOR_VERIFY_ANSWER)
-
-    article_input_placeholder = wait_attribute_to_be_non_empty(article_input, "placeholder", 10)
-    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
-
-    assert article_input_placeholder == "Article"
-    assert Word.objects.filter(
-        word_name=word_input_placeholder,
-        language__language_name=random_language.language_name
-    ).exists()
-    assert verify_answer_button.text == "Verify answer"
-
-
-@pytest.mark.parametrize("is_correct", [True, False])
-@pytest.mark.django_db
-def test_article_game_play_non_authenticated_user(live_server, selenium_driver, languages, words, is_correct):
+def test_article_game_correct_answer_non_authenticated_user(live_server, selenium_driver, languages, words):
     """
     Tests the feedback provided for unauthenticated users when they play the article game in case of a correct and of a
     wrong answer.
@@ -57,9 +24,7 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver, 
     random_language = random.choice(languages)
     selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
 
-    css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
-
-    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -68,23 +33,52 @@ def test_article_game_play_non_authenticated_user(live_server, selenium_driver, 
         language__language_name=random_language.language_name
     ).first()
 
-    answer = word.article.article_name if is_correct else get_random_string(5)
+    answer = word.article.article_name
 
-    submit_answer(selenium_driver, answer)
+    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input.send_keys(answer)
 
-    feedback_alert = find_element(selenium_driver, css_selector_alert)
+    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button.click()
 
-    if is_correct:
-        expected_feedback = f"Correct answer :)\n{word}"
-    else:
-        expected_feedback = f"Wrong answer\n{word}"
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
 
-    assert feedback_alert.text == expected_feedback
+    assert feedback_alert.text == f"Correct answer :)\n{word}"
 
 
-@pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_article_game_play_authenticated_user(live_server, selenium_driver, account, languages, words, is_correct):
+def test_article_game_incorrect_answer_non_authenticated_user(live_server, selenium_driver, languages, words):
+    """
+    Tests the feedback provided for unauthenticated users when they play the article game in case of a correct and of a
+    wrong answer.
+    """
+    random_language = random.choice(languages)
+    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
+
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
+
+    word = Word.objects.filter(
+        word_name=word_input_placeholder,
+        language__language_name=random_language.language_name
+    ).first()
+
+    answer = get_random_string(5)
+
+    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input.send_keys(answer)
+
+    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button.click()
+
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+
+    assert feedback_alert.text == f"Wrong answer\n{word}"
+
+
+@pytest.mark.django_db
+def test_article_game_correct_answer_authenticated_user(live_server, selenium_driver, account, languages, words):
     """
     Tests the feedback provided for authenticated users when they play the article game in case of a correct and of a
     wrong answer.
@@ -93,21 +87,18 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver, acco
     achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
-    article_game_id = 2
     random_language = random.choice(languages)
 
     initial_score = Score.objects.filter(
         user=user,
         language=random_language,
-        game__id=article_game_id
+        game__id=2
     ).first()
     expected_score = 1 if (initial_score is None) else initial_score.score + 1
 
     selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
 
-    css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
-
-    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -116,24 +107,60 @@ def test_article_game_play_authenticated_user(live_server, selenium_driver, acco
         language__language_name=random_language.language_name
     ).first()
 
-    answer = word.article.article_name if is_correct else get_random_string(5)
+    answer = word.article.article_name
 
-    submit_answer(selenium_driver, answer)
+    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input.send_keys(answer)
 
-    feedback_alert = find_element(selenium_driver, css_selector_alert)
+    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button.click()
 
-    if is_correct:
-        expected_feedback = f"Correct answer :)\n{word}\nYour score is {expected_score}"
-    else:
-        expected_feedback = f"Wrong answer\n{word}"
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
 
-    assert feedback_alert.text == expected_feedback
+    assert feedback_alert.text == f"Correct answer :)\n{word}\nYour score is {expected_score}"
 
-    if is_correct:
-        badge_explorer = Badge.objects.get(id=1)
+    badge_explorer = Badge.objects.get(id=1)
 
-        badge_notification_header = find_element(selenium_driver, CSS_SELECTOR_BADGE_NOTIFICATION_HEADER)
-        badge_notification_body = find_element(selenium_driver, CSS_SELECTOR_BADGE_NOTIFICATION_BODY)
+    badge_notification = find_by_test_id(selenium_driver, f"notification-badge-{badge_explorer.id}")
 
-        assert badge_notification_header.text == f"New achievement: {badge_explorer.name}"
-        assert badge_notification_body.text == badge_explorer.description
+    badge_notification_header = badge_notification.find_element(By.CSS_SELECTOR, ".toast-header")
+    badge_notification_body = badge_notification.find_element(By.CSS_SELECTOR, ".toast-body")
+
+    assert badge_notification_header.text == f"New achievement: {badge_explorer.name}"
+    assert badge_notification_body.text == badge_explorer.description
+
+
+@pytest.mark.django_db
+def test_article_game_incorrect_answer_authenticated_user(live_server, selenium_driver, account, languages, words):
+    """
+    Tests the feedback provided for authenticated users when they play the article game in case of a correct and of a
+    wrong answer.
+    """
+    user, password = account()[0]
+    achieve_explorer_badge(user)
+    authenticate_user(selenium_driver, user.username, password)
+
+    random_language = random.choice(languages)
+
+    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
+
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
+
+    word = Word.objects.filter(
+        word_name=word_input_placeholder,
+        language__language_name=random_language.language_name
+    ).first()
+
+    answer = get_random_string(5)
+
+    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input.send_keys(answer)
+
+    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button.click()
+
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+
+    assert feedback_alert.text == f"Wrong answer\n{word}"

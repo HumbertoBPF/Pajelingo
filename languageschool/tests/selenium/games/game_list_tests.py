@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from languageschool.tests.selenium.utils import wait_number_of_elements_to_be
 from pajelingo.settings import FRONT_END_URL
 
-GAME_LIST_URL = FRONT_END_URL + "/games"
+GAME_LIST_URL = f"{FRONT_END_URL}/games"
 CSS_SELECTOR_GAME_CARDS = (By.CSS_SELECTOR, "main .card")
 
 

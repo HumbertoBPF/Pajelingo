@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from languageschool.tests.selenium.utils import find_element, wait_text_to_be_present, assert_menu
 from pajelingo.settings import FRONT_END_URL
 
-DASHBOARD_URL = FRONT_END_URL + "/dashboard"
+DASHBOARD_URL = f"{FRONT_END_URL}/dashboard"
 CSS_SELECTOR_PREVIOUS_BUTTON = (By.CSS_SELECTOR, "main .justify-content-center .carousel .carousel-control-prev")
 CSS_SELECTOR_NEXT_BUTTON = (By.CSS_SELECTOR, "main .justify-content-center .carousel .carousel-control-next")
 CSS_SELECTOR_ITEM_TITLE = (By.CSS_SELECTOR, "main .justify-content-center .active .carousel-caption h5")

@@ -1,16 +1,15 @@
 from django.core import mail
 from django.utils.crypto import get_random_string
-from selenium.webdriver.common.by import By
 
 from languageschool.models import User
-from languageschool.tests.selenium.utils import find_element, signup_user
+from languageschool.tests.selenium.utils import signup_user, find_by_test_id
 from languageschool.tests.utils import get_random_email, get_random_username, get_valid_password, get_random_bio
 from pajelingo.settings import FRONT_END_URL
 
-CSS_SELECTOR_ALERT_SUCCESS = (By.CSS_SELECTOR, "main .alert-success")
-CSS_SELECTOR_ALERT_DANGER = (By.CSS_SELECTOR, "main .alert-danger")
-CSS_SELECTOR_DASHBOARD_BUTTON = (By.CSS_SELECTOR, "main .btn-primary")
-CSS_SELECTOR_LOGIN_BUTTON = (By.CSS_SELECTOR, "main .btn-success")
+TEST_ID_SUCCESS_ALERT = "success-alert"
+TEST_ID_ERROR_ALERT = "error-alert"
+TEST_ID_DASHBOARD_BUTTON = "dashboard-button"
+TEST_ID_LOGIN_BUTTON = "login-button"
 
 EMAIL = get_random_email()
 USERNAME = get_random_username()
@@ -22,9 +21,9 @@ def test_activate_account_success(live_server, selenium_driver):
     activate_account_url = mail.outbox[0].body.split(FRONT_END_URL)[1]
     selenium_driver.get(FRONT_END_URL + activate_account_url)
 
-    alert_success = find_element(selenium_driver, CSS_SELECTOR_ALERT_SUCCESS)
-    dashboard_button = find_element(selenium_driver, CSS_SELECTOR_DASHBOARD_BUTTON)
-    login_button = find_element(selenium_driver, CSS_SELECTOR_LOGIN_BUTTON)
+    alert_success = find_by_test_id(selenium_driver, TEST_ID_SUCCESS_ALERT)
+    dashboard_button = find_by_test_id(selenium_driver, TEST_ID_DASHBOARD_BUTTON)
+    login_button = find_by_test_id(selenium_driver, TEST_ID_LOGIN_BUTTON)
 
     assert alert_success.text == "Thank you for your email confirmation. Now you can sign in your account."
     assert User.objects.filter(
@@ -42,9 +41,9 @@ def test_activate_account_invalid_url(live_server, selenium_driver):
     activate_account_url = mail.outbox[0].body.split(FRONT_END_URL)[1]
     selenium_driver.get(FRONT_END_URL + activate_account_url + get_random_string(1))
 
-    alert_danger = find_element(selenium_driver, CSS_SELECTOR_ALERT_DANGER)
-    dashboard_button = find_element(selenium_driver, CSS_SELECTOR_DASHBOARD_BUTTON)
-    login_button = find_element(selenium_driver, CSS_SELECTOR_LOGIN_BUTTON)
+    alert_danger = find_by_test_id(selenium_driver, TEST_ID_ERROR_ALERT)
+    dashboard_button = find_by_test_id(selenium_driver, TEST_ID_DASHBOARD_BUTTON)
+    login_button = find_by_test_id(selenium_driver, TEST_ID_LOGIN_BUTTON)
 
     assert alert_danger.text == "Invalid token!"
     assert User.objects.filter(
@@ -72,9 +71,9 @@ def test_activate_account_already_active_user(live_server, selenium_driver):
     activate_account_url = mail.outbox[0].body.split(FRONT_END_URL)[1]
     selenium_driver.get(FRONT_END_URL + activate_account_url)
 
-    alert_danger = find_element(selenium_driver, CSS_SELECTOR_ALERT_DANGER)
-    dashboard_button = find_element(selenium_driver, CSS_SELECTOR_DASHBOARD_BUTTON)
-    login_button = find_element(selenium_driver, CSS_SELECTOR_LOGIN_BUTTON)
+    alert_danger = find_by_test_id(selenium_driver, TEST_ID_ERROR_ALERT)
+    dashboard_button = find_by_test_id(selenium_driver, TEST_ID_DASHBOARD_BUTTON)
+    login_button = find_by_test_id(selenium_driver, TEST_ID_LOGIN_BUTTON)
 
     assert alert_danger.text == "Invalid token!"
     assert dashboard_button.text == "Go to dashboard"

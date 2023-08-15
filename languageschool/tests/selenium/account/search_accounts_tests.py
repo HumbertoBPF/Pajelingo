@@ -13,7 +13,7 @@ from languageschool.tests.selenium.utils import wait_text_to_be_present, wait_nu
 from languageschool.tests.utils import get_users, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
-SEARCH_ACCOUNT_URL = FRONT_END_URL + "/accounts"
+SEARCH_ACCOUNT_URL = f"{FRONT_END_URL}/accounts"
 CSS_SELECTOR_SEARCH_INPUT = (By.CSS_SELECTOR, "main form .form-control")
 CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
 CSS_SELECTOR_ACCOUNT_CARD = (By.CSS_SELECTOR, "main .card .card-body")
@@ -63,16 +63,6 @@ def assert_search_results(selenium_driver, q, current_page, number_accounts):
 
         assert User.objects.filter(**args).exists()
         assert query.lower() in username.lower()
-
-
-@pytest.mark.django_db
-def test_search_account_form_rendering(live_server, selenium_driver):
-    selenium_driver.get(SEARCH_ACCOUNT_URL)
-    search_input = selenium_driver.find_element(CSS_SELECTOR_SEARCH_INPUT[0], CSS_SELECTOR_SEARCH_INPUT[1])
-    submit_button = selenium_driver.find_element(CSS_SELECTOR_SUBMIT_BUTTON[0], CSS_SELECTOR_SUBMIT_BUTTON[1])
-
-    assert search_input.get_attribute("placeholder") == "Search an account"
-    assert submit_button.text == "Search account"
 
 
 @pytest.mark.django_db

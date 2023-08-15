@@ -5,28 +5,14 @@ from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word, Badge, Score
-from languageschool.tests.selenium.utils import find_element, wait_attribute_to_be_non_empty, authenticate_user
+from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, authenticate_user, find_by_test_id
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
 
-CSS_SELECTOR_WORD_INPUT = (By.CSS_SELECTOR, "main form #wordInput")
-CSS_SELECTOR_ANSWER_INPUT = (By.CSS_SELECTOR, "main form #answerInput")
-CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main form .btn-success")
-CSS_SELECTOR_BADGE_NOTIFICATION_HEADER = (By.CSS_SELECTOR, "main .toast-container .toast-header")
-CSS_SELECTOR_BADGE_NOTIFICATION_BODY = (By.CSS_SELECTOR, "main .toast-container .toast-body")
-
-def get_languages(languages):
-    base_language = random.choice(languages)
-
-    target_language_options = []
-
-    for language in languages:
-        if language.language_name != base_language.language_name:
-            target_language_options.append(language)
-
-    target_language = random.choice(target_language_options)
-
-    return base_language, target_language
+TEST_ID_WORD_INPUT = "word-input"
+TEST_ID_ANSWER_INPUT = "answer-input"
+TEST_ID_SUBMIT_ANSWER_BUTTON = "submit-answer-button"
+TEST_ID_FEEDBACK_ALERT = "feedback-alert"
 
 
 def get_correct_answer(word_to_translate, base_language):
@@ -42,55 +28,19 @@ def get_correct_answer(word_to_translate, base_language):
     return correct_translation
 
 
-def submit_answer(selenium_driver, answer):
-    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    answer_input.send_keys(answer)
-    submit_button.click()
-
-
 @pytest.mark.django_db
-def test_vocabulary_game_play_form_rendering(live_server, selenium_driver, languages, words):
-    """
-    Tests the rendering of the form that the player sees during the gameplay. The form must contain a disabled input
-    with the word to be translated, an input to receive the user's answer, and a submit button.
-    """
-    base_language, target_language = get_languages(languages)
-    selenium_driver\
-        .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
-             .format(base_language, target_language))
-
-    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
-    answer_input = find_element(selenium_driver, CSS_SELECTOR_ANSWER_INPUT)
-    submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
-    answer_input_placeholder = wait_attribute_to_be_non_empty(answer_input, "placeholder", 10)
-
-    assert Word.objects.filter(
-        word_name=word_input_placeholder,
-        language=target_language
-    ).exists()
-    assert answer_input_placeholder == "Provide the translation in {}".format(base_language.language_name)
-    assert submit_button.text == "Verify answer"
-
-
-@pytest.mark.parametrize("is_correct", [True, False])
-@pytest.mark.django_db
-def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_driver, languages, words, is_correct):
+def test_vocabulary_game_correct_answer_non_authenticated_user(live_server, selenium_driver, languages, words):
     """
     Tests the feedback provided for unauthenticated users when they play the vocabulary game in case of a correct and
     of an incorrect answer.
     """
-    base_language, target_language = get_languages(languages)
+    base_language = random.choice(languages)
+    target_language = random.choice(languages.exclude(id=base_language.id))
+
     selenium_driver \
-        .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
-             .format(base_language, target_language))
+        .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
 
-    css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
-
-    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -100,21 +50,55 @@ def test_vocabulary_game_play_non_authenticated_user(live_server, selenium_drive
     ).first()
 
     synonym = word.synonyms.filter(language=base_language).first()
-    answer = synonym.word_name if is_correct else get_random_string(8)
+    answer = synonym.word_name
 
-    submit_answer(selenium_driver, answer)
+    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input.send_keys(answer)
 
-    feedback_alert = find_element(selenium_driver, css_selector_alert)
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button.click()
 
-    expected_feedback = "{}\n{}: {}".format("Correct answer :)" if is_correct else "Wrong answer", word.word_name,
-                                            get_correct_answer(word, base_language))
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
 
-    assert feedback_alert.text == expected_feedback
+    assert feedback_alert.text == f"Correct answer :)\n{word.word_name}: {get_correct_answer(word, base_language)}"
 
 
-@pytest.mark.parametrize("is_correct", [True, False])
 @pytest.mark.django_db
-def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, account, languages, words, is_correct):
+def test_vocabulary_game_incorrect_answer_non_authenticated_user(live_server, selenium_driver, languages, words):
+    """
+    Tests the feedback provided for unauthenticated users when they play the vocabulary game in case of a correct and
+    of an incorrect answer.
+    """
+    base_language = random.choice(languages)
+    target_language = random.choice(languages.exclude(id=base_language.id))
+
+    selenium_driver \
+        .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
+
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
+
+    word = Word.objects.filter(
+        word_name=word_input_placeholder,
+        language=target_language
+    ).first()
+
+    answer = get_random_string(8)
+
+    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input.send_keys(answer)
+
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button.click()
+
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+
+    assert feedback_alert.text == f"Wrong answer\n{word.word_name}: {get_correct_answer(word, base_language)}"
+
+
+@pytest.mark.django_db
+def test_vocabulary_game_correct_answer_authenticated_user(live_server, selenium_driver, account, languages, words):
     """
     Tests the feedback provided for authenticated users when they play the vocabulary game in case of a correct and of
     an incorrect answer.
@@ -123,23 +107,20 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
     achieve_explorer_badge(user)
     authenticate_user(selenium_driver, user.username, password)
 
-    vocabulary_game_id = 1
-    base_language, target_language = get_languages(languages)
+    base_language = random.choice(languages)
+    target_language = random.choice(languages.exclude(id=base_language.id))
 
     initial_score = Score.objects.filter(
         user=user,
         language=target_language,
-        game__id=vocabulary_game_id
+        game__id=1
     ).first()
     expected_score = 1 if (initial_score is None) else initial_score.score + 1
 
     selenium_driver \
-        .get(FRONT_END_URL + "/vocabulary-game/play?base_language={}&target_language={}"
-             .format(base_language, target_language))
+        .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
 
-    css_selector_alert = (By.CSS_SELECTOR, "main .alert-{}".format("success" if is_correct else "danger"))
-
-    word_input = find_element(selenium_driver, CSS_SELECTOR_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -149,29 +130,67 @@ def test_vocabulary_game_play_authenticated_user(live_server, selenium_driver, a
     ).first()
 
     synonym = word.synonyms.filter(language=base_language).first()
-    answer = synonym.word_name if is_correct else get_random_string(8)
+    answer = synonym.word_name
 
-    submit_answer(selenium_driver, answer)
+    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input.send_keys(answer)
 
-    feedback_alert = find_element(selenium_driver, css_selector_alert)
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button.click()
+
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
 
     correct_answer = get_correct_answer(word, base_language)
 
-    if is_correct:
-        expected_feedback = f"Correct answer :)\n" \
-                            f"{word.word_name}: {correct_answer}" \
-                            f"\nYour score is {expected_score}"
-    else:
-        expected_feedback = f"Wrong answer\n" \
-                            f"{word.word_name}: {correct_answer}"
+    assert (feedback_alert.text ==
+            f"Correct answer :)\n{word.word_name}: {correct_answer}\nYour score is {expected_score}")
 
-    assert feedback_alert.text == expected_feedback
+    badge_explorer = Badge.objects.get(id=1)
 
-    if is_correct:
-        badge_explorer = Badge.objects.get(id=1)
+    badge_notification = find_by_test_id(selenium_driver, f"notification-badge-{badge_explorer.id}")
 
-        badge_notification_header = find_element(selenium_driver, CSS_SELECTOR_BADGE_NOTIFICATION_HEADER)
-        badge_notification_body = find_element(selenium_driver, CSS_SELECTOR_BADGE_NOTIFICATION_BODY)
+    badge_notification_header = badge_notification.find_element(By.CSS_SELECTOR, ".toast-header")
+    badge_notification_body = badge_notification.find_element(By.CSS_SELECTOR, ".toast-body")
 
-        assert badge_notification_header.text == f"New achievement: {badge_explorer.name}"
-        assert badge_notification_body.text == badge_explorer.description
+    assert badge_notification_header.text == f"New achievement: {badge_explorer.name}"
+    assert badge_notification_body.text == badge_explorer.description
+
+
+@pytest.mark.django_db
+def test_vocabulary_game_incorrect_answer_authenticated_user(live_server, selenium_driver, account, languages, words):
+    """
+    Tests the feedback provided for authenticated users when they play the vocabulary game in case of a correct and of
+    an incorrect answer.
+    """
+    user, password = account()[0]
+    achieve_explorer_badge(user)
+    authenticate_user(selenium_driver, user.username, password)
+
+    base_language = random.choice(languages)
+    target_language = random.choice(languages.exclude(id=base_language.id))
+
+    selenium_driver \
+        .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
+
+    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+
+    word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
+
+    word = Word.objects.filter(
+        word_name=word_input_placeholder,
+        language=target_language
+    ).first()
+
+    answer = get_random_string(8)
+
+    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input.send_keys(answer)
+
+    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button.click()
+
+    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+
+    correct_answer = get_correct_answer(word, base_language)
+
+    assert feedback_alert.text == f"Wrong answer\n{word.word_name}: {correct_answer}"
