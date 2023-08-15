@@ -95,54 +95,44 @@ def test_conjugation_game_setup_authenticated_user(api_client, account, verbs, l
     )
 
 
-@pytest.mark.parametrize("has_id", [True, False])
-@pytest.mark.parametrize("has_tense", [True, False])
-@pytest.mark.parametrize("has_conjugation_1", [True, False])
-@pytest.mark.parametrize("has_conjugation_2", [True, False])
-@pytest.mark.parametrize("has_conjugation_3", [True, False])
-@pytest.mark.parametrize("has_conjugation_4", [True, False])
-@pytest.mark.parametrize("has_conjugation_5", [True, False])
-@pytest.mark.parametrize("has_conjugation_6", [True, False])
+@pytest.mark.parametrize(
+    "field", [
+        "word_id",
+        "tense",
+        "conjugation_1",
+        "conjugation_2",
+        "conjugation_3",
+        "conjugation_4",
+        "conjugation_5",
+        "conjugation_6"
+    ]
+)
 @pytest.mark.django_db
-def test_conjugation_game_play_required_parameters(api_client, has_id, has_tense, has_conjugation_1,
-                                                   has_conjugation_2, has_conjugation_3, has_conjugation_4,
-                                                   has_conjugation_5, has_conjugation_6):
+def test_conjugation_game_play_required_parameters(api_client, field):
     """
     Checks that /api/conjugation-game returns 400 Bad Request when some required parameter is missing.
     """
-    payload = {}
+    payload = {
+        "word_id": random.randint(1, 1000),
+        "tense":get_random_string(8),
+        "conjugation_1": get_random_string(8),
+        "conjugation_2": get_random_string(8),
+        "conjugation_3": get_random_string(8),
+        "conjugation_4": get_random_string(8),
+        "conjugation_5": get_random_string(8),
+        "conjugation_6": get_random_string(8)
+    }
 
-    if has_id:
-        payload["word_id"] = random.randint(1, 1000)
-
-    if has_tense:
-        payload["tense"] = get_random_string(8)
-
-    if has_conjugation_1:
-        payload["conjugation_1"] = get_random_string(8)
-
-    if has_conjugation_2:
-        payload["conjugation_2"] = get_random_string(8)
-
-    if has_conjugation_3:
-        payload["conjugation_3"] = get_random_string(8)
-
-    if has_conjugation_4:
-        payload["conjugation_4"] = get_random_string(8)
-
-    if has_conjugation_5:
-        payload["conjugation_5"] = get_random_string(8)
-
-    if has_conjugation_6:
-        payload["conjugation_6"] = get_random_string(8)
+    del payload[field]
 
     response = api_client.post(CONJUGATION_GAME_URL, data=payload)
 
-    if has_id and has_tense and has_conjugation_1 and has_conjugation_2 and has_conjugation_3 and has_conjugation_4 \
-            and has_conjugation_5 and has_conjugation_6:
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-    else:
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body[field]) == 1
+    assert str(response_body[field][0]) == "This field is required."
 
 
 @pytest.mark.django_db

@@ -1,3 +1,4 @@
+import base64
 import random
 import string
 
@@ -275,3 +276,9 @@ def attribute_user_badges():
     for user in users:
         user_badges = random.sample(list(badges.values_list("id", flat=True)), k=2)
         user.badges.add(*user_badges)
+
+
+def get_profile_picture_base64(user):
+    if user.picture:
+        img = user.picture.open("rb")
+        return base64.b64encode(img.read())

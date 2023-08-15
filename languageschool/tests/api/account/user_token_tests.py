@@ -6,28 +6,28 @@ from rest_framework import status
 URL = reverse("user-token-api")
 
 
-@pytest.mark.parametrize("has_username, has_password", [
-    (True, False),
-    (False, True),
-    (False, False)
-])
+@pytest.mark.parametrize("field", ["username", "password"])
 @pytest.mark.django_db
-def test_user_token_required_parameters(api_client, account, has_username, has_password):
+def test_user_token_required_parameters(api_client, account, field):
     """
     Tests that /api/user-token raises 400 Bad Request when some required parameter is missing.
     """
     user, password = account()[0]
-    payload ={}
+    payload ={
+        "username": user.username,
+        "password": password
+    }
 
-    if has_username:
-        payload["username"] = user.username
-
-    if has_password:
-        payload["password"] = password
+    del payload[field]
 
     response = api_client.post(URL, data=payload)
 
+    response_body = response.data
+
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body[field]) == 1
+    assert str(response_body[field][0]) == "This field is required."
 
 
 @pytest.mark.parametrize("has_valid_username, has_valid_password", [
@@ -47,7 +47,12 @@ def test_user_token_invalid_credentials(api_client, account, has_valid_username,
         "password": password if has_valid_password else get_random_string(8)
     })
 
+    response_body = response.data
+
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["non_field_errors"]) == 1
+    assert str(response_body["non_field_errors"][0]) == "Unable to log in with provided credentials."
 
 
 @pytest.mark.django_db

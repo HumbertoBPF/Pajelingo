@@ -167,8 +167,8 @@ def authenticate_user(selenium_driver, username, password):
     """
     selenium_driver.get(FRONT_END_URL + "/login")
 
-    css_selector_username_input = (By.CSS_SELECTOR, "main form #floatingUsername")
-    css_selector_password_input = (By.CSS_SELECTOR, "main form #floatingPassword")
+    css_selector_username_input = (By.CSS_SELECTOR, "main form .form-floating:nth-of-type(1) .form-control")
+    css_selector_password_input = (By.CSS_SELECTOR, "main form .form-floating:nth-of-type(2) .form-control")
     css_selector_submit_button = (By.CSS_SELECTOR, "main form .btn-success")
 
     username_input = find_element(selenium_driver, css_selector_username_input)

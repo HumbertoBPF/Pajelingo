@@ -4,10 +4,12 @@ attrs==23.1.0
 certifi==2023.5.7
 cffi==1.15.1
 colorama==0.4.6
+coverage==7.3.0
 Django==4.2.1
 django-cors-headers==3.14.0
 djangorestframework==3.14.0
 exceptiongroup==1.1.1
+execnet==2.0.2
 h11==0.14.0
 idna==3.4
 iniconfig==2.0.0
@@ -22,7 +24,9 @@ pycparser==2.21
 pyparsing==3.0.9
 PySocks==1.7.1
 pytest==7.3.1
+pytest-cov==4.1.0
 pytest-django==4.5.2
+pytest-xdist==3.3.1
 python-dotenv==1.0.0
 pytz==2023.3
 selenium==4.9.1

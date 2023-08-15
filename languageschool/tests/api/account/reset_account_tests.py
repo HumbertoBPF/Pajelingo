@@ -48,7 +48,7 @@ def test_request_reset_account_email_does_not_match_account(api_client):
         "email": get_random_string(8, string.ascii_letters) + "@test.com"
     })
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
     assert len(mail.outbox) == 0
 
 
@@ -66,7 +66,7 @@ def test_request_reset_account_email_does_not_match_active_account(api_client, a
         "email": user.email
     })
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
     assert len(mail.outbox) == 0
 
 
@@ -82,7 +82,7 @@ def test_request_reset_account(api_client, account):
         "email": user.email
     })
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
     assert len(mail.outbox) == 1
     assert len(mail.outbox[0].to) == 1
     assert mail.outbox[0].to[0] == user.email
@@ -133,18 +133,8 @@ def test_reset_account_requires_password(api_client, account):
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-@pytest.mark.parametrize(
-    "password", [
-        get_too_long_password(),
-        get_too_short_password(),
-        get_password_without_letters(),
-        get_password_without_digits(),
-        get_password_without_special_characters(),
-        ""
-    ]
-)
 @pytest.mark.django_db
-def test_reset_account_validates_password(api_client, account, password):
+def test_reset_account_too_long_password(api_client, account):
     """
     Tests that /api/reset-account raises a 400 Bad Request if the specified password does not fulfill all validation
     rules.
@@ -157,10 +147,140 @@ def test_reset_account_validates_password(api_client, account, password):
     })
 
     response = api_client.put(url, data={
-        "password": password
+        "password": get_too_long_password()
     })
 
+    response_body = response.data
+
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["password"]) == 1
+    assert str(response_body["password"][0]) == "The password must have a length between 8 and 30."
+
+
+@pytest.mark.django_db
+def test_reset_account_too_short_password(api_client, account):
+    """
+    Tests that /api/reset-account raises a 400 Bad Request if the specified password does not fulfill all validation
+    rules.
+    """
+    user, _ = account()[0]
+
+    url = reverse("reset-account-api", kwargs={
+        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user)
+    })
+
+    response = api_client.put(url, data={
+        "password": get_too_short_password()
+    })
+
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["password"]) == 1
+    assert str(response_body["password"][0]) == "The password must have a length between 8 and 30."
+
+
+@pytest.mark.django_db
+def test_reset_account_password_without_letters(api_client, account):
+    """
+    Tests that /api/reset-account raises a 400 Bad Request if the specified password does not fulfill all validation
+    rules.
+    """
+    user, _ = account()[0]
+
+    url = reverse("reset-account-api", kwargs={
+        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user)
+    })
+
+    response = api_client.put(url, data={
+        "password": get_password_without_letters()
+    })
+
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["password"]) == 1
+    assert str(response_body["password"][0]) == "The password must have at least one letter."
+
+
+@pytest.mark.django_db
+def test_reset_account_password_without_digits(api_client, account):
+    """
+    Tests that /api/reset-account raises a 400 Bad Request if the specified password does not fulfill all validation
+    rules.
+    """
+    user, _ = account()[0]
+
+    url = reverse("reset-account-api", kwargs={
+        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user)
+    })
+
+    response = api_client.put(url, data={
+        "password": get_password_without_digits()
+    })
+
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["password"]) == 1
+    assert str(response_body["password"][0]) == "The password must have at least one digit."
+
+
+@pytest.mark.django_db
+def test_reset_account_password_without_special_characters(api_client, account):
+    """
+    Tests that /api/reset-account raises a 400 Bad Request if the specified password does not fulfill all validation
+    rules.
+    """
+    user, _ = account()[0]
+
+    url = reverse("reset-account-api", kwargs={
+        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user)
+    })
+
+    response = api_client.put(url, data={
+        "password": get_password_without_special_characters()
+    })
+
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["password"]) == 1
+    assert str(response_body["password"][0]) == "The password must have at least one special character."
+
+
+@pytest.mark.django_db
+def test_reset_account_empty_password(api_client, account):
+    """
+    Tests that /api/reset-account raises a 400 Bad Request if the specified password does not fulfill all validation
+    rules.
+    """
+    user, _ = account()[0]
+
+    url = reverse("reset-account-api", kwargs={
+        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user)
+    })
+
+    response = api_client.put(url, data={
+        "password": ""
+    })
+
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body["password"]) == 1
+    assert str(response_body["password"][0]) == "This field may not be blank."
 
 
 @pytest.mark.django_db

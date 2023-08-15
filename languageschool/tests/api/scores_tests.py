@@ -51,14 +51,8 @@ def test_list_scores_get_score(api_client, account, languages, score, games):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "has_language, has_game", [
-        (False, False),
-        (True, False),
-        (False, True)
-    ]
-)
-def test_list_scores_get_score_missing_parameters(api_client, account, languages, score, games, has_language, has_game):
+@pytest.mark.parametrize("field", ["language", "game"])
+def test_list_scores_get_score_missing_parameters(api_client, account, languages, score, games, field):
     accounts = account(n=random.randint(1, 10))
     users = get_users(accounts)
     score(users=users, languages=languages)
@@ -67,13 +61,12 @@ def test_list_scores_get_score_missing_parameters(api_client, account, languages
     language = random.choice(languages)
     game = random.choice(games)
 
-    data = {}
+    data = {
+        "language": language.language_name,
+        "game": game.id
+    }
 
-    if has_language:
-        data["language"] = language.language_name
-
-    if has_game:
-        data["game"] = game.id
+    del data[field]
 
     token = get_user_token(api_client, user, password)
 

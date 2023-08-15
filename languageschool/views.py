@@ -210,11 +210,11 @@ class PublicImageViewSet(views.APIView):
         except FileNotFoundError:
             return Response({
                 "error": "The requested image does not exist"
-            }, status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_404_NOT_FOUND)
 
         return Response({
             "image": converted_string
-        }, status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)
 
 
 class RequestResetPasswordView(views.APIView):
@@ -223,7 +223,7 @@ class RequestResetPasswordView(views.APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SearchView(generics.ListAPIView):

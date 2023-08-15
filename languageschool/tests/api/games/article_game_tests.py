@@ -101,27 +101,27 @@ def test_article_game_setup_authenticated_user(api_client, account, languages, w
     ).exists()
 
 
-@pytest.mark.parametrize("has_word_id, has_answer", [
-    (True, False),
-    (False, True),
-    (False, False)
-])
+@pytest.mark.parametrize("field", ["word_id", "answer"])
 @pytest.mark.django_db
-def test_article_game_play_required_parameters(api_client, has_word_id, has_answer):
+def test_article_game_play_required_parameters(api_client, field):
     """
     Tests that POST requests to /api/article-game require word_id and answer as parameters.
     """
-    payload = {}
+    payload = {
+        "word_id": random.randint(1, 1000),
+        "answer": get_random_string(8)
+    }
 
-    if has_word_id:
-        payload["word_id"] = random.randint(1, 1000)
-
-    if has_answer:
-        payload["answer"] = get_random_string(8)
+    del payload[field]
 
     response = api_client.post(ARTICLE_GAME_URL, data=payload)
 
-    assert response.status_code == response.status_code == status.HTTP_400_BAD_REQUEST
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body[field]) == 1
+    assert str(response_body[field][0]) == "This field is required."
 
 
 @pytest.mark.django_db

@@ -124,32 +124,29 @@ def test_vocabulary_game_setup_authenticated_user(api_client, account, words, la
     ).exists()
 
 
-@pytest.mark.parametrize("has_id", [True, False])
-@pytest.mark.parametrize("has_base_language", [True, False])
-@pytest.mark.parametrize("has_answer", [True, False])
+@pytest.mark.parametrize("field", ["word_id", "base_language", "answer"])
 @pytest.mark.django_db
-def test_vocabulary_play_required_parameters(api_client, has_id, has_base_language, has_answer):
+def test_vocabulary_play_required_parameters(api_client, field):
     """
     Checks that POST request to /api/vocabulary-game raise a 400 Bad Request when no word id, base language and answer
     parameters in the request body.
     """
-    payload = {}
+    payload = {
+        "word_id": random.randint(1, 1000),
+        "base_language": get_random_string(8),
+        "answer": get_random_string(8)
+    }
 
-    if has_id:
-        payload["word_id"] = random.randint(1, 1000)
-
-    if has_base_language:
-        payload["base_language"] = get_random_string(8)
-
-    if has_answer:
-        payload["answer"] = get_random_string(8)
+    del payload[field]
 
     response = api_client.post(VOCABULARY_GAME_URL, data=payload)
 
-    if has_id and has_base_language and has_answer:
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-    else:
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    response_body = response.data
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(response_body) == 1
+    assert len(response_body[field]) == 1
+    assert str(response_body[field][0]) == "This field is required."
 
 
 @pytest.mark.django_db

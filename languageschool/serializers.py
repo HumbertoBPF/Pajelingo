@@ -162,7 +162,7 @@ class BadgesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Badge
-        fields = ("name", "description", "image", "color")
+        fields = ("id", "name", "description", "image", "color")
 
     def get_image(self, obj):
         return get_base_64_encoded_image(obj.image)
