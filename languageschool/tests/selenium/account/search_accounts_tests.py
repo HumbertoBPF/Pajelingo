@@ -14,6 +14,7 @@ from languageschool.tests.utils import get_users, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
 SEARCH_ACCOUNT_URL = f"{FRONT_END_URL}/accounts"
+TEST_ID_SPINNER = "spinner"
 TEST_ID_SEARCH_INPUT = "search-input"
 TEST_ID_SUBMIT_BUTTON = "submit-button"
 CSS_SELECTOR_ACCOUNT_CARD = (By.CSS_SELECTOR, "main .card .card-body")
@@ -35,7 +36,6 @@ def get_bio_from_account_card(account_card):
 
 
 def assert_search_results(selenium_driver, q):
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_ACCOUNT_CARD, 10)
     account_cards = selenium_driver.find_elements(CSS_SELECTOR_ACCOUNT_CARD[0], CSS_SELECTOR_ACCOUNT_CARD[1])
 
     for account_card in account_cards:

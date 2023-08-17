@@ -89,7 +89,7 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
     # Waiting to be redirected to the profile
-    wait_for_redirect(selenium_driver, FRONT_END_URL + "/profile")
+    wait_for_redirect(selenium_driver, f"{FRONT_END_URL}/profile")
 
     user = User.objects.filter(
         id=user.id,

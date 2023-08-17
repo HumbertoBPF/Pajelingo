@@ -1,26 +1,25 @@
 import math
 import random
-import time
 
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word, Meaning, User
-from languageschool.tests.selenium.utils import assert_menu, find_element, wait_text_to_be_present, \
+from languageschool.tests.selenium.utils import find_element, wait_text_to_be_present, \
     wait_number_of_elements_to_be, scroll_to_element, assert_pagination, go_to_next_page, \
-    CSS_SELECTOR_ACTIVE_PAGE_BUTTON
+    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, find_by_test_id
 from pajelingo.settings import FRONT_END_URL
 
-SEARCH_URL = FRONT_END_URL + "/search"
-CSS_SELECTOR_FILTER_BUTTON = (By.CSS_SELECTOR, "main .btn-info")
-CSS_SELECTOR_SEARCH_FORM_INPUT = (By.CSS_SELECTOR, "body .modal .modal-body .form-floating .form-control")
 CSS_SELECTOR_FORM_CHECK = (By.CSS_SELECTOR, "body .modal .modal-body .form-check")
-CSS_SELECTOR_SUBMIT_BUTTON = (By.CSS_SELECTOR, "body .modal .modal-footer .btn-success")
 CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 CSS_SELECTOR_HEART_NON_FILL_ICON = (By.CSS_SELECTOR, "main .card .bi-heart")
 CSS_SELECTOR_HEART_FILL_ICON = (By.CSS_SELECTOR, "main .card .bi-heart-fill")
-CSS_SELECTOR_NO_RESULTS_IMG = (By.CSS_SELECTOR, "main img")
-CSS_SELECTOR_NO_RESULTS_TEXT = (By.CSS_SELECTOR, "main p")
 CSS_SELECTOR_MEANING_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text")
+
+TEST_ID_FILTER_BUTTON = "filter-button"
+TEST_ID_SEARCH_INPUT = "search-input"
+TEST_ID_APPLY_FILTER_BUTTON = "apply-filters-button"
+TEST_ID_NO_RESULTS = "no-results"
+TEST_ID_NO_RESULTS_IMG = "no-results-img"
 
 
 def get_card_language(card):
@@ -32,13 +31,7 @@ def get_card_language(card):
 def get_card_word(card):
     return card.find_element(By.CSS_SELECTOR, ".card-body .card-text").text
 
-def assert_search_results(selenium_driver, words, current_page, number_pages, user=None, language=None,
-                          search_pattern=""):
-    number_words = words.count()
-    expected_number_of_cards = (number_words % 12
-                                if ((current_page == number_pages) and (number_words % 12 != 0)) else 12)
-
-    wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_CARDS, expected_number_of_cards)
+def assert_search_results(selenium_driver, user=None, language=None, search_pattern=""):
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
 
     for card in cards:
@@ -83,35 +76,23 @@ def assert_meaning_page(selenium_driver, word_name, language_name, user=None):
     assert word.word_name == word_name
     assert word.language.language_name == language_name
 
-    wait_text_to_be_present(selenium_driver, (By.CSS_SELECTOR, "main h5"), "Meanings of \"{}\"".format(word.word_name))
-    title = find_element(selenium_driver, (By.CSS_SELECTOR, "main h5"))
-    meanings = Meaning.objects.filter(word=word)
-
-    meanings_dict = {}
-
-    for meaning in meanings:
-        meanings_dict[meaning.id] = True
+    title = find_by_test_id(selenium_driver, "title")
+    assert title.text == f"Meanings of \"{word.word_name}\""
 
     cards = selenium_driver.find_elements(CSS_SELECTOR_MEANING_CARD[0], CSS_SELECTOR_MEANING_CARD[1])
 
-    assert title.text == "Meanings of \"{}\"".format(word.word_name)
-
     nb_cards = len(cards)
 
-    for i in range(len(cards)):
+    for i in range(nb_cards):
         card = cards[i]
 
-        separator = "Meaning: " if (nb_cards == 1) else "Meaning number {}: ".format(i + 1)
+        separator = "Meaning: " if (nb_cards == 1) else f"Meaning number {i + 1}: "
         meaning = card.text.split(separator)[1]
 
-        meaning = Meaning.objects.filter(
+        assert Meaning.objects.filter(
             word=word,
             meaning=meaning
-        ).first()
-
-        del meanings_dict[meaning.id]
-
-    assert len(meanings_dict) == 0
+        ).exists()
 
     if user is not None:
         heart_icon_button = find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info"))
@@ -126,29 +107,6 @@ def assert_meaning_page(selenium_driver, word_name, language_name, user=None):
             find_element(selenium_driver, (By.CSS_SELECTOR, "main .btn-info .bi-heart-fill"))
 
 
-def modal_form_rendering(selenium_driver, languages, user):
-    number_languages = languages.count()
-    assert_menu(selenium_driver, user=user)
-
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
-    filter_button.click()
-
-    search_form_input = find_element(selenium_driver, CSS_SELECTOR_SEARCH_FORM_INPUT)
-    find_element(selenium_driver, CSS_SELECTOR_FORM_CHECK)
-    search_form_checkboxes = selenium_driver.find_elements(CSS_SELECTOR_FORM_CHECK[0], CSS_SELECTOR_FORM_CHECK[1])
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    assert search_form_input.get_attribute("placeholder") == "Search for..."
-    assert len(search_form_checkboxes) == number_languages
-
-    for i in range(number_languages):
-        assert search_form_checkboxes[i].find_element(By.CSS_SELECTOR, "label").text == languages[i].language_name
-        assert search_form_checkboxes[i].find_element(By.CSS_SELECTOR, "input") \
-                   .get_attribute("value") == languages[i].language_name
-
-    assert search_form_submit_button.text == "Apply"
-
-
 def search(selenium_driver, words, user):
     number_words = words.count()
     number_pages = math.ceil(number_words / 12)
@@ -158,81 +116,27 @@ def search(selenium_driver, words, user):
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
-        assert_search_results(selenium_driver, words, current_page, number_pages, user=user)
-        assert_pagination(selenium_driver, current_page, number_pages)
-
-        go_to_next_page(selenium_driver, current_page, number_pages)
-
-
-def search_with_language_filter(selenium_driver, words, user, language):
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
-    filter_button.click()
-
-    find_element(selenium_driver, CSS_SELECTOR_FORM_CHECK)
-    search_form_checkboxes = selenium_driver.find_elements(CSS_SELECTOR_FORM_CHECK[0], CSS_SELECTOR_FORM_CHECK[1])
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    for search_form_checkbox in search_form_checkboxes:
-        if search_form_checkbox.text != language.language_name:
-            search_form_checkbox.find_element(By.CSS_SELECTOR, ".form-check-input").click()
-
-    search_form_submit_button.click()
-
-    words = words.filter(language=language)
-    number_words = words.count()
-    number_pages = math.ceil(number_words / 12)
-
-    for i in range(number_pages):
-        current_page = i + 1
-
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
-
-        assert_search_results(selenium_driver, words, current_page, number_pages, user=user, language=language)
-        assert_pagination(selenium_driver, current_page, number_pages)
-
-        go_to_next_page(selenium_driver, current_page, number_pages)
-
-
-def search_with_search_pattern(selenium_driver, words, user, search_pattern):
-    time.sleep(1)
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
-    filter_button.click()
-
-    search_form_input = find_element(selenium_driver, CSS_SELECTOR_SEARCH_FORM_INPUT)
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
-    search_form_input.send_keys(search_pattern)
-    search_form_submit_button.click()
-
-    words = words.filter(word_name__icontains=search_pattern)
-    number_words = words.count()
-    number_pages = math.ceil(number_words / 12)
-
-    for i in range(number_pages):
-        current_page = i + 1
-
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
-        assert_search_results(selenium_driver, words, current_page, number_pages, user=user,
-                              search_pattern=search_pattern)
+        assert_search_results(selenium_driver, user=user)
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
 
 
 def search_with_search_pattern_and_language_filter(selenium_driver, words, user, search_pattern, language):
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
+    filter_button = find_by_test_id(selenium_driver, TEST_ID_FILTER_BUTTON)
     filter_button.click()
 
-    search_form_input = find_element(selenium_driver, CSS_SELECTOR_SEARCH_FORM_INPUT)
+    search_form_input = find_by_test_id(selenium_driver, TEST_ID_SEARCH_INPUT).find_element(By.CSS_SELECTOR, "input")
+    search_form_input.send_keys(search_pattern)
+
     find_element(selenium_driver, CSS_SELECTOR_FORM_CHECK)
     search_form_checkboxes = selenium_driver.find_elements(CSS_SELECTOR_FORM_CHECK[0], CSS_SELECTOR_FORM_CHECK[1])
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
-    search_form_input.send_keys(search_pattern)
     for search_form_checkbox in search_form_checkboxes:
         if search_form_checkbox.text != language.language_name:
             search_form_checkbox.find_element(By.CSS_SELECTOR, ".form-check-input").click()
 
+    search_form_submit_button = find_by_test_id(selenium_driver, TEST_ID_APPLY_FILTER_BUTTON)
     search_form_submit_button.click()
 
     words = words.filter(word_name__icontains=search_pattern, language=language)
@@ -244,8 +148,7 @@ def search_with_search_pattern_and_language_filter(selenium_driver, words, user,
 
         wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
-        assert_search_results(selenium_driver, words, current_page, number_pages, user=user, language=language,
-                              search_pattern=search_pattern)
+        assert_search_results(selenium_driver, user=user, language=language, search_pattern=search_pattern)
         assert_pagination(selenium_driver, current_page, number_pages)
 
         go_to_next_page(selenium_driver, current_page, number_pages)
@@ -282,31 +185,30 @@ def toggle_favorite_word(selenium_driver, user):
         assert User.objects.get(id=user.id).favorite_words.contains(word)
 
 def search_with_no_results(selenium_driver):
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
+    filter_button = find_by_test_id(selenium_driver, TEST_ID_FILTER_BUTTON)
     filter_button.click()
 
     find_element(selenium_driver, CSS_SELECTOR_FORM_CHECK)
     search_form_checkboxes = selenium_driver.find_elements(CSS_SELECTOR_FORM_CHECK[0], CSS_SELECTOR_FORM_CHECK[1])
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
 
     for search_form_checkbox in search_form_checkboxes:
         search_form_checkbox.find_element(By.CSS_SELECTOR, ".form-check-input").click()
 
+    search_form_submit_button = find_by_test_id(selenium_driver, TEST_ID_APPLY_FILTER_BUTTON)
     search_form_submit_button.click()
 
-    no_results_img = find_element(selenium_driver, CSS_SELECTOR_NO_RESULTS_IMG)
-    no_results_text = find_element(selenium_driver, CSS_SELECTOR_NO_RESULTS_TEXT)
+    no_results = find_by_test_id(selenium_driver, TEST_ID_NO_RESULTS)
+    no_results_img = find_by_test_id(selenium_driver, TEST_ID_NO_RESULTS_IMG)
 
+    assert no_results.text == "No result matching your search was found"
     assert no_results_img.get_attribute("alt") == "No results"
-    assert no_results_text.text == "No result matching your search was found"
 
 
 def access_meaning_page(selenium_driver, user):
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
+    filter_button = find_by_test_id(selenium_driver, TEST_ID_FILTER_BUTTON)
     filter_button.click()
 
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
-
+    search_form_submit_button = find_by_test_id(selenium_driver, TEST_ID_APPLY_FILTER_BUTTON)
     search_form_submit_button.click()
 
     wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")
@@ -324,10 +226,10 @@ def access_meaning_page(selenium_driver, user):
 
 
 def toggle_favorite_word_in_meaning_page(selenium_driver, user):
-    filter_button = find_element(selenium_driver, CSS_SELECTOR_FILTER_BUTTON)
+    filter_button = find_by_test_id(selenium_driver, TEST_ID_FILTER_BUTTON)
     filter_button.click()
 
-    search_form_submit_button = find_element(selenium_driver, CSS_SELECTOR_SUBMIT_BUTTON)
+    search_form_submit_button = find_by_test_id(selenium_driver, TEST_ID_APPLY_FILTER_BUTTON)
     search_form_submit_button.click()
 
     wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")

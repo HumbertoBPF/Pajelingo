@@ -29,6 +29,7 @@ TEST_ID_CAROUSEL = "carousel"
 def find_by_test_id(selenium_driver, test_id):
     return find_element(selenium_driver, (By.CSS_SELECTOR, f"[data-testid=\"{test_id}\"]"))
 
+
 def find_element(selenium_driver, locator):
     """
     Tries to find an element matching the specified locator.
@@ -42,6 +43,7 @@ def find_element(selenium_driver, locator):
     wait = WebDriverWait(selenium_driver, 10)
     return wait.until(ec.visibility_of_element_located(locator))
 
+
 def wait_for_redirect(selenium_driver, url):
     """
     Expects a redirect to the specified url.
@@ -52,6 +54,7 @@ def wait_for_redirect(selenium_driver, url):
     """
     wait = WebDriverWait(selenium_driver, 10)
     wait.until(ec.url_to_be(url))
+
 
 def wait_text_to_be_present(selenium_driver, locator, text):
     """
@@ -198,12 +201,12 @@ def signup_user(selenium_driver, email, username, bio, password):
 
 def assert_public_account_data(selenium_driver, user):
     css_selector_username_credential = (By.CSS_SELECTOR, "[data-testid=\"username-data\"]")
-    css_selector_bio_credential = (By.CSS_SELECTOR, "[data-testid=\"bio-data\"]")
-    css_selector_badges = (By.CSS_SELECTOR, "main > .row .row:nth-of-type(2) > .col > button")
-
     wait_text_to_be_present(selenium_driver, css_selector_username_credential, f"Username: {user.username}")
+
+    css_selector_bio_credential = (By.CSS_SELECTOR, "[data-testid=\"bio-data\"]")
     wait_text_to_be_present(selenium_driver, css_selector_bio_credential, f"Bio: {user.bio}")
 
+    css_selector_badges = (By.CSS_SELECTOR, "main > .row .row:nth-of-type(2) > .col > button")
     badges = selenium_driver.find_elements(css_selector_badges[0], css_selector_badges[1])
 
     assert len(badges) == user.badges.count()
@@ -214,7 +217,7 @@ def assert_public_account_data(selenium_driver, user):
 
 
 def assert_private_account_data(selenium_driver, user):
-    css_selector_email_credential = (By.CSS_SELECTOR, (By.CSS_SELECTOR, "[data-testid=\"email-data\"]"))
+    css_selector_email_credential = (By.CSS_SELECTOR, "[data-testid=\"email-data\"]")
     wait_text_to_be_present(selenium_driver, css_selector_email_credential, f"Email: {user.email}")
 
     update_picture_button = find_by_test_id(selenium_driver, TEST_ID_UPDATE_PICTURE_BUTTON)
