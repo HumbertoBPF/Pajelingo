@@ -2,9 +2,8 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from languageschool.models import User
-from languageschool.tests.selenium.utils import authenticate_user, \
-    assert_is_profile_page, submit_user_form, \
-    wait_for_redirect, find_by_test_id
+from languageschool.tests.selenium.utils import authenticate_user, submit_user_form, wait_for_redirect, \
+    find_by_test_id, assert_public_account_data, assert_private_account_data
 from languageschool.tests.utils import get_random_username, get_valid_password, get_random_email, \
     get_random_bio, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
@@ -99,4 +98,6 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
         bio=bio
     ).first()
     assert user is not None
-    assert_is_profile_page(selenium_driver, user, is_auth_user=True)
+
+    assert_public_account_data(selenium_driver, user)
+    assert_private_account_data(selenium_driver, user)

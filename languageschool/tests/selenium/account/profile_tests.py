@@ -4,8 +4,8 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from languageschool.models import User
-from languageschool.tests.selenium.utils import authenticate_user, assert_is_login_page, \
-    assert_is_profile_page, assert_profile_language_filter, assert_profile_scores, find_by_test_id
+from languageschool.tests.selenium.utils import authenticate_user, assert_profile_language_filter, \
+    assert_profile_scores, find_by_test_id, wait_for_redirect, assert_public_account_data, assert_private_account_data
 from languageschool.tests.utils import attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
@@ -30,7 +30,8 @@ def test_profile(live_server, selenium_driver, account):
 
     selenium_driver.get(PROFILE_URL)
 
-    assert_is_profile_page(selenium_driver, user, is_auth_user=True)
+    assert_public_account_data(selenium_driver, user)
+    assert_private_account_data(selenium_driver, user)
 
 
 @pytest.mark.django_db
@@ -55,7 +56,7 @@ def test_profile_delete_account(live_server, selenium_driver, account):
     delete_dialog_delete_button = find_by_test_id(selenium_driver, TEST_ID_DELETE_DIALOG_CONFIRM_BUTTON)
     delete_dialog_delete_button.click()
 
-    assert_is_login_page(selenium_driver)
+    wait_for_redirect(selenium_driver, f"{FRONT_END_URL}/login")
 
     assert not User.objects.filter(
         username=user.username,
@@ -84,7 +85,8 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
         find_by_test_id(selenium_driver, TEST_ID_UPDATE_PICTURE_DIALOG_CONFIRM_BUTTON)
     profile_picture_dialog_success_button.click()
 
-    assert_is_profile_page(selenium_driver, user, is_auth_user=True)
+    assert_public_account_data(selenium_driver, user)
+    assert_private_account_data(selenium_driver, user)
 
 
 @pytest.mark.django_db

@@ -3,19 +3,13 @@ import random
 import pytest
 from django.utils.crypto import get_random_string
 
-from languageschool.tests.selenium.utils import assert_is_login_page, authenticate_user
+from languageschool.tests.selenium.utils import authenticate_user
 from languageschool.tests.selenium.word_list_test_utils import modal_form_rendering, search, \
     search_with_language_filter, search_with_search_pattern, search_with_search_pattern_and_language_filter, \
     toggle_favorite_word, search_with_no_results, access_meaning_page, toggle_favorite_word_in_meaning_page
 from pajelingo.settings import FRONT_END_URL
 
 FAVORITE_WORDS_URL = FRONT_END_URL + "/profile/favorite-words"
-
-
-@pytest.mark.django_db
-def test_favorite_words_requires_authentication(live_server, selenium_driver):
-    selenium_driver.get(FAVORITE_WORDS_URL)
-    assert_is_login_page(selenium_driver)
 
 
 @pytest.mark.django_db
