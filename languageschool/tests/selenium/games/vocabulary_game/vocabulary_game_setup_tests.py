@@ -8,12 +8,6 @@ from languageschool.tests.selenium.utils import find_element, find_by_test_id
 from pajelingo.settings import FRONT_END_URL
 
 VOCABULARY_GAME_SETUP_URL = f"{FRONT_END_URL}/vocabulary-game/setup"
-TEST_ID_SELECT_BASE_LANGUAGE = "select-base-language"
-TEST_ID_SELECT_TARGET_LANGUAGE = "select-target-language"
-TEST_ID_ERROR_TOAST = "toast-error"
-TEST_ID_START_BUTTON = "start-button"
-TEST_ID_WORD_INPUT = "word-input"
-TEST_ID_ANSWER_INPUT = "answer-input"
 
 
 @pytest.mark.django_db
@@ -27,7 +21,7 @@ def test_vocabulary_game_setup_requires_base_language(live_server, selenium_driv
 
     css_selector_target_language_option = (By.ID, random_target_language.language_name)
 
-    select_target_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_TARGET_LANGUAGE)
+    select_target_language = find_by_test_id(selenium_driver, "select-target-language")
     select_target_language.click()
 
     find_element(selenium_driver, css_selector_target_language_option)
@@ -35,10 +29,10 @@ def test_vocabulary_game_setup_requires_base_language(live_server, selenium_driv
         .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
     target_language_option.click()
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "start-button")
     submit_button.click()
 
-    error_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    error_toast = find_by_test_id(selenium_driver, "toast-error")
 
     assert error_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert error_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
@@ -56,7 +50,7 @@ def test_vocabulary_game_setup_requires_target_language(live_server, selenium_dr
 
     css_selector_base_language_option = (By.ID, random_base_language.language_name)
 
-    select_base_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_BASE_LANGUAGE)
+    select_base_language = find_by_test_id(selenium_driver, "select-base-language")
     select_base_language.click()
 
     find_element(selenium_driver, css_selector_base_language_option)
@@ -64,10 +58,10 @@ def test_vocabulary_game_setup_requires_target_language(live_server, selenium_dr
         .find_element(css_selector_base_language_option[0], css_selector_base_language_option[1])
     base_language_option.click()
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "start-button")
     submit_button.click()
 
-    error_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    error_toast = find_by_test_id(selenium_driver, "toast-error")
 
     assert error_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert error_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
@@ -87,7 +81,7 @@ def test_vocabulary_game_setup_base_and_target_languages_must_not_be_equal(live_
     css_selector_random_language_option = (By.ID, random_language.language_name)
 
     # Selecting the base language
-    select_base_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_BASE_LANGUAGE)
+    select_base_language = find_by_test_id(selenium_driver, "select-base-language")
     select_base_language.click()
 
     find_element(selenium_driver, css_selector_random_language_option)
@@ -96,7 +90,7 @@ def test_vocabulary_game_setup_base_and_target_languages_must_not_be_equal(live_
     base_language_option.click()
 
     # Selecting the target language
-    select_target_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_TARGET_LANGUAGE)
+    select_target_language = find_by_test_id(selenium_driver, "select-target-language")
     select_target_language.click()
 
     find_element(selenium_driver, css_selector_random_language_option)
@@ -104,10 +98,10 @@ def test_vocabulary_game_setup_base_and_target_languages_must_not_be_equal(live_
         .find_element(css_selector_random_language_option[0], css_selector_random_language_option[1])
     target_language_option.click()
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "start-button")
     submit_button.click()
 
-    error_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    error_toast = find_by_test_id(selenium_driver, "toast-error")
 
     assert error_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert error_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
@@ -126,7 +120,7 @@ def test_vocabulary_game_setup_form_submission(live_server, selenium_driver, wor
     selenium_driver.get(VOCABULARY_GAME_SETUP_URL)
 
     # Selecting the base language
-    select_base_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_BASE_LANGUAGE)
+    select_base_language = find_by_test_id(selenium_driver, "select-base-language")
     select_base_language.click()
 
     css_selector_base_language_option = (By.ID, random_base_language)
@@ -137,7 +131,7 @@ def test_vocabulary_game_setup_form_submission(live_server, selenium_driver, wor
     base_language_option.click()
 
     # Selecting the target language
-    select_target_language = find_by_test_id(selenium_driver, TEST_ID_SELECT_TARGET_LANGUAGE)
+    select_target_language = find_by_test_id(selenium_driver, "select-target-language")
     select_target_language.click()
 
     css_selector_target_language_option = (By.ID, random_target_language.language_name)
@@ -147,11 +141,11 @@ def test_vocabulary_game_setup_form_submission(live_server, selenium_driver, wor
         .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
     target_language_option.click()
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_START_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "start-button")
     submit_button.click()
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
-    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-input")
+    answer_input = find_by_test_id(selenium_driver, "answer-input")
 
     word_name = word_input.get_attribute("placeholder")
     answer_placeholder = answer_input.get_attribute("placeholder")

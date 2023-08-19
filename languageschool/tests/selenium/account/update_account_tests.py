@@ -9,7 +9,6 @@ from languageschool.tests.utils import get_random_username, get_valid_password, 
 from pajelingo.settings import FRONT_END_URL
 
 UPDATE_ACCOUNT_URL =f"{FRONT_END_URL}/update-account"
-TEST_ID_ERROR_TOAST = "error-toast"
 
 
 @pytest.mark.django_db
@@ -33,7 +32,7 @@ def test_update_account_repeated_email(live_server, selenium_driver, account):
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
 
-    alert_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    alert_toast = find_by_test_id(selenium_driver, "error-toast")
 
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
@@ -61,7 +60,7 @@ def test_update_account_repeated_username(live_server, selenium_driver, account)
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
 
-    alert_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    alert_toast = find_by_test_id(selenium_driver, "error-toast")
 
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \

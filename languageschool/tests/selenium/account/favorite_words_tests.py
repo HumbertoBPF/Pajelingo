@@ -1,23 +1,56 @@
+import math
 import random
 
 import pytest
 from django.utils.crypto import get_random_string
+from selenium.webdriver.common.by import By
 
-from languageschool.tests.selenium.utils import authenticate_user
-from languageschool.tests.selenium.word_list_test_utils import search, \
-    search_with_search_pattern_and_language_filter, \
-    toggle_favorite_word, search_with_no_results, access_meaning_page, toggle_favorite_word_in_meaning_page
+from languageschool.models import Word
+from languageschool.tests.selenium.utils import authenticate_user, find_by_test_id, wait_text_to_be_present, \
+    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, get_language_from_word_card, get_word_name_from_card_word, assert_pagination, \
+    go_to_next_page
 from pajelingo.settings import FRONT_END_URL
 
-FAVORITE_WORDS_URL = FRONT_END_URL + "/profile/favorite-words"
+FAVORITE_WORDS_URL = f"{FRONT_END_URL}/profile/favorite-words"
+CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 
 
 @pytest.mark.django_db
 def test_favorite_words_search(live_server, selenium_driver, account, languages):
     user, password = account()[0]
     authenticate_user(selenium_driver, user.username, password)
+
     selenium_driver.get(FAVORITE_WORDS_URL)
-    search(selenium_driver, user.favorite_words.all(), user)
+
+    number_words = user.favorite_words.count()
+    number_pages = math.ceil(number_words / 12)
+
+    for i in range(number_pages):
+        current_page = i + 1
+
+        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
+
+        cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
+
+        for card in cards:
+            language_name = get_language_from_word_card(card)
+            word_name = get_word_name_from_card_word(card)
+
+            word = Word.objects.filter(
+                language__language_name=language_name,
+                word_name=word_name
+            ).first()
+
+            assert word is not None
+
+            if user.favorite_words.contains(word):
+                find_by_test_id(selenium_driver, "heart-filled-icon")
+            else:
+                find_by_test_id(selenium_driver, "heart-icon")
+
+        assert_pagination(selenium_driver, current_page, number_pages)
+
+        go_to_next_page(selenium_driver, current_page, number_pages)
 
 
 @pytest.mark.django_db
@@ -25,40 +58,79 @@ def test_favorite_words_search_with_search_pattern_and_language_filter(live_serv
                                                                        languages):
     user, password = account()[0]
     authenticate_user(selenium_driver, user.username, password)
+
     search_pattern = get_random_string(1)
     random_language = random.choice(languages)
+
     selenium_driver.get(FAVORITE_WORDS_URL)
-    search_with_search_pattern_and_language_filter(selenium_driver, user.favorite_words.all(), user,
-                                                   search_pattern, random_language)
+
+    filter_button = find_by_test_id(selenium_driver, "filter-button")
+    filter_button.click()
+
+    search_form_input = find_by_test_id(selenium_driver, "search-input").find_element(By.CSS_SELECTOR, "input")
+    search_form_input.send_keys(search_pattern)
+
+    for language in languages:
+        if language.id != random_language.id:
+            language_checkbox = find_by_test_id(selenium_driver, f"{language.language_name}-check-item")
+            language_checkbox.click()
+
+    search_form_submit_button = find_by_test_id(selenium_driver, "apply-filters-button")
+    search_form_submit_button.click()
+
+    number_words = user.favorite_words.filter(word_name__icontains=search_pattern, language=random_language).count()
+    number_pages = math.ceil(number_words / 12)
+
+    for i in range(number_pages):
+        current_page = i + 1
+
+        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
+
+        cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
+
+        for card in cards:
+            language_name = get_language_from_word_card(card)
+            word_name = get_word_name_from_card_word(card)
+
+            word = Word.objects.filter(
+                language__language_name=language_name,
+                word_name=word_name
+            ).first()
+
+            assert word is not None
+
+            if user.favorite_words.contains(word):
+                find_by_test_id(selenium_driver, "heart-filled-icon")
+            else:
+                find_by_test_id(selenium_driver, "heart-icon")
+
+            assert language_name == random_language.language_name
+            assert search_pattern.lower() in word_name.lower()
+
+        assert_pagination(selenium_driver, current_page, number_pages)
+
+        go_to_next_page(selenium_driver, current_page, number_pages)
 
 
 @pytest.mark.django_db
-def test_favorite_words_toggle_favorite_word(live_server, selenium_driver, account):
+def test_favorite_words_search_no_results(live_server, selenium_driver, account, languages):
     user, password = account()[0]
     authenticate_user(selenium_driver, user.username, password)
+
     selenium_driver.get(FAVORITE_WORDS_URL)
-    toggle_favorite_word(selenium_driver, user)
 
+    filter_button = find_by_test_id(selenium_driver, "filter-button")
+    filter_button.click()
 
-@pytest.mark.django_db
-def test_favorite_words_search_no_results(live_server, selenium_driver, account):
-    user, password = account()[0]
-    authenticate_user(selenium_driver, user.username, password)
-    selenium_driver.get(FAVORITE_WORDS_URL)
-    search_with_no_results(selenium_driver)
+    for language in languages:
+        language_check = find_by_test_id(selenium_driver, f"{language.language_name}-check-item")
+        language_check.click()
 
+    search_form_submit_button = find_by_test_id(selenium_driver, "apply-filters-button")
+    search_form_submit_button.click()
 
-@pytest.mark.django_db
-def test_favorite_words_meaning(live_server, selenium_driver, account, words, meanings,):
-    user, password = account()[0]
-    authenticate_user(selenium_driver, user.username, password)
-    selenium_driver.get(FAVORITE_WORDS_URL)
-    access_meaning_page(selenium_driver, user)
+    no_results = find_by_test_id(selenium_driver, "no-results")
+    no_results_img = find_by_test_id(selenium_driver,  "no-results-img")
 
-
-@pytest.mark.django_db
-def test_favorite_words_meaning_toggle_favorite_word(live_server, selenium_driver, account, words, meanings):
-    user, password = account()[0]
-    authenticate_user(selenium_driver, user.username, password)
-    selenium_driver.get(FAVORITE_WORDS_URL)
-    toggle_favorite_word_in_meaning_page(selenium_driver, user)
+    assert no_results.text == "No result matching your search was found"
+    assert no_results_img.get_attribute("alt") == "No results"

@@ -46,34 +46,6 @@ def get_user_token(api_client, user, password):
     return response.data.get("token")
 
 
-def is_model_objects_equal_to_dict_array(objects, dict_array, comparer):
-    """
-    Verifies if a dictionary array is equivalent to an array of objects using the specified comparer.
-
-    :param objects: list of objects
-    :type objects: list
-    :param dict_array: list of dictionaries
-    :type dict_array: list
-    :param comparer: comparer object
-
-    :return: boolean indicating if the list of objects and if the list of dictionaries are equivalent.
-    """
-    id_to_object = {}
-
-    for obj in objects:
-        id_to_object[obj.id] = obj
-
-    for item in dict_array:
-        obj = id_to_object.get(item.get("id"))
-
-        if obj is None or not(comparer.are_equal(obj, item)):
-            return False
-
-        del id_to_object[item.get("id")]
-
-    return True
-
-
 def get_users(accounts):
     """
     Gets list of users associated with the specified list of accounts (an account here is a tuple with the user object

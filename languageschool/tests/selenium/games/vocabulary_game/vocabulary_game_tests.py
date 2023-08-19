@@ -9,11 +9,6 @@ from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, 
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
 
-TEST_ID_WORD_INPUT = "word-input"
-TEST_ID_ANSWER_INPUT = "answer-input"
-TEST_ID_SUBMIT_ANSWER_BUTTON = "submit-answer-button"
-TEST_ID_FEEDBACK_ALERT = "feedback-alert"
-
 
 def get_correct_answer(word_to_translate, base_language):
     correct_translation = ""
@@ -40,7 +35,7 @@ def test_vocabulary_game_correct_answer_non_authenticated_user(live_server, sele
     selenium_driver \
         .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -52,13 +47,13 @@ def test_vocabulary_game_correct_answer_non_authenticated_user(live_server, sele
     synonym = word.synonyms.filter(language=base_language).first()
     answer = synonym.word_name
 
-    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input = find_by_test_id(selenium_driver, "answer-input")
     answer_input.send_keys(answer)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     assert feedback_alert.text == f"Correct answer :)\n{word.word_name}: {get_correct_answer(word, base_language)}"
 
@@ -75,7 +70,7 @@ def test_vocabulary_game_incorrect_answer_non_authenticated_user(live_server, se
     selenium_driver \
         .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -86,13 +81,13 @@ def test_vocabulary_game_incorrect_answer_non_authenticated_user(live_server, se
 
     answer = get_random_string(8)
 
-    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input = find_by_test_id(selenium_driver, "answer-input")
     answer_input.send_keys(answer)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     assert feedback_alert.text == f"Wrong answer\n{word.word_name}: {get_correct_answer(word, base_language)}"
 
@@ -120,7 +115,7 @@ def test_vocabulary_game_correct_answer_authenticated_user(live_server, selenium
     selenium_driver \
         .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -132,13 +127,13 @@ def test_vocabulary_game_correct_answer_authenticated_user(live_server, selenium
     synonym = word.synonyms.filter(language=base_language).first()
     answer = synonym.word_name
 
-    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input = find_by_test_id(selenium_driver, "answer-input")
     answer_input.send_keys(answer)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     correct_answer = get_correct_answer(word, base_language)
 
@@ -172,7 +167,7 @@ def test_vocabulary_game_incorrect_answer_authenticated_user(live_server, seleni
     selenium_driver \
         .get(f"{FRONT_END_URL}/vocabulary-game/play?base_language={base_language}&target_language={target_language}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -183,13 +178,13 @@ def test_vocabulary_game_incorrect_answer_authenticated_user(live_server, seleni
 
     answer = get_random_string(8)
 
-    answer_input = find_by_test_id(selenium_driver, TEST_ID_ANSWER_INPUT)
+    answer_input = find_by_test_id(selenium_driver, "answer-input")
     answer_input.send_keys(answer)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_ANSWER_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     correct_answer = get_correct_answer(word, base_language)
 

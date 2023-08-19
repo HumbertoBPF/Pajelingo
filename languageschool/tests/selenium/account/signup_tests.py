@@ -10,8 +10,6 @@ from languageschool.tests.utils import get_random_username, get_valid_password, 
 from pajelingo.settings import FRONT_END_URL
 
 SIGNUP_URL = f"{FRONT_END_URL}/signup"
-TEST_ID_SUCCESS_ALERT = "success-alert"
-TEST_ID_ERROR_TOAST = "error-toast"
 
 
 @pytest.mark.django_db
@@ -27,7 +25,7 @@ def test_signup_repeated_email(live_server, selenium_driver, account):
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
 
-    alert_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    alert_toast = find_by_test_id(selenium_driver, "error-toast")
 
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
@@ -47,7 +45,7 @@ def test_signup_repeated_username(live_server, selenium_driver, account):
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
 
-    alert_toast = find_by_test_id(selenium_driver, TEST_ID_ERROR_TOAST)
+    alert_toast = find_by_test_id(selenium_driver, "error-toast")
 
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-header").text == "Error"
     assert alert_toast.find_element(By.CSS_SELECTOR, ".toast-body").text == \
@@ -64,7 +62,7 @@ def test_signup(live_server, selenium_driver):
 
     submit_user_form(selenium_driver, email, username, bio, password, True)
 
-    alert_success = find_by_test_id(selenium_driver, TEST_ID_SUCCESS_ALERT)
+    alert_success = find_by_test_id(selenium_driver, "success-alert")
     alert_success_text = alert_success.find_element(By.CSS_SELECTOR, "p")
 
     assert alert_success_text.text == "Account successfully created. Please check your email to activate it."

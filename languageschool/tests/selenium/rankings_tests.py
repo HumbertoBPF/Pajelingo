@@ -10,21 +10,10 @@ from languageschool.tests.utils import get_users
 from pajelingo.settings import FRONT_END_URL
 
 RANKINGS_URL = f"{FRONT_END_URL}/rankings"
-CSS_SELECTOR_RANKING_TABLE = (By.CSS_SELECTOR, "main .table")
-
-TEST_ID_RANKING_SEPARATOR = "ranking-separator"
-TEST_ID_USER_SCORE_RECORD = "user-score-record"
-
-TEST_ID_LANGUAGE_SELECT = "select-language"
-TEST_ID_ELLIPSIS_START = "ellipsis-start"
-TEST_ID_ELLIPSIS_END = "ellipsis-end"
-TEST_ID_PREVIOUS_PAGE = "previous-page"
-TEST_ID_NEXT_PAGE = "next-page"
-TEST_ID_CURRENT_PAGE = "current-page"
 
 
 def assert_language_select(selenium_driver, languages):
-    language_select = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    language_select = find_by_test_id(selenium_driver, "select-language")
     language_select.click()
 
     for language in languages:
@@ -59,14 +48,14 @@ def assert_ranking_dynamic_rows(selenium_driver, page, language):
 
 
 def assert_authenticated_user_rows(selenium_driver, language, auth_user):
-    separator_row = find_by_test_id(selenium_driver, TEST_ID_RANKING_SEPARATOR)
+    separator_row = find_by_test_id(selenium_driver, "ranking-separator")
     columns = separator_row.find_elements(By.CSS_SELECTOR, "td")
 
     assert columns[0].text == "..."
     assert columns[1].text == "..."
     assert columns[2].text == "..."
 
-    user_position = find_by_test_id(selenium_driver, TEST_ID_USER_SCORE_RECORD)
+    user_position = find_by_test_id(selenium_driver, "user-score-record")
 
     user_score = get_expected_score(auth_user.username, language)
     columns = user_position.find_elements(By.CSS_SELECTOR, "th")
@@ -78,95 +67,95 @@ def assert_authenticated_user_rows(selenium_driver, language, auth_user):
     assert score_column == str(user_score)
 
 def assert_page_of_two(selenium_driver, page):
-    current_page_button = find_by_test_id(selenium_driver, TEST_ID_CURRENT_PAGE)
+    current_page_button = find_by_test_id(selenium_driver, "current-page")
     assert current_page_button.text == f"{page}\n(current)"
 
     if page == 1:
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
         second_page_button = find_by_test_id(selenium_driver, "2th-page")
         assert second_page_button.text == "2"
         assert next_page_button.text == "›\nNext"
     elif page == 2:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
 
 def assert_page_of_three(selenium_driver, page):
-    current_page_button = find_by_test_id(selenium_driver, TEST_ID_CURRENT_PAGE)
+    current_page_button = find_by_test_id(selenium_driver, "current-page")
     assert current_page_button.text == f"{page}\n(current)"
 
     if page == 1:
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
-        ellipsis_end = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_END)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
+        ellipsis_end = find_by_test_id(selenium_driver, "ellipsis-end")
         third_page_button = find_by_test_id(selenium_driver, "3th-page")
         assert ellipsis_end.text == "…\nMore"
         assert third_page_button.text == "3"
         assert next_page_button.text == "›\nNext"
     elif page == 2:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
         third_page_button = find_by_test_id(selenium_driver, "3th-page")
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
         assert third_page_button.text == "3"
         assert next_page_button.text == "›\nNext"
     elif page == 3:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
-        ellipsis_start = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_START)
+        ellipsis_start = find_by_test_id(selenium_driver, "ellipsis-start")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
         assert ellipsis_start.text == "…\nMore"
 
 def assert_page_of_five(selenium_driver, page):
-    current_page_button = find_by_test_id(selenium_driver, TEST_ID_CURRENT_PAGE)
+    current_page_button = find_by_test_id(selenium_driver, "current-page")
     assert current_page_button.text == f"{page}\n(current)"
 
     if page == 1:
-        ellipsis_end = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_END)
+        ellipsis_end = find_by_test_id(selenium_driver, "ellipsis-end")
         last_page_button = find_by_test_id(selenium_driver, "5th-page")
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
         assert ellipsis_end.text == "…\nMore"
         assert last_page_button.text == "5"
         assert next_page_button.text == "›\nNext"
     elif page == 5:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
-        ellipsis_start = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_START)
+        ellipsis_start = find_by_test_id(selenium_driver, "ellipsis-start")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
         assert ellipsis_start.text == "…\nMore"
     elif page == 2:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
-        ellipsis_end = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_END)
+        ellipsis_end = find_by_test_id(selenium_driver, "ellipsis-end")
         last_page_button = find_by_test_id(selenium_driver, "5th-page")
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
         assert ellipsis_end.text == "…\nMore"
         assert last_page_button.text == "5"
         assert next_page_button.text == "›\nNext"
     elif page == 4:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
-        ellipsis_start = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_START)
+        ellipsis_start = find_by_test_id(selenium_driver, "ellipsis-start")
         last_page_button = find_by_test_id(selenium_driver, "5th-page")
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
         assert ellipsis_start.text == "…\nMore"
         assert last_page_button.text == "5"
         assert next_page_button.text == "›\nNext"
     else:
-        previous_page_button = find_by_test_id(selenium_driver, TEST_ID_PREVIOUS_PAGE)
+        previous_page_button = find_by_test_id(selenium_driver, "previous-page")
         first_page_button = find_by_test_id(selenium_driver, "1th-page")
-        ellipsis_start = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_START)
-        ellipsis_end = find_by_test_id(selenium_driver, TEST_ID_ELLIPSIS_END)
+        ellipsis_start = find_by_test_id(selenium_driver, "ellipsis-start")
+        ellipsis_end = find_by_test_id(selenium_driver, "ellipsis-end")
         last_page_button = find_by_test_id(selenium_driver, "5th-page")
-        next_page_button = find_by_test_id(selenium_driver, TEST_ID_NEXT_PAGE)
+        next_page_button = find_by_test_id(selenium_driver, "next-page")
         assert previous_page_button.text == "‹\nPrevious"
         assert first_page_button.text == "1"
         assert ellipsis_start.text == "…\nMore"
@@ -186,7 +175,7 @@ def test_rankings_unauthenticated_user_two_pages(live_server, selenium_driver, a
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
     select_language.find_element(By.ID, random_language.language_name).click()
 
@@ -216,7 +205,7 @@ def test_rankings_authenticated_user_two_pages(live_server, selenium_driver, acc
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
     select_language.find_element(By.ID, random_language.language_name).click()
 
@@ -244,7 +233,7 @@ def test_rankings_unauthenticated_user_three_pages(live_server, selenium_driver,
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
     select_language.find_element(By.ID, random_language.language_name).click()
 
@@ -274,7 +263,7 @@ def test_rankings_authenticated_user_three_pages(live_server, selenium_driver, a
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
     select_language.find_element(By.ID, random_language.language_name).click()
 
@@ -302,7 +291,7 @@ def test_rankings_unauthenticated_user_more_than_three_pages(live_server, seleni
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
     select_language.find_element(By.ID, random_language.language_name).click()
 
@@ -332,7 +321,7 @@ def test_rankings_authenticated_user_more_than_three_pages(live_server, selenium
 
     selenium_driver.get(RANKINGS_URL)
 
-    select_language = find_by_test_id(selenium_driver, TEST_ID_LANGUAGE_SELECT)
+    select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
     select_language.find_element(By.ID, random_language.language_name).click()
 

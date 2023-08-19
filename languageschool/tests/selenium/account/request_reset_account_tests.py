@@ -7,21 +7,18 @@ from languageschool.tests.utils import get_random_email
 from pajelingo.settings import FRONT_END_URL
 
 REQUEST_RESET_ACCOUNT_URL = f"{FRONT_END_URL}/request-reset-account"
-TEST_ID_EMAIL_INPUT = "email-input"
-TEST_ID_SUBMIT_BUTTON = "submit-button"
-TEST_ID_SUCCESS_ALERT = "successful-request-alert"
 
 
 def test_request_reset_account_email_does_not_match_account(live_server, selenium_driver):
     selenium_driver.get(REQUEST_RESET_ACCOUNT_URL)
 
-    email_input = find_by_test_id(selenium_driver, TEST_ID_EMAIL_INPUT).find_element(By.CSS_SELECTOR, "input")
+    email_input = find_by_test_id(selenium_driver, "email-input").find_element(By.CSS_SELECTOR, "input")
     email_input.send_keys(get_random_email())
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
 
-    alert = find_by_test_id(selenium_driver, TEST_ID_SUCCESS_ALERT)
+    alert = find_by_test_id(selenium_driver, "successful-request-alert")
 
     assert alert.text == "Check the specified email to reset your account. If there is an email associated with a " \
                          "Pajelingo account, you should have received an email with a reset link."
@@ -38,13 +35,13 @@ def test_request_reset_account_non_active_user(live_server, selenium_driver, acc
 
     selenium_driver.get(REQUEST_RESET_ACCOUNT_URL)
 
-    email_input = find_by_test_id(selenium_driver, TEST_ID_EMAIL_INPUT).find_element(By.CSS_SELECTOR, "input")
+    email_input = find_by_test_id(selenium_driver, "email-input").find_element(By.CSS_SELECTOR, "input")
     email_input.send_keys(get_random_email())
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
 
-    alert = find_by_test_id(selenium_driver, TEST_ID_SUCCESS_ALERT)
+    alert = find_by_test_id(selenium_driver, "successful-request-alert")
 
     assert alert.text == "Check the specified email to reset your account. If there is an email associated with a " \
                          "Pajelingo account, you should have received an email with a reset link."
@@ -57,13 +54,13 @@ def test_request_reset_account(live_server, selenium_driver, account):
 
     selenium_driver.get(REQUEST_RESET_ACCOUNT_URL)
 
-    email_input = find_by_test_id(selenium_driver, TEST_ID_EMAIL_INPUT).find_element(By.CSS_SELECTOR, "input")
+    email_input = find_by_test_id(selenium_driver, "email-input").find_element(By.CSS_SELECTOR, "input")
     email_input.send_keys(user.email)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
 
-    alert = find_by_test_id(selenium_driver, TEST_ID_SUCCESS_ALERT)
+    alert = find_by_test_id(selenium_driver, "successful-request-alert")
 
     assert alert.text == "Check the specified email to reset your account. If there is an email associated with a " \
                          "Pajelingo account, you should have received an email with a reset link."

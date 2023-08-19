@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 
-from languageschool.tests.selenium.utils import find_element, wait_text_to_be_present, assert_menu
+from languageschool.tests.selenium.utils import find_element, wait_text_to_be_present
 from pajelingo.settings import FRONT_END_URL
 
 DASHBOARD_URL = f"{FRONT_END_URL}/dashboard"
@@ -15,8 +15,6 @@ def test_dashboard_onwards(live_server, selenium_driver):
     Checks the carousel items on the dashboard browsing onwards, that is, 1 -> 2 -> 3.
     """
     selenium_driver.get(DASHBOARD_URL)
-
-    assert_menu(selenium_driver)
 
     carousel_next_button = find_element(selenium_driver, CSS_SELECTOR_NEXT_BUTTON)
     carousel_item_title = find_element(selenium_driver, CSS_SELECTOR_ITEM_TITLE)
@@ -43,8 +41,6 @@ def test_dashboard_backwards(live_server, selenium_driver):
     Checks the carousel items on the dashboard browsing backwards, that is, 1 -> 3 -> 2.
     """
     selenium_driver.get(DASHBOARD_URL)
-
-    assert_menu(selenium_driver)
 
     carousel_previous_button = find_element(selenium_driver, CSS_SELECTOR_PREVIOUS_BUTTON)
     carousel_item_title = find_element(selenium_driver, CSS_SELECTOR_ITEM_TITLE)

@@ -9,16 +9,12 @@ from languageschool.models import User
 from languageschool.tests.selenium.rankings_tests import RANKINGS_URL
 from languageschool.tests.selenium.utils import wait_text_to_be_present, wait_number_of_elements_to_be, \
     CSS_SELECTOR_ACTIVE_PAGE_BUTTON, assert_pagination, go_to_next_page, scroll_to_element, \
-    find_element, assert_public_account_data, wait_attribute_to_be_non_empty, find_by_test_id
+    assert_public_account_data, wait_attribute_to_be_non_empty, find_by_test_id
 from languageschool.tests.utils import get_users, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
 SEARCH_ACCOUNT_URL = f"{FRONT_END_URL}/accounts"
-TEST_ID_SPINNER = "spinner"
-TEST_ID_SEARCH_INPUT = "search-input"
-TEST_ID_SUBMIT_BUTTON = "submit-button"
 CSS_SELECTOR_ACCOUNT_CARD = (By.CSS_SELECTOR, "main .card .card-body")
-CSS_SELECTOR_LANGUAGE_SELECT = (By.CSS_SELECTOR, "main .form-select")
 
 
 def get_username_from_account_card(account_card):
@@ -63,7 +59,7 @@ def test_search_all_accounts(live_server, selenium_driver, account):
 
     selenium_driver.get(SEARCH_ACCOUNT_URL)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
 
     for i in range(number_pages):
@@ -86,10 +82,10 @@ def test_search_account(live_server, selenium_driver, account):
 
     selenium_driver.get(SEARCH_ACCOUNT_URL)
 
-    search_input = find_by_test_id(selenium_driver, TEST_ID_SEARCH_INPUT).find_element(By.CSS_SELECTOR, "input")
+    search_input = find_by_test_id(selenium_driver, "search-input").find_element(By.CSS_SELECTOR, "input")
     search_input.send_keys(q)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
 
     for i in range(number_pages):
@@ -108,7 +104,7 @@ def test_select_account(live_server, selenium_driver, account, languages):
 
     selenium_driver.get(SEARCH_ACCOUNT_URL)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
 
     wait_number_of_elements_to_be(selenium_driver, CSS_SELECTOR_ACCOUNT_CARD, 10)
@@ -137,7 +133,7 @@ def test_select_account_on_rankings_page(live_server, selenium_driver, account, 
 
     selenium_driver.get(RANKINGS_URL)
 
-    language_select = find_element(selenium_driver, CSS_SELECTOR_LANGUAGE_SELECT)
+    language_select = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(language_select, "innerHTML", 10)
     language_select.find_element(By.ID, random_language.language_name).click()
 

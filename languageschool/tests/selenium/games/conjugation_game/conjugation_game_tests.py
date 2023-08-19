@@ -9,16 +9,6 @@ from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, 
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
 
-TEST_ID_VERB_AND_TENSE = "verb-and-tense"
-TEST_ID_CONJUGATION_1 = "conjugation-1"
-TEST_ID_CONJUGATION_2 = "conjugation-2"
-TEST_ID_CONJUGATION_3 = "conjugation-3"
-TEST_ID_CONJUGATION_4 = "conjugation-4"
-TEST_ID_CONJUGATION_5 = "conjugation-5"
-TEST_ID_CONJUGATION_6 = "conjugation-6"
-TEST_ID_SUBMIT_BUTTON = "submit-answer-button"
-TEST_ID_FEEDBACK_ALERT = "feedback-alert"
-
 def get_conjugation(form_input):
     verb, tense = wait_attribute_to_be_non_empty(form_input, "placeholder", 10).split(" - ")
 
@@ -43,7 +33,7 @@ def test_conjugation_game_correct_answer_non_authenticated_user(live_server, sel
     random_language = random.choice(languages)
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    verb_and_tense = find_by_test_id(selenium_driver, TEST_ID_VERB_AND_TENSE).find_element(By.CSS_SELECTOR, "input")
+    verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
     verb, tense = get_conjugation(verb_and_tense)
 
@@ -53,28 +43,33 @@ def test_conjugation_game_correct_answer_non_authenticated_user(live_server, sel
         tense=tense
     ).first()
 
-    conjugation_1_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_1).find_element(By.CSS_SELECTOR, "input")
+    conjugation_1_input = find_by_test_id(selenium_driver, "conjugation-1").find_element(By.CSS_SELECTOR, "input")
     conjugation_1_input.send_keys(conjugation.conjugation_1)
 
-    conjugation_2_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_2).find_element(By.CSS_SELECTOR, "input")
+    conjugation_2_input = (find_by_test_id(selenium_driver, "conjugation-2")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_2_input.send_keys(conjugation.conjugation_2)
 
-    conjugation_3_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_3).find_element(By.CSS_SELECTOR, "input")
+    conjugation_3_input = (find_by_test_id(selenium_driver, "conjugation-3")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_3_input.send_keys(conjugation.conjugation_3)
 
-    conjugation_4_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_4).find_element(By.CSS_SELECTOR, "input")
+    conjugation_4_input = (find_by_test_id(selenium_driver, "conjugation-4")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_4_input.send_keys(conjugation.conjugation_4)
 
-    conjugation_5_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_5).find_element(By.CSS_SELECTOR, "input")
+    conjugation_5_input = (find_by_test_id(selenium_driver, "conjugation-5")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_5_input.send_keys(conjugation.conjugation_5)
 
-    conjugation_6_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_6).find_element(By.CSS_SELECTOR, "input")
+    conjugation_6_input = (find_by_test_id(selenium_driver, "conjugation-6")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_6_input.send_keys(conjugation.conjugation_6)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     correct_answer = f"{random_language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
                      f"{random_language.personal_pronoun_2} {conjugation.conjugation_2}\n" \
@@ -95,7 +90,7 @@ def test_conjugation_game_incorrect_answer_non_authenticated_user(live_server, s
     random_language = random.choice(languages)
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    verb_and_tense = find_by_test_id(selenium_driver, TEST_ID_VERB_AND_TENSE).find_element(By.CSS_SELECTOR, "input")
+    verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
     verb, tense = get_conjugation(verb_and_tense)
 
@@ -105,28 +100,34 @@ def test_conjugation_game_incorrect_answer_non_authenticated_user(live_server, s
         tense=tense
     ).first()
 
-    conjugation_1_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_1).find_element(By.CSS_SELECTOR, "input")
+    conjugation_1_input = (find_by_test_id(selenium_driver, "conjugation-1")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_1_input.send_keys(get_random_string(8))
 
-    conjugation_2_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_2).find_element(By.CSS_SELECTOR, "input")
+    conjugation_2_input = (find_by_test_id(selenium_driver, "conjugation-2")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_2_input.send_keys(get_random_string(8))
 
-    conjugation_3_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_3).find_element(By.CSS_SELECTOR, "input")
+    conjugation_3_input = (find_by_test_id(selenium_driver, "conjugation-3")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_3_input.send_keys(get_random_string(8))
 
-    conjugation_4_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_4).find_element(By.CSS_SELECTOR, "input")
+    conjugation_4_input = (find_by_test_id(selenium_driver, "conjugation-4")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_4_input.send_keys(get_random_string(8))
 
-    conjugation_5_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_5).find_element(By.CSS_SELECTOR, "input")
+    conjugation_5_input = (find_by_test_id(selenium_driver, "conjugation-5")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_5_input.send_keys(get_random_string(8))
 
-    conjugation_6_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_6).find_element(By.CSS_SELECTOR, "input")
+    conjugation_6_input = (find_by_test_id(selenium_driver, "conjugation-6")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_6_input.send_keys(get_random_string(8))
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     correct_answer = f"{random_language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
                      f"{random_language.personal_pronoun_2} {conjugation.conjugation_2}\n" \
@@ -160,7 +161,7 @@ def test_conjugation_game_correct_answer_authenticated_user(live_server, seleniu
 
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    verb_and_tense = find_by_test_id(selenium_driver, TEST_ID_VERB_AND_TENSE).find_element(By.CSS_SELECTOR, "input")
+    verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
     verb, tense = get_conjugation(verb_and_tense)
 
@@ -170,28 +171,34 @@ def test_conjugation_game_correct_answer_authenticated_user(live_server, seleniu
         tense=tense
     ).first()
 
-    conjugation_1_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_1).find_element(By.CSS_SELECTOR, "input")
+    conjugation_1_input = (find_by_test_id(selenium_driver, "conjugation-1")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_1_input.send_keys(conjugation.conjugation_1)
 
-    conjugation_2_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_2).find_element(By.CSS_SELECTOR, "input")
+    conjugation_2_input = (find_by_test_id(selenium_driver, "conjugation-2")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_2_input.send_keys(conjugation.conjugation_2)
 
-    conjugation_3_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_3).find_element(By.CSS_SELECTOR, "input")
+    conjugation_3_input = (find_by_test_id(selenium_driver, "conjugation-3")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_3_input.send_keys(conjugation.conjugation_3)
 
-    conjugation_4_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_4).find_element(By.CSS_SELECTOR, "input")
+    conjugation_4_input = (find_by_test_id(selenium_driver, "conjugation-4")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_4_input.send_keys(conjugation.conjugation_4)
 
-    conjugation_5_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_5).find_element(By.CSS_SELECTOR, "input")
+    conjugation_5_input = (find_by_test_id(selenium_driver, "conjugation-5")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_5_input.send_keys(conjugation.conjugation_5)
 
-    conjugation_6_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_6).find_element(By.CSS_SELECTOR, "input")
+    conjugation_6_input = (find_by_test_id(selenium_driver, "conjugation-6")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_6_input.send_keys(conjugation.conjugation_6)
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     correct_answer = f"{random_language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
                      f"{random_language.personal_pronoun_2} {conjugation.conjugation_2}\n" \
@@ -228,7 +235,7 @@ def test_conjugation_game_incorrect_answer_authenticated_user(live_server, selen
 
     selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
 
-    verb_and_tense = find_by_test_id(selenium_driver, TEST_ID_VERB_AND_TENSE).find_element(By.CSS_SELECTOR, "input")
+    verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
     verb, tense = get_conjugation(verb_and_tense)
 
@@ -238,28 +245,34 @@ def test_conjugation_game_incorrect_answer_authenticated_user(live_server, selen
         tense=tense
     ).first()
 
-    conjugation_1_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_1).find_element(By.CSS_SELECTOR, "input")
+    conjugation_1_input = (find_by_test_id(selenium_driver, "conjugation-1")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_1_input.send_keys(get_random_string(8))
 
-    conjugation_2_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_2).find_element(By.CSS_SELECTOR, "input")
+    conjugation_2_input = (find_by_test_id(selenium_driver, "conjugation-2")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_2_input.send_keys(get_random_string(8))
 
-    conjugation_3_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_3).find_element(By.CSS_SELECTOR, "input")
+    conjugation_3_input = (find_by_test_id(selenium_driver, "conjugation-3")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_3_input.send_keys(get_random_string(8))
 
-    conjugation_4_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_4).find_element(By.CSS_SELECTOR, "input")
+    conjugation_4_input = (find_by_test_id(selenium_driver, "conjugation-4")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_4_input.send_keys(get_random_string(8))
 
-    conjugation_5_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_5).find_element(By.CSS_SELECTOR, "input")
+    conjugation_5_input = (find_by_test_id(selenium_driver, "conjugation-5")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_5_input.send_keys(get_random_string(8))
 
-    conjugation_6_input = find_by_test_id(selenium_driver, TEST_ID_CONJUGATION_6).find_element(By.CSS_SELECTOR, "input")
+    conjugation_6_input = (find_by_test_id(selenium_driver, "conjugation-6")
+                           .find_element(By.CSS_SELECTOR, "input"))
     conjugation_6_input.send_keys(get_random_string(8))
 
-    submit_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    submit_button = find_by_test_id(selenium_driver, "submit-answer-button")
     submit_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     correct_answer = f"{random_language.personal_pronoun_1} {conjugation.conjugation_1}\n" \
                      f"{random_language.personal_pronoun_2} {conjugation.conjugation_2}\n" \

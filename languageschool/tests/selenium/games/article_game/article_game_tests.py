@@ -9,11 +9,6 @@ from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, 
 from languageschool.tests.utils import achieve_explorer_badge
 from pajelingo.settings import FRONT_END_URL
 
-TEST_ID_ARTICLE_INPUT = "article-input"
-TEST_ID_WORD_INPUT = "word-disabled-input"
-TEST_ID_SUBMIT_BUTTON = "submit-answer-button"
-TEST_ID_FEEDBACK_ALERT = "feedback-alert"
-
 
 @pytest.mark.django_db
 def test_article_game_correct_answer_non_authenticated_user(live_server, selenium_driver, languages, words):
@@ -22,9 +17,9 @@ def test_article_game_correct_answer_non_authenticated_user(live_server, seleniu
     wrong answer.
     """
     random_language = random.choice(languages)
-    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
+    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -35,13 +30,13 @@ def test_article_game_correct_answer_non_authenticated_user(live_server, seleniu
 
     answer = word.article.article_name
 
-    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input = find_by_test_id(selenium_driver, "article-input")
     article_input.send_keys(answer)
 
-    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button = find_by_test_id(selenium_driver, "submit-answer-button")
     verify_answer_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     assert feedback_alert.text == f"Correct answer :)\n{word}"
 
@@ -53,9 +48,9 @@ def test_article_game_incorrect_answer_non_authenticated_user(live_server, selen
     wrong answer.
     """
     random_language = random.choice(languages)
-    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
+    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -66,13 +61,13 @@ def test_article_game_incorrect_answer_non_authenticated_user(live_server, selen
 
     answer = get_random_string(5)
 
-    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input = find_by_test_id(selenium_driver, "article-input")
     article_input.send_keys(answer)
 
-    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button = find_by_test_id(selenium_driver, "submit-answer-button")
     verify_answer_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     assert feedback_alert.text == f"Wrong answer\n{word}"
 
@@ -96,9 +91,9 @@ def test_article_game_correct_answer_authenticated_user(live_server, selenium_dr
     ).first()
     expected_score = 1 if (initial_score is None) else initial_score.score + 1
 
-    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
+    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -109,13 +104,13 @@ def test_article_game_correct_answer_authenticated_user(live_server, selenium_dr
 
     answer = word.article.article_name
 
-    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input = find_by_test_id(selenium_driver, "article-input")
     article_input.send_keys(answer)
 
-    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button = find_by_test_id(selenium_driver, "submit-answer-button")
     verify_answer_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     assert feedback_alert.text == f"Correct answer :)\n{word}\nYour score is {expected_score}"
 
@@ -142,9 +137,9 @@ def test_article_game_incorrect_answer_authenticated_user(live_server, selenium_
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(FRONT_END_URL + "/article-game/play?language={}".format(random_language.language_name))
+    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
 
-    word_input = find_by_test_id(selenium_driver, TEST_ID_WORD_INPUT)
+    word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
     word_input_placeholder = wait_attribute_to_be_non_empty(word_input, "placeholder", 10)
 
@@ -155,12 +150,12 @@ def test_article_game_incorrect_answer_authenticated_user(live_server, selenium_
 
     answer = get_random_string(5)
 
-    article_input = find_by_test_id(selenium_driver, TEST_ID_ARTICLE_INPUT)
+    article_input = find_by_test_id(selenium_driver, "article-input")
     article_input.send_keys(answer)
 
-    verify_answer_button = find_by_test_id(selenium_driver, TEST_ID_SUBMIT_BUTTON)
+    verify_answer_button = find_by_test_id(selenium_driver, "submit-answer-button")
     verify_answer_button.click()
 
-    feedback_alert = find_by_test_id(selenium_driver, TEST_ID_FEEDBACK_ALERT)
+    feedback_alert = find_by_test_id(selenium_driver, "feedback-alert")
 
     assert feedback_alert.text == f"Wrong answer\n{word}"
