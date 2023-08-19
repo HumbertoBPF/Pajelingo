@@ -4,9 +4,8 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word, User
-from languageschool.tests.selenium.utils import authenticate_user, wait_text_to_be_present, \
-    find_element, scroll_to_element, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, get_language_from_word_card, \
-    get_word_name_from_card_word
+from languageschool.tests.selenium.utils import authenticate_user, find_element, scroll_to_element, \
+    get_language_from_word_card, get_word_name_from_card_word
 from pajelingo.settings import FRONT_END_URL
 
 FAVORITE_WORDS_URL = f"{FRONT_END_URL}/profile/favorite-words"
@@ -33,8 +32,6 @@ def test_favorite_words_toggle_favorite_word(live_server, selenium_driver, accou
     authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(FAVORITE_WORDS_URL)
-
-    wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")
 
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
@@ -69,8 +66,6 @@ def test_favorite_words_meaning_toggle_favorite_word(live_server, selenium_drive
 
     selenium_driver.get(FAVORITE_WORDS_URL)
 
-    wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")
-
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
 
@@ -103,8 +98,6 @@ def test_meaning_toggle_favorite_word(live_server, selenium_driver, account, wor
     authenticate_user(selenium_driver, user.username, password)
 
     selenium_driver.get(SEARCH_URL)
-
-    wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, "1")
 
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])

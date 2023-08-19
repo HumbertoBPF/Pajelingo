@@ -6,9 +6,8 @@ from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word
-from languageschool.tests.selenium.utils import authenticate_user, find_by_test_id, wait_text_to_be_present, \
-    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, get_language_from_word_card, get_word_name_from_card_word, assert_pagination, \
-    go_to_next_page
+from languageschool.tests.selenium.utils import authenticate_user, find_by_test_id, get_language_from_word_card, \
+    get_word_name_from_card_word, assert_pagination, go_to_next_page
 from pajelingo.settings import FRONT_END_URL
 
 FAVORITE_WORDS_URL = f"{FRONT_END_URL}/profile/favorite-words"
@@ -27,8 +26,6 @@ def test_favorite_words_search(live_server, selenium_driver, account, languages)
 
     for i in range(number_pages):
         current_page = i + 1
-
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
         cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
 
@@ -83,8 +80,6 @@ def test_favorite_words_search_with_search_pattern_and_language_filter(live_serv
 
     for i in range(number_pages):
         current_page = i + 1
-
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
 
         cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
 

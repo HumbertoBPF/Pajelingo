@@ -7,9 +7,8 @@ from selenium.webdriver.common.by import By
 
 from languageschool.models import User
 from languageschool.tests.selenium.rankings_tests import RANKINGS_URL
-from languageschool.tests.selenium.utils import wait_text_to_be_present, wait_number_of_elements_to_be, \
-    CSS_SELECTOR_ACTIVE_PAGE_BUTTON, assert_pagination, go_to_next_page, scroll_to_element, \
-    assert_public_account_data, wait_attribute_to_be_non_empty, find_by_test_id
+from languageschool.tests.selenium.utils import wait_number_of_elements_to_be, assert_pagination, go_to_next_page, \
+    scroll_to_element, assert_public_account_data, wait_attribute_to_be_non_empty, find_by_test_id
 from languageschool.tests.utils import get_users, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
@@ -65,7 +64,6 @@ def test_search_all_accounts(live_server, selenium_driver, account):
     for i in range(number_pages):
         current_page = i + 1
 
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
         assert_search_results(selenium_driver, "")
         assert_pagination(selenium_driver, current_page, number_pages)
         go_to_next_page(selenium_driver, current_page, number_pages)
@@ -91,7 +89,6 @@ def test_search_account(live_server, selenium_driver, account):
     for i in range(number_pages):
         current_page = i + 1
 
-        wait_text_to_be_present(selenium_driver, CSS_SELECTOR_ACTIVE_PAGE_BUTTON, str(current_page))
         assert_search_results(selenium_driver, q)
         assert_pagination(selenium_driver, current_page, number_pages)
         go_to_next_page(selenium_driver, current_page, number_pages)

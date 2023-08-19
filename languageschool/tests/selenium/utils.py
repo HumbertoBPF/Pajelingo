@@ -8,10 +8,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from languageschool.models import Score, Meaning
 from pajelingo.settings import FRONT_END_URL
 
-# Pagination component CSS selectors
-CSS_SELECTOR_ACTIVE_PAGE_BUTTON = (By.CSS_SELECTOR, "main .pagination .active .page-link")
-CSS_SELECTOR_MEANING_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text")
-
 def find_by_test_id(selenium_driver, test_id):
     return find_element(selenium_driver, (By.CSS_SELECTOR, f"[data-testid=\"{test_id}\"]"))
 
@@ -173,7 +169,7 @@ def assert_private_account_data(selenium_driver, user):
 
 
 def assert_meanings_of_word(selenium_driver, word):
-    cards = selenium_driver.find_elements(CSS_SELECTOR_MEANING_CARD[0], CSS_SELECTOR_MEANING_CARD[1])
+    cards = selenium_driver.find_elements(By.CSS_SELECTOR, "main .card .card-body .card-text")
 
     nb_cards = len(cards)
 
@@ -222,6 +218,9 @@ def go_to_next_page(selenium_driver, current_page, number_pages):
     if current_page != number_pages:
         next_page = find_by_test_id(selenium_driver, "next-page")
         selenium_driver.execute_script("arguments[0].click();", next_page)
+
+        css_selector_active_page_button = (By.CSS_SELECTOR, "[data-testid=\"current-page\"]")
+        wait_text_to_be_present(selenium_driver, css_selector_active_page_button, str(current_page + 1))
 
 
 def assert_profile_scores(selenium_driver, user, language):
