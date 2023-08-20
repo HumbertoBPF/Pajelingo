@@ -9,8 +9,6 @@ from languageschool.tests.selenium.utils import authenticate_user, assert_profil
 from languageschool.tests.utils import attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
-PROFILE_URL = f"{FRONT_END_URL}/profile"
-
 
 @pytest.mark.django_db
 def test_profile(live_server, selenium_driver, account, languages, score):
@@ -20,15 +18,17 @@ def test_profile(live_server, selenium_driver, account, languages, score):
     """
     user, password = account()[0]
     attribute_user_badges()
-    random_language = random.choice(languages)
     score([user], languages)
 
     authenticate_user(selenium_driver, user.username, password)
 
-    selenium_driver.get(PROFILE_URL)
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
 
     assert_public_account_data(selenium_driver, user)
     assert_private_account_data(selenium_driver, user)
+
+    random_language = random.choice(languages)
 
     css_selector_select_language_options = (By.CSS_SELECTOR, "[data-testid=select-language] option")
     wait_number_of_elements_to_be(selenium_driver, css_selector_select_language_options, len(languages))
@@ -53,7 +53,8 @@ def test_profile_delete_account(live_server, selenium_driver, account):
 
     authenticate_user(selenium_driver, user.username, password)
 
-    selenium_driver.get(PROFILE_URL)
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
 
     delete_account_button = find_by_test_id(selenium_driver, "delete-item")
     delete_account_button.click()
@@ -85,7 +86,8 @@ def test_profile_update_profile_picture(live_server, selenium_driver, account):
 
     authenticate_user(selenium_driver, user.username, password)
 
-    selenium_driver.get(PROFILE_URL)
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
 
     update_picture_button = find_by_test_id(selenium_driver, "update-picture-button")
     update_picture_button.click()

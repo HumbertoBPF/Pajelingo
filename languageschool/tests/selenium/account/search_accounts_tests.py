@@ -6,13 +6,11 @@ from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import User
-from languageschool.tests.selenium.rankings_tests import RANKINGS_URL
 from languageschool.tests.selenium.utils import wait_number_of_elements_to_be, assert_pagination, go_to_next_page, \
     scroll_to_element, assert_public_account_data, wait_attribute_to_be_non_empty, find_by_test_id
 from languageschool.tests.utils import get_users, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
-SEARCH_ACCOUNT_URL = f"{FRONT_END_URL}/accounts"
 CSS_SELECTOR_ACCOUNT_CARD = (By.CSS_SELECTOR, "main .card .card-body")
 
 
@@ -56,7 +54,10 @@ def test_search_all_accounts(live_server, selenium_driver, account):
     number_accounts = 30
     account(n=number_accounts)
 
-    selenium_driver.get(SEARCH_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "account-item").click()
 
     submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
@@ -73,12 +74,15 @@ def test_search_all_accounts(live_server, selenium_driver, account):
 def test_search_account(live_server, selenium_driver, account):
     account(n=20)
 
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "account-item").click()
+
     q = get_random_string(1)
 
     number_accounts = User.objects.filter(username__icontains=q).count()
     number_pages = math.ceil(number_accounts/10)
-
-    selenium_driver.get(SEARCH_ACCOUNT_URL)
 
     search_input = find_by_test_id(selenium_driver, "search-input").find_element(By.CSS_SELECTOR, "input")
     search_input.send_keys(q)
@@ -99,7 +103,10 @@ def test_select_account(live_server, selenium_driver, account, languages):
     account(n=10)
     attribute_user_badges()
 
-    selenium_driver.get(SEARCH_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "account-item").click()
 
     submit_button = find_by_test_id(selenium_driver, "submit-button")
     submit_button.click()
@@ -128,7 +135,10 @@ def test_select_account_on_rankings_page(live_server, selenium_driver, account, 
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     language_select = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(language_select, "innerHTML", 10)

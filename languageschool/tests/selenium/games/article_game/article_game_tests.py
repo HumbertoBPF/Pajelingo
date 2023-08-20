@@ -5,9 +5,9 @@ from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Word, Badge, Score
-from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, authenticate_user, find_by_test_id
+from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, authenticate_user, find_by_test_id, \
+    setup_article_game
 from languageschool.tests.utils import achieve_explorer_badge
-from pajelingo.settings import FRONT_END_URL
 
 
 @pytest.mark.django_db
@@ -17,7 +17,8 @@ def test_article_game_correct_answer_non_authenticated_user(live_server, seleniu
     wrong answer.
     """
     random_language = random.choice(languages)
-    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
+
+    setup_article_game(selenium_driver, random_language)
 
     word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
@@ -48,7 +49,8 @@ def test_article_game_incorrect_answer_non_authenticated_user(live_server, selen
     wrong answer.
     """
     random_language = random.choice(languages)
-    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
+
+    setup_article_game(selenium_driver, random_language)
 
     word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
@@ -80,6 +82,7 @@ def test_article_game_correct_answer_authenticated_user(live_server, selenium_dr
     """
     user, password = account()[0]
     achieve_explorer_badge(user)
+
     authenticate_user(selenium_driver, user.username, password)
 
     random_language = random.choice(languages)
@@ -91,7 +94,7 @@ def test_article_game_correct_answer_authenticated_user(live_server, selenium_dr
     ).first()
     expected_score = 1 if (initial_score is None) else initial_score.score + 1
 
-    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
+    setup_article_game(selenium_driver, random_language)
 
     word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 
@@ -133,11 +136,12 @@ def test_article_game_incorrect_answer_authenticated_user(live_server, selenium_
     """
     user, password = account()[0]
     achieve_explorer_badge(user)
+
     authenticate_user(selenium_driver, user.username, password)
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(f"{FRONT_END_URL}/article-game/play?language={random_language.language_name}")
+    setup_article_game(selenium_driver, random_language)
 
     word_input = find_by_test_id(selenium_driver, "word-disabled-input")
 

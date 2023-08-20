@@ -9,8 +9,6 @@ from languageschool.tests.selenium.utils import authenticate_user, go_to_next_pa
 from languageschool.tests.utils import get_users
 from pajelingo.settings import FRONT_END_URL
 
-RANKINGS_URL = f"{FRONT_END_URL}/rankings"
-
 
 def assert_language_select(selenium_driver, languages):
     language_select = find_by_test_id(selenium_driver, "select-language")
@@ -173,7 +171,10 @@ def test_rankings_unauthenticated_user_two_pages(live_server, selenium_driver, a
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
@@ -203,7 +204,10 @@ def test_rankings_authenticated_user_two_pages(live_server, selenium_driver, acc
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
@@ -231,7 +235,10 @@ def test_rankings_unauthenticated_user_three_pages(live_server, selenium_driver,
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
@@ -261,7 +268,10 @@ def test_rankings_authenticated_user_three_pages(live_server, selenium_driver, a
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
@@ -289,7 +299,10 @@ def test_rankings_unauthenticated_user_more_than_three_pages(live_server, seleni
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)
@@ -319,7 +332,10 @@ def test_rankings_authenticated_user_more_than_three_pages(live_server, selenium
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(RANKINGS_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "rankings-item").click()
 
     select_language = find_by_test_id(selenium_driver, "select-language")
     wait_attribute_to_be_non_empty(select_language, "innerHTML", 10)

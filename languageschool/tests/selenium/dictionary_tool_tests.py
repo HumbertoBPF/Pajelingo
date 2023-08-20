@@ -10,8 +10,6 @@ from languageschool.tests.selenium.utils import authenticate_user, find_by_test_
     get_word_name_from_card_word, assert_pagination, go_to_next_page
 from pajelingo.settings import FRONT_END_URL
 
-SEARCH_URL = f"{FRONT_END_URL}/dictionary"
-
 CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 
 
@@ -20,7 +18,10 @@ def test_search_authenticated_user(live_server, account, selenium_driver, words,
     user, password = account()[0]
     authenticate_user(selenium_driver, user.username, password)
 
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     number_words = words.count()
     number_pages = math.ceil(number_words / 12)
@@ -56,7 +57,10 @@ def test_search_authenticated_user(live_server, account, selenium_driver, words,
 
 @pytest.mark.django_db
 def test_search_unauthenticated_user(live_server, selenium_driver, words, languages):
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     number_words = words.count()
     number_pages = math.ceil(number_words / 12)
@@ -91,7 +95,10 @@ def test_search_with_search_pattern_and_language_filter_authenticated_user(live_
     search_pattern = get_random_string(1)
     random_language = random.choice(languages)
 
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     filter_button = find_by_test_id(selenium_driver, "filter-button")
     filter_button.click()
@@ -145,7 +152,10 @@ def test_search_with_search_pattern_and_language_filter_unauthenticated_user(liv
     search_pattern = get_random_string(1)
     random_language = random.choice(languages)
 
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     filter_button = find_by_test_id(selenium_driver, "filter-button")
     filter_button.click()
@@ -190,7 +200,10 @@ def test_search_with_search_pattern_and_language_filter_unauthenticated_user(liv
 
 @pytest.mark.django_db
 def test_search_no_results(live_server, selenium_driver, words, languages):
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     filter_button = find_by_test_id(selenium_driver, "filter-button")
     filter_button.click()

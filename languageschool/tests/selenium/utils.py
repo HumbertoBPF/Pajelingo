@@ -272,3 +272,76 @@ def submit_user_form(selenium_driver, email, username, bio, password, confirm_pa
     submit_button = find_by_test_id(selenium_driver, "submit-button")
     scroll_to_element(selenium_driver, submit_button)
     submit_button.click()
+
+
+def setup_article_game(selenium_driver, language):
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "play-item").click()
+    find_by_test_id(selenium_driver, "2-game-card").click()
+
+    if language is not None:
+        form_select = find_by_test_id(selenium_driver, "select-language")
+        form_select.click()
+
+        css_selector_select_option = (By.ID, language.language_name)
+        select_option = find_element(selenium_driver, css_selector_select_option)
+        select_option.click()
+
+    start_button = find_by_test_id(selenium_driver, "start-button")
+    start_button.click()
+
+
+def setup_conjugation_game(selenium_driver, language):
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "play-item").click()
+    find_by_test_id(selenium_driver, "3-game-card").click()
+
+    if language is not None:
+        form_select = find_by_test_id(selenium_driver, "select-language")
+        form_select.click()
+
+        css_selector_select_option = (By.ID, language.language_name)
+        select_option = find_element(selenium_driver, css_selector_select_option)
+        select_option.click()
+
+    start_button = find_by_test_id(selenium_driver, "start-button")
+    start_button.click()
+
+
+def setup_vocabulary_game(selenium_driver, base_language, target_language):
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "games-dropdown").click()
+    find_by_test_id(selenium_driver, "play-item").click()
+    find_by_test_id(selenium_driver, "1-game-card").click()
+
+    # Selecting the base language
+    if base_language is not None:
+        select_base_language = find_by_test_id(selenium_driver, "select-base-language")
+        select_base_language.click()
+
+        css_selector_base_language_option = (By.ID, base_language.language_name)
+        find_element(selenium_driver, css_selector_base_language_option)
+
+        base_language_option = select_base_language \
+            .find_element(css_selector_base_language_option[0], css_selector_base_language_option[1])
+        base_language_option.click()
+
+    # Selecting the target language
+    if target_language is not None:
+        select_target_language = find_by_test_id(selenium_driver, "select-target-language")
+        select_target_language.click()
+
+        css_selector_target_language_option = (By.ID, target_language.language_name)
+        find_element(selenium_driver, css_selector_target_language_option)
+
+        target_language_option = select_target_language \
+            .find_element(css_selector_target_language_option[0], css_selector_target_language_option[1])
+        target_language_option.click()
+
+    start_button = find_by_test_id(selenium_driver, "start-button")
+    start_button.click()

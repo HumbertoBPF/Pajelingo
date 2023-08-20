@@ -9,14 +9,14 @@ from languageschool.tests.utils import get_random_username, get_valid_password, 
     get_random_bio
 from pajelingo.settings import FRONT_END_URL
 
-SIGNUP_URL = f"{FRONT_END_URL}/signup"
-
 
 @pytest.mark.django_db
 def test_signup_repeated_email(live_server, selenium_driver, account):
     user, password = account()[0]
 
-    selenium_driver.get(SIGNUP_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signup-button").click()
 
     email = user.email
     username = get_random_username()
@@ -36,7 +36,9 @@ def test_signup_repeated_email(live_server, selenium_driver, account):
 def test_signup_repeated_username(live_server, selenium_driver, account):
     user, password = account()[0]
 
-    selenium_driver.get(SIGNUP_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signup-button").click()
 
     email = get_random_email()
     username = user.username
@@ -53,7 +55,9 @@ def test_signup_repeated_username(live_server, selenium_driver, account):
 
 
 def test_signup(live_server, selenium_driver):
-    selenium_driver.get(SIGNUP_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signup-button").click()
 
     email = get_random_email()
     username = get_random_username()

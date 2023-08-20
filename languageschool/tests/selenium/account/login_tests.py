@@ -5,12 +5,12 @@ from selenium.webdriver.common.by import By
 from languageschool.tests.selenium.utils import find_by_test_id
 from pajelingo.settings import FRONT_END_URL
 
-LOGIN_URL = f"{FRONT_END_URL}/login"
-
 
 @pytest.mark.django_db
 def test_failed_login(live_server, selenium_driver):
-    selenium_driver.get(LOGIN_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signin-button").click()
 
     username_input = find_by_test_id(selenium_driver, "username-input").find_element(By.CSS_SELECTOR, "input")
     username_input.send_keys(get_random_string(8))
@@ -32,7 +32,9 @@ def test_failed_login(live_server, selenium_driver):
 def test_successful_login(live_server, selenium_driver, account):
     user, password = account()[0]
 
-    selenium_driver.get(LOGIN_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signin-button").click()
 
     username_input = find_by_test_id(selenium_driver, "username-input").find_element(By.CSS_SELECTOR, "input")
     username_input.send_keys(user.username)

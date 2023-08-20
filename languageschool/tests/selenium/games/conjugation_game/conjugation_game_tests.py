@@ -5,9 +5,10 @@ from django.utils.crypto import get_random_string
 from selenium.webdriver.common.by import By
 
 from languageschool.models import Conjugation, Badge, Score
-from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, authenticate_user, find_by_test_id
+from languageschool.tests.selenium.utils import wait_attribute_to_be_non_empty, authenticate_user, find_by_test_id, \
+    setup_conjugation_game
 from languageschool.tests.utils import achieve_explorer_badge
-from pajelingo.settings import FRONT_END_URL
+
 
 def get_conjugation(form_input):
     verb, tense = wait_attribute_to_be_non_empty(form_input, "placeholder", 10).split(" - ")
@@ -31,7 +32,8 @@ def test_conjugation_game_correct_answer_non_authenticated_user(live_server, sel
     of an incorrect answer.
     """
     random_language = random.choice(languages)
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
+
+    setup_conjugation_game(selenium_driver, random_language)
 
     verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
@@ -88,7 +90,8 @@ def test_conjugation_game_incorrect_answer_non_authenticated_user(live_server, s
     of an incorrect answer.
     """
     random_language = random.choice(languages)
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
+
+    setup_conjugation_game(selenium_driver, random_language)
 
     verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
@@ -148,6 +151,7 @@ def test_conjugation_game_correct_answer_authenticated_user(live_server, seleniu
     """
     user, password = account()[0]
     achieve_explorer_badge(user)
+
     authenticate_user(selenium_driver, user.username, password)
 
     random_language = random.choice(languages)
@@ -159,7 +163,7 @@ def test_conjugation_game_correct_answer_authenticated_user(live_server, seleniu
     ).first()
     expected_score = 1 if (initial_score is None) else initial_score.score + 1
 
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
+    setup_conjugation_game(selenium_driver, random_language)
 
     verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 
@@ -229,11 +233,12 @@ def test_conjugation_game_incorrect_answer_authenticated_user(live_server, selen
     """
     user, password = account()[0]
     achieve_explorer_badge(user)
+
     authenticate_user(selenium_driver, user.username, password)
 
     random_language = random.choice(languages)
 
-    selenium_driver.get(FRONT_END_URL + "/conjugation-game/play?language={}".format(random_language.language_name))
+    setup_conjugation_game(selenium_driver, random_language)
 
     verb_and_tense = find_by_test_id(selenium_driver, "verb-and-tense").find_element(By.CSS_SELECTOR, "input")
 

@@ -6,11 +6,12 @@ from languageschool.tests.selenium.utils import find_by_test_id
 from languageschool.tests.utils import get_random_email
 from pajelingo.settings import FRONT_END_URL
 
-REQUEST_RESET_ACCOUNT_URL = f"{FRONT_END_URL}/request-reset-account"
-
 
 def test_request_reset_account_email_does_not_match_account(live_server, selenium_driver):
-    selenium_driver.get(REQUEST_RESET_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signin-button").click()
+    find_by_test_id(selenium_driver, "link-forgot-password").click()
 
     email_input = find_by_test_id(selenium_driver, "email-input").find_element(By.CSS_SELECTOR, "input")
     email_input.send_keys(get_random_email())
@@ -33,7 +34,10 @@ def test_request_reset_account_non_active_user(live_server, selenium_driver, acc
     user.is_active = False
     user.save()
 
-    selenium_driver.get(REQUEST_RESET_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signin-button").click()
+    find_by_test_id(selenium_driver, "link-forgot-password").click()
 
     email_input = find_by_test_id(selenium_driver, "email-input").find_element(By.CSS_SELECTOR, "input")
     email_input.send_keys(get_random_email())
@@ -52,7 +56,10 @@ def test_request_reset_account_non_active_user(live_server, selenium_driver, acc
 def test_request_reset_account(live_server, selenium_driver, account):
     user, _ = account()[0]
 
-    selenium_driver.get(REQUEST_RESET_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "signin-button").click()
+    find_by_test_id(selenium_driver, "link-forgot-password").click()
 
     email_input = find_by_test_id(selenium_driver, "email-input").find_element(By.CSS_SELECTOR, "input")
     email_input.send_keys(user.email)

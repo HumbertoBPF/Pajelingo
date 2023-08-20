@@ -7,14 +7,15 @@ from languageschool.tests.selenium.utils import find_element, find_by_test_id, a
     assert_meanings_of_word
 from pajelingo.settings import FRONT_END_URL
 
-SEARCH_URL = f"{FRONT_END_URL}/dictionary"
-
 CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 CSS_SELECTOR_MEANING_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text")
 
 
 def test_meaning_word_unauthenticated_user(live_server, selenium_driver, words, meanings):
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
@@ -36,7 +37,10 @@ def test_meaning_word_authenticated_user(live_server, selenium_driver, account, 
 
     authenticate_user(selenium_driver, user.username, password)
 
-    selenium_driver.get(SEARCH_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "search-dropdown").click()
+    find_by_test_id(selenium_driver, "dictionary-item").click()
 
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])

@@ -8,8 +8,6 @@ from languageschool.tests.utils import get_random_username, get_valid_password, 
     get_random_bio, attribute_user_badges
 from pajelingo.settings import FRONT_END_URL
 
-UPDATE_ACCOUNT_URL =f"{FRONT_END_URL}/update-account"
-
 
 @pytest.mark.django_db
 def test_update_account_repeated_email(live_server, selenium_driver, account):
@@ -23,7 +21,11 @@ def test_update_account_repeated_email(live_server, selenium_driver, account):
 
     authenticate_user(selenium_driver, user.username, user_password)
 
-    selenium_driver.get(UPDATE_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
+    find_by_test_id(selenium_driver, "update-item").click()
 
     email = another_user.email
     username = get_random_username()
@@ -51,7 +53,11 @@ def test_update_account_repeated_username(live_server, selenium_driver, account)
 
     authenticate_user(selenium_driver, user.username, user_password)
 
-    selenium_driver.get(UPDATE_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
+    find_by_test_id(selenium_driver, "update-item").click()
 
     email = get_random_email()
     username = another_user.username
@@ -79,7 +85,11 @@ def test_update_account_same_credentials(live_server, selenium_driver, account, 
 
     authenticate_user(selenium_driver, user.username, user_password)
 
-    selenium_driver.get(UPDATE_ACCOUNT_URL)
+    selenium_driver.get(f"{FRONT_END_URL}/dashboard")
+
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
+    find_by_test_id(selenium_driver, "update-item").click()
 
     email = user.email if is_same_email else get_random_email()
     username = user.username if is_same_username else get_random_username()

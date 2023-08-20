@@ -7,7 +7,6 @@ from languageschool.tests.selenium.utils import authenticate_user, find_element,
     assert_meanings_of_word
 from pajelingo.settings import FRONT_END_URL
 
-FAVORITE_WORDS_URL = f"{FRONT_END_URL}/profile/favorite-words"
 CSS_SELECTOR_CARDS = (By.CSS_SELECTOR, "main .card")
 CSS_SELECTOR_MEANING_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text")
 
@@ -15,7 +14,11 @@ CSS_SELECTOR_MEANING_CARD = (By.CSS_SELECTOR, "main .card .card-body .card-text"
 def test_favorite_words_meaning(live_server, selenium_driver, account, words, meanings,):
     user, password = account()[0]
     authenticate_user(selenium_driver, user.username, password)
-    selenium_driver.get(FAVORITE_WORDS_URL)
+
+    find_by_test_id(selenium_driver, "profile-dropdown").click()
+    find_by_test_id(selenium_driver, "profile-item").click()
+    find_by_test_id(selenium_driver, "favorite-item").click()
+
     find_element(selenium_driver, CSS_SELECTOR_CARDS)
     cards = selenium_driver.find_elements(CSS_SELECTOR_CARDS[0], CSS_SELECTOR_CARDS[1])
 
